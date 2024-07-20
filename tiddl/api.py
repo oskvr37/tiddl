@@ -1,35 +1,24 @@
-from requests import request, Response
-from typing import Literal
-
+from requests import Session
 from .types import SessionData
 
 
 class TidalApi:
-    def request(
-        self,
-        method: Literal["GET", "POST"],
-        url: str,
-        data=None,
-        auth=None,
-        headers=None,
-    ) -> Response:
-        req = request(method, url, data=data, auth=auth, headers=headers)
+    def __init__(self, token: str) -> None:
+        self.token = token
 
-        if req.status_code != 200:
-            raise Exception(f"{req.text} - {req.status_code}")
+        self.session = Session()
+        self.session.headers = {"authorization": f"Bearer {token}"}
 
-        return req
+        session_data = self.getSession()
+        self.user_id = session_data["userId"]
+        self.country_code = session_data["countryCode"]
 
-    def getSession(self, token: str) -> SessionData:
-        return self.request(
-            "GET",
+    def getSession(self) -> SessionData:
+        return self.session.get(
             "https://api.tidal.com/v1/sessions",
-            headers={"authorization": f"Bearer {token}"},
         ).json()
 
-    def getPlaylists(self, token: str, user_id: int, country_code: str):
-        return self.request(
-            "GET",
-            f"https://api.tidalhifi.com/v1/users/{user_id}/playlists?countryCode={country_code}",
-            headers={"authorization": f"Bearer {token}"},
+    def getPlaylists(self):
+        return self.session.get(
+            f"https://api.tidalhifi.com/v1/users/{self.user_id}/playlists?countryCode={self.country_code}",
         ).json()
