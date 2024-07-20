@@ -1,18 +1,11 @@
 from requests import request, Response
-from typing import TypedDict, Literal
+from typing import Literal
+
+from .types import DeviceAuthData, AuthData
 
 AUTH_URL = "https://auth.tidal.com/v1/oauth2"
 CLIENT_ID = "7m7Ap0JC9j1cOM3n"
 CLIENT_SECRET = "vRAdA108tlvkJpTsGZS8rGZ7xTlbJ0qaZ2K9saEzsgY="
-
-
-class DeviceAuthData(TypedDict):
-    deviceCode: str
-    userCode: str
-    verificationUri: str
-    verificationUriComplete: str
-    expiresIn: int
-    interval: int
 
 
 class TidalApi:
@@ -33,7 +26,7 @@ class TidalApi:
             {"client_id": CLIENT_ID, "scope": "r_usr+w_usr+w_sub"},
         ).json()
 
-    def getToken(self, device_code: str):
+    def getToken(self, device_code: str) -> AuthData:
         return self.request(
             "POST",
             f"{AUTH_URL}/token",
