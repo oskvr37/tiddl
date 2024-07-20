@@ -47,3 +47,17 @@ class AuthData(TypedDict):
     refresh_token: str
     expires_in: int
     user_id: int
+
+class Client(TypedDict):
+    id: int
+    name: str
+    authorizedForOffline: bool
+    authorizedForOfflineDate: Optional[str]
+
+class SessionData(TypedDict):
+    sessionId: str
+    userId: int
+    countryCode: str
+    channelId: int
+    partnerId: int
+    client: Client
