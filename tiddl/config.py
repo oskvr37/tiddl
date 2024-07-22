@@ -9,11 +9,17 @@ class Settings(TypedDict, total=False):
 class ConfigData(TypedDict, total=False):
     token: str
     refresh_token: str
+    token_expires_at: int
     settings: Settings
 
 
 FILENAME = ".tiddl.json"
-DEFAULT_CONFIG: ConfigData = {"token": "", "settings": {"download_path": "tiddl"}}
+DEFAULT_CONFIG: ConfigData = {
+    "token": "",
+    "refresh_token": "",
+    "token_expires_at": 0,
+    "settings": {"download_path": "tiddl"},
+}
 
 
 class Config:
