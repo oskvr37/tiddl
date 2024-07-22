@@ -10,14 +10,16 @@ def main():
     print("✅ TIDDL installed!")
 
     config = Config()
-    if not config.config["token"]:
+
+    if not config["token"]:
         auth = getDeviceAuth()
         print(f"Go to https://{auth['verificationUriComplete']} and add device!")
         input("Hit enter when you are ready")
         token = getToken(auth["deviceCode"])
         print(token)
-        config.config.update({"token": token["access_token"]})
-        config.save()
+        config.update({"token": token["access_token"]})
+    else:
+        print(config)
 
 
 if __name__ == "__main__":

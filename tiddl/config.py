@@ -1,12 +1,12 @@
 import json
-from typing import TypedDict
+from typing import TypedDict, Any
 
 
-class Settings(TypedDict):
+class Settings(TypedDict, total=False):
     download_path: str
 
 
-class ConfigData(TypedDict):
+class ConfigData(TypedDict, total=False):
     token: str
     settings: Settings
 
@@ -17,15 +17,29 @@ DEFAULT_CONFIG: ConfigData = {"token": "", "settings": {"download_path": "tiddl"
 
 class Config:
     def __init__(self) -> None:
-        self.config: ConfigData = DEFAULT_CONFIG
+        self._config: ConfigData = DEFAULT_CONFIG
 
-        # load config from file or create new
         try:
             with open(FILENAME, "r") as f:
-                self.config = json.load(f)
+                loaded_config = json.load(f)
+                self._config.update(loaded_config)
         except FileNotFoundError:
-            self.save()
+            self._save()  # save default config if file does not exist
 
-    def save(self):
+    def _save(self) -> None:
         with open(FILENAME, "w") as f:
-            json.dump(self.config, f)
+            json.dump(self._config, f, indent=2)
+
+    def __getitem__(self, key: str) -> Any:
+        return self._config[key]
+
+    def __iter__(self):
+        return iter(self._config)
+
+    def __str__(self) -> str:
+        return json.dumps(self._config, indent=2)
+
+    def update(self, data: ConfigData) -> ConfigData:
+        self._config.update(data)
+        self._save()
+        return self._config.copy()
