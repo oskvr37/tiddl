@@ -38,21 +38,26 @@ class User(TypedDict):
     newUser: bool
 
 
-class AuthData(TypedDict):
+class AuthResponse(TypedDict):
     scope: str
     user: User
     clientName: str
     token_type: str
     access_token: str
-    refresh_token: str
     expires_in: int
     user_id: int
+
+
+class AuthResponseWithRefresh(AuthResponse):
+    refresh_token: str
+
 
 class Client(TypedDict):
     id: int
     name: str
     authorizedForOffline: bool
     authorizedForOfflineDate: Optional[str]
+
 
 class SessionData(TypedDict):
     sessionId: str

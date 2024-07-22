@@ -8,6 +8,7 @@ class Settings(TypedDict, total=False):
 
 class ConfigData(TypedDict, total=False):
     token: str
+    refresh_token: str
     settings: Settings
 
 

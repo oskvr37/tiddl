@@ -17,7 +17,7 @@ def main():
         input("Hit enter when you are ready")
         token = getToken(auth["deviceCode"])
         print(token)
-        config.update({"token": token["access_token"]})
+        config.update({"token": token["access_token"], "refresh_token": token["refresh_token"]})
     else:
         print(config)
 
