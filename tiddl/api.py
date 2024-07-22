@@ -1,5 +1,5 @@
 from requests import Session
-from .types import SessionData
+from .types import SessionData, PlaylistResponse
 
 
 class TidalApi:
@@ -18,7 +18,7 @@ class TidalApi:
             "https://api.tidal.com/v1/sessions",
         ).json()
 
-    def getPlaylists(self):
+    def getPlaylists(self) -> PlaylistResponse:
         return self.session.get(
             f"https://api.tidalhifi.com/v1/users/{self.user_id}/playlists?countryCode={self.country_code}",
         ).json()
