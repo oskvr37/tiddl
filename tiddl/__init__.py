@@ -48,7 +48,7 @@ def main():
 
     track_id = int(input("Enter track id to download: "))
 
-    track = api.getTrack(track_id)
+    track = api.getTrack(track_id, "HI_RES_LOSSLESS")
     decoded_manifest = decodeManifest(track["manifest"])
     track_urls, codecs = parseTrackManifest(decoded_manifest)
     downloadTrack(track_id, track_urls)

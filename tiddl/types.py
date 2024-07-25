@@ -1,4 +1,20 @@
-from typing import TypedDict, Optional, List, Any
+from typing import TypedDict, Optional, List, Any, Literal
+
+
+TrackQuality = Literal["LOW", "HIGH", "LOSSLESS", "HI_RES_LOSSLESS"]
+
+
+class QualityDetails(TypedDict):
+    name: str
+    details: str
+
+
+TRACK_QUALITY: dict[TrackQuality, QualityDetails] = {
+    "LOW": {"name": "Low", "details": "96 kbps"},
+    "HIGH": {"name": "Low", "details": "320 kbps"},
+    "LOSSLESS": {"name": "High", "details": "16-bit, 44.1 kHz"},
+    "HI_RES_LOSSLESS": {"name": "Max", "details": "Up to 24-bit, 192 kHz"},
+}
 
 
 class DeviceAuthData(TypedDict):
@@ -71,6 +87,7 @@ class SessionData(TypedDict):
 class Creator(TypedDict):
     id: int
 
+
 class PlaylistItem(TypedDict):
     uuid: str
     title: str
@@ -90,17 +107,19 @@ class PlaylistItem(TypedDict):
     promotedArtists: List[Any]  # dont know yet the type
     lastItemAddedAt: str
 
+
 class PlaylistResponse(TypedDict):
     limit: int
     offset: int
     totalNumberOfItems: int
     items: List[PlaylistItem]
 
+
 class TrackResponse(TypedDict):
     trackId: int
     assetPresentation: str
     audioMode: str
-    audioQuality: str
+    audioQuality: TrackQuality
     manifestMimeType: str
     manifestHash: str
     manifest: str
