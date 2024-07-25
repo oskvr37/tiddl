@@ -1,5 +1,7 @@
 from requests import Session
-from .types import SessionData, PlaylistResponse
+from .types import SessionData, PlaylistResponse, TrackResponse
+
+API_URL = "https://api.tidal.com/v1"
 
 
 class TidalApi:
@@ -15,10 +17,23 @@ class TidalApi:
 
     def getSession(self) -> SessionData:
         return self.session.get(
-            "https://api.tidal.com/v1/sessions",
+            f"{API_URL}/sessions",
         ).json()
 
     def getPlaylists(self) -> PlaylistResponse:
         return self.session.get(
-            f"https://api.tidalhifi.com/v1/users/{self.user_id}/playlists?countryCode={self.country_code}",
+            f"{API_URL}/users/{self.user_id}/playlists",
+            params={"countryCode": self.country_code},
+        ).json()
+
+    def getTrack(self, id: int, quality="LOW") -> TrackResponse:
+        # TODO: add quality types 🏷️
+
+        return self.session.get(
+            f"{API_URL}/tracks/{id}/playbackinfo",
+            params={
+                "audioquality": quality,
+                "playbackmode": "STREAM",
+                "assetpresentation": "FULL",
+            },
         ).json()

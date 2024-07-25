@@ -95,3 +95,16 @@ class PlaylistResponse(TypedDict):
     offset: int
     totalNumberOfItems: int
     items: List[PlaylistItem]
+
+class TrackResponse(TypedDict):
+    trackId: int
+    assetPresentation: str
+    audioMode: str
+    audioQuality: str
+    manifestMimeType: str
+    manifestHash: str
+    manifest: str
+    albumReplayGain: float
+    albumPeakAmplitude: float
+    trackReplayGain: float
+    trackPeakAmplitude: float
