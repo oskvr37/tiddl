@@ -48,11 +48,11 @@ def parseTrackManifest(xml_content: str):
     return urls, codecs
 
 
-def downloadTrack(urls: list[str]):
-    # file is corrupted, song is playing tho
+def downloadTrack(track_id: int, urls: list[str]):
+    # both mp3 and flac extensions work
     print("downloading...")
-    filename = "out.mp3"
-    with open(filename, "wb") as f:
+    filename = f"{track_id}.flac"
+    with open(filename, "wb+") as f:
         progress = 0
         for url in urls:
             progress += 1
