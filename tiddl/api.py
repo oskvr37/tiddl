@@ -1,21 +1,19 @@
 from requests import Session
-from .types import SessionData, PlaylistResponse, TrackResponse, TrackQuality
+from .types import SessionResponse, PlaylistResponse, TrackResponse, TrackQuality
 
 API_URL = "https://api.tidal.com/v1"
 
 
 class TidalApi:
-    def __init__(self, token: str) -> None:
+    def __init__(self, token: str, user_id: str, country_code: str) -> None:
         self.token = token
+        self.user_id = user_id
+        self.country_code = country_code
 
         self.session = Session()
         self.session.headers = {"authorization": f"Bearer {token}"}
 
-        session_data = self.getSession()
-        self.user_id = session_data["userId"]
-        self.country_code = session_data["countryCode"]
-
-    def getSession(self) -> SessionData:
+    def getSession(self) -> SessionResponse:
         return self.session.get(
             f"{API_URL}/sessions",
         ).json()

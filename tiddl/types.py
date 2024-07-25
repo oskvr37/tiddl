@@ -75,7 +75,7 @@ class Client(TypedDict):
     authorizedForOfflineDate: Optional[str]
 
 
-class SessionData(TypedDict):
+class SessionResponse(TypedDict):
     sessionId: str
     userId: int
     countryCode: str
