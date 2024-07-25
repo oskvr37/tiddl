@@ -4,6 +4,7 @@ import time
 from .api import TidalApi
 from .auth import getDeviceAuth, getToken, refreshToken
 from .config import Config
+from .utils import decodeManifest, parseTrackManifest, downloadTrack
 
 
 def main():
@@ -44,6 +45,13 @@ def main():
     api = TidalApi(config["token"])
     playlists = api.getPlaylists()
     print(f"You have got {playlists['totalNumberOfItems']} playlists.")
+
+    track_id = input("Enter track id to download: ")
+
+    track = api.getTrack(int(track_id))
+    decoded_manifest = decodeManifest(track["manifest"])
+    track_urls, codecs = parseTrackManifest(decoded_manifest)
+    downloadTrack(track_urls)
 
 
 if __name__ == "__main__":
