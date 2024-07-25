@@ -42,9 +42,11 @@ def main():
         )
         print("✅ Refreshed token!")
 
-    # TODO: format time to days and hours ✨
     time_to_expire = config["token_expires_at"] - t_now
-    print(f"✅ Token good for {time_to_expire}s")
+    days, hours = time_to_expire // (24 * 3600), time_to_expire % (24 * 3600) // 3600
+    days_text = f" {days} {"day" if days == 1 else "days"}" if days else ""
+    hours_text = f" {hours} {"hour" if hours == 1 else "hours"}" if hours else ""
+    print(f"✅ Token good for{days_text}{hours_text}")
 
     api = TidalApi(
         config["token"], config["user"]["user_id"], config["user"]["country_code"]
