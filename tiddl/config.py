@@ -21,7 +21,7 @@ class ConfigData(TypedDict, total=False):
     user: User
 
 
-FILENAME = ".tiddl.json"
+DEFAULT_PATH = ".tiddl_config.json"
 DEFAULT_CONFIG: ConfigData = {
     "token": "",
     "refresh_token": "",
@@ -32,11 +32,12 @@ DEFAULT_CONFIG: ConfigData = {
 
 
 class Config:
-    def __init__(self) -> None:
+    def __init__(self, config_path=DEFAULT_PATH) -> None:
+        self.config_path = config_path
         self._config: ConfigData = DEFAULT_CONFIG
 
         try:
-            with open(FILENAME, "r") as f:
+            with open(self.config_path, "r") as f:
                 loaded_config = json.load(f)
                 self._config.update(loaded_config)
                 self._save()
@@ -44,7 +45,7 @@ class Config:
             self._save()  # save default config if file does not exist
 
     def _save(self) -> None:
-        with open(FILENAME, "w") as f:
+        with open(self.config_path, "w") as f:
             json.dump(self._config, f, indent=2)
 
     def __getitem__(self, key: str) -> Any:
