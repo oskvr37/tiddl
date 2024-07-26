@@ -5,6 +5,7 @@ from .api import TidalApi
 from .auth import getDeviceAuth, getToken, refreshToken
 from .config import Config
 from .download import downloadTrack
+from .types import TRACK_QUALITY
 
 
 def main():
@@ -56,10 +57,16 @@ def main():
     print(f"You have got {playlists['totalNumberOfItems']} playlists.")
 
     track_id = input("Enter track id to download: ")
-
     track = api.getTrack(int(track_id), config["settings"]["track_quality"])
-    track_path = downloadTrack(config["settings"]["download_path"], track_id, track["manifest"])
-    print(f"✨ Track saved in {track_path}")
+
+    # f string is too long
+    print(f"▶️  {TRACK_QUALITY[track['audioQuality']]['name']} quality - {track['bitDepth']} bit, {track['sampleRate'] / 1000:.1f} kHz")
+
+    if track["manifestMimeType"] == "application/dash+xml":
+        track_path = downloadTrack(config["settings"]["download_path"], track_id, track["manifest"])
+        print(f"✨ Track saved in {track_path}")
+    else:
+        print(f"🚨 Mime type `{track["manifestMimeType"]}` not supported yet")
 
 
 if __name__ == "__main__":
