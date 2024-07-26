@@ -2,8 +2,8 @@ from requests import request
 from .types import DeviceAuthData, AuthResponse, AuthResponseWithRefresh
 
 AUTH_URL = "https://auth.tidal.com/v1/oauth2"
-CLIENT_ID = "7m7Ap0JC9j1cOM3n"
-CLIENT_SECRET = "vRAdA108tlvkJpTsGZS8rGZ7xTlbJ0qaZ2K9saEzsgY="
+CLIENT_ID = "zU4XHVVkc2tDPo4t"
+CLIENT_SECRET = "VJKhDFqJPqvsPVNBV6ukXTJmwlvbttP7wlMlrc72se4="
 
 
 def getDeviceAuth() -> DeviceAuthData:
