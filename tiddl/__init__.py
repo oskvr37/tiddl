@@ -55,10 +55,10 @@ def main():
     playlists = api.getPlaylists()
     print(f"You have got {playlists['totalNumberOfItems']} playlists.")
 
-    track_id = int(input("Enter track id to download: "))
+    track_id = input("Enter track id to download: ")
 
-    track = api.getTrack(track_id, config["settings"]["track_quality"])
-    track_path = downloadTrack(track_id, track["manifest"], config["settings"]["download_path"])
+    track = api.getTrack(int(track_id), config["settings"]["track_quality"])
+    track_path = downloadTrack(config["settings"]["download_path"], track_id, track["manifest"])
     print(f"✨ Track saved in {track_path}")
 
 

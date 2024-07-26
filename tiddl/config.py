@@ -26,7 +26,7 @@ DEFAULT_CONFIG: ConfigData = {
     "token": "",
     "refresh_token": "",
     "token_expires_at": 0,
-    "settings": {"download_path": "tiddl", "track_quality": "HIGH"},
+    "settings": {"download_path": "tidal_download", "track_quality": "HIGH"},
     "user": {"user_id": "", "country_code": ""},
 }
 

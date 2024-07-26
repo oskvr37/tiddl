@@ -61,7 +61,7 @@ def threadDownload(urls: list[str]) -> bytes:
     return data
 
 
-def downloadTrack(file_name: int, manifest: str, path: str):
+def downloadTrack(path: str, file_name: str, manifest: str):
     decoded_manifest = decodeManifest(manifest)
     track_urls, codecs = parseTrackManifest(decoded_manifest)
     track_data = threadDownload(track_urls)
