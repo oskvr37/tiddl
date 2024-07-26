@@ -1,4 +1,5 @@
 import requests
+from os import makedirs
 from xml.etree.ElementTree import fromstring
 from base64 import b64decode
 
@@ -60,13 +61,15 @@ def threadDownload(urls: list[str]) -> bytes:
     return data
 
 
-def downloadTrack(track_id: int, manifest: str, path: str):
+def downloadTrack(file_name: int, manifest: str, path: str):
     decoded_manifest = decodeManifest(manifest)
     track_urls, codecs = parseTrackManifest(decoded_manifest)
     track_data = threadDownload(track_urls)
 
+    makedirs(path, exist_ok=True)
+
     # TODO: use proper file extension ✨
-    file_path = f"{path}/{track_id}.flac"
+    file_path = f"{path}/{file_name}.flac"
 
     with open(file_path, "wb+") as f:
         f.write(track_data)
