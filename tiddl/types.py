@@ -117,13 +117,15 @@ class PlaylistResponse(TypedDict):
 
 class TrackResponse(TypedDict):
     trackId: int
-    assetPresentation: str
-    audioMode: str
+    assetPresentation: Literal["FULL"]
+    audioMode: Literal["STEREO"]
     audioQuality: TrackQuality
-    manifestMimeType: str
+    manifestMimeType: Literal["application/dash+xml", "application/vnd.tidal.bts"]
     manifestHash: str
     manifest: str
     albumReplayGain: float
     albumPeakAmplitude: float
     trackReplayGain: float
     trackPeakAmplitude: float
+    bitDepth: int
+    sampleRate: int
