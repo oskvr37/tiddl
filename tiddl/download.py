@@ -48,15 +48,27 @@ def parseTrackManifest(xml_content: str):
     return urls, codecs
 
 
-def downloadTrack(track_id: int, urls: list[str]):
-    # both mp3 and flac extensions work
-    print("downloading...")
-    filename = f"{track_id}.flac"
-    with open(filename, "wb+") as f:
-        progress = 0
-        for url in urls:
-            progress += 1
-            req = requests.get(url)
-            print(f"{round(progress / len(urls) * 100)}%")
-            f.write(req.content)
-    print(f"file saved as ./{filename}")
+def threadDownload(urls: list[str]) -> bytes:
+    # TODO: implement threaded download ⚡️
+
+    data = b""
+    for index, url in enumerate(urls):
+        req = requests.get(url)
+        data += req.content
+        print(f"{round(index / len(urls) * 100)}%")
+
+    return data
+
+
+def downloadTrack(track_id: int, manifest: str, path: str):
+    decoded_manifest = decodeManifest(manifest)
+    track_urls, codecs = parseTrackManifest(decoded_manifest)
+    track_data = threadDownload(track_urls)
+
+    # TODO: use proper file extension ✨
+    file_path = f"{path}/{track_id}.flac"
+
+    with open(file_path, "wb+") as f:
+        f.write(track_data)
+
+    return file_path
