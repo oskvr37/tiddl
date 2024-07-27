@@ -5,7 +5,7 @@ from .api import TidalApi
 from .auth import getDeviceAuth, getToken, refreshToken
 from .config import Config
 from .download import downloadTrack
-from .types import TRACK_QUALITY
+from .types import TRACK_QUALITY, TrackQuality
 
 
 def main():
@@ -53,14 +53,20 @@ def main():
         config["token"], config["user"]["user_id"], config["user"]["country_code"]
     )
 
-    playlists = api.getPlaylists()
-    print(f"You have got {playlists['totalNumberOfItems']} playlists.")
-
     track_id = input("Enter track id to download: ")
     track = api.getTrack(int(track_id), config["settings"]["track_quality"])
 
-    # f string is too long
-    print(f"▶️  {TRACK_QUALITY[track['audioQuality']]['name']} quality - {track['bitDepth']} bit, {track['sampleRate'] / 1000:.1f} kHz")
+    # qualities below master dont have `bitDepth` and `sampleRate`
+    # TODO: add special types for master quality 🏷️
+    
+    MASTER_QUALITIES: list[TrackQuality] = ["HI_RES_LOSSLESS", "LOSSLESS"]
+    if track["audioQuality"] in MASTER_QUALITIES:
+        print("▶️  {0} quality - {1} bit, {2:.1f} kHz"
+            .format(TRACK_QUALITY[track['audioQuality']]['name'],
+                    track['bitDepth'],
+                    track['sampleRate'] / 1000))
+    else:
+        print(f"▶️  {TRACK_QUALITY[track['audioQuality']]['name']}")
 
     if track["manifestMimeType"] == "application/dash+xml":
         track_path = downloadTrack(config["settings"]["download_path"], track_id, track["manifest"])
