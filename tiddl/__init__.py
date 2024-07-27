@@ -58,7 +58,7 @@ def main():
 
     # qualities below master dont have `bitDepth` and `sampleRate`
     # TODO: add special types for master quality 🏷️
-    
+
     MASTER_QUALITIES: list[TrackQuality] = ["HI_RES_LOSSLESS", "LOSSLESS"]
     if track["audioQuality"] in MASTER_QUALITIES:
         print(
@@ -69,7 +69,7 @@ def main():
             )
         )
     else:
-        print(f"▶️  {TRACK_QUALITY[track['audioQuality']]['name']}")
+        print(f"▶️  {TRACK_QUALITY[track['audioQuality']]['name']} quality")
 
     track_path = downloadTrack(
         config["settings"]["download_path"],

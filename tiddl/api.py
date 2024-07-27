@@ -3,6 +3,8 @@ from .types import SessionResponse, PlaylistResponse, TrackResponse, TrackQualit
 
 API_URL = "https://api.tidal.com/v1"
 
+# TODO: endpoints error handling ✨
+
 
 class TidalApi:
     def __init__(self, token: str, user_id: str, country_code: str) -> None:

@@ -71,7 +71,7 @@ def threadDownload(urls: list[str]) -> bytes:
     for index, url in enumerate(urls):
         req = requests.get(url)
         data += req.content
-        print(f"{round(index / len(urls) * 100)}%")
+        print(f"{round((index + 1) / len(urls) * 100)}%")
 
     return data
 
@@ -91,6 +91,15 @@ def downloadTrack(
             raise ValueError(f"Unknown `mime_type`: {mime_type}")
 
     track_data = threadDownload(track_urls)
+
+    print("codecs:", codecs)
+
+    """
+    known codecs
+        flac (master)
+        mp4a.40.2 (high)
+        mp4a.40.5 (low)
+    """
 
     makedirs(path, exist_ok=True)
 
