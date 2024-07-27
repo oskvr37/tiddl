@@ -1,14 +1,29 @@
 import requests
+import json
 from os import makedirs
 from xml.etree.ElementTree import fromstring
 from base64 import b64decode
+from typing import TypedDict, List
+
+from .types import ManifestMimeType
 
 
 def decodeManifest(manifest: str):
     return b64decode(manifest).decode()
 
 
-def parseTrackManifest(xml_content: str):
+def parseManifest(manifest: str):
+    class AudioFileInfo(TypedDict):
+        mimeType: str
+        codecs: str
+        encryptionType: str
+        urls: List[str]
+
+    data: AudioFileInfo = json.loads(manifest)
+    return data
+
+
+def parseManifestXML(xml_content: str):
     """
     Parses XML manifest file of the track.
     """
@@ -61,9 +76,20 @@ def threadDownload(urls: list[str]) -> bytes:
     return data
 
 
-def downloadTrack(path: str, file_name: str, manifest: str):
-    decoded_manifest = decodeManifest(manifest)
-    track_urls, codecs = parseTrackManifest(decoded_manifest)
+def downloadTrack(
+    path: str, file_name: str, encoded_manifest: str, mime_type: ManifestMimeType
+):
+    manifest = decodeManifest(encoded_manifest)
+
+    match mime_type:
+        case "application/dash+xml":
+            track_urls, codecs = parseManifestXML(manifest)
+        case "application/vnd.tidal.bts":
+            data = parseManifest(manifest)
+            track_urls, codecs = data["urls"], data["codecs"]
+        case _:
+            raise ValueError(f"Unknown `mime_type`: {mime_type}")
+
     track_data = threadDownload(track_urls)
 
     makedirs(path, exist_ok=True)

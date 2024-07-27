@@ -61,18 +61,23 @@ def main():
     
     MASTER_QUALITIES: list[TrackQuality] = ["HI_RES_LOSSLESS", "LOSSLESS"]
     if track["audioQuality"] in MASTER_QUALITIES:
-        print("▶️  {0} quality - {1} bit, {2:.1f} kHz"
-            .format(TRACK_QUALITY[track['audioQuality']]['name'],
-                    track['bitDepth'],
-                    track['sampleRate'] / 1000))
+        print(
+            "▶️  {0} quality - {1} bit, {2:.1f} kHz".format(
+                TRACK_QUALITY[track["audioQuality"]]["name"],
+                track["bitDepth"],
+                track["sampleRate"] / 1000,
+            )
+        )
     else:
         print(f"▶️  {TRACK_QUALITY[track['audioQuality']]['name']}")
 
-    if track["manifestMimeType"] == "application/dash+xml":
-        track_path = downloadTrack(config["settings"]["download_path"], track_id, track["manifest"])
-        print(f"✨ Track saved in {track_path}")
-    else:
-        print(f"🚨 Mime type `{track["manifestMimeType"]}` not supported yet")
+    track_path = downloadTrack(
+        config["settings"]["download_path"],
+        track_id,
+        track["manifest"],
+        track["manifestMimeType"],
+    )
+    print(f"✨ Track saved in {track_path}")
 
 
 if __name__ == "__main__":
