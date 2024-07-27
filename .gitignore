@@ -1,3 +1,7 @@
+# TIDDL
+tidal_download/
+.tiddl_config.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
