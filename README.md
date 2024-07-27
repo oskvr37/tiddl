@@ -42,7 +42,9 @@ After authentication - when your token is ready - you can start downloading trac
 You can also use TIDDL as module, it's fully typed so you will get type hints
 
 ```python
-from tiddl import TidalApi
+from tiddl import TidalApi, Config
+
+config = Config()
 
 api = TidalApi(
 	config["token"],
