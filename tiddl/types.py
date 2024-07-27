@@ -7,13 +7,18 @@ TrackQuality = Literal["LOW", "HIGH", "LOSSLESS", "HI_RES_LOSSLESS"]
 class QualityDetails(TypedDict):
     name: str
     details: str
+    arg: str
 
 
 TRACK_QUALITY: dict[TrackQuality, QualityDetails] = {
-    "LOW": {"name": "Low", "details": "96 kbps"},
-    "HIGH": {"name": "Low", "details": "320 kbps"},
-    "LOSSLESS": {"name": "High", "details": "16-bit, 44.1 kHz"},
-    "HI_RES_LOSSLESS": {"name": "Max", "details": "Up to 24-bit, 192 kHz"},
+    "LOW": {"name": "Low", "details": "96 kbps", "arg": "low"},
+    "HIGH": {"name": "Low", "details": "320 kbps", "arg": "normal"},
+    "LOSSLESS": {"name": "High", "details": "16-bit, 44.1 kHz", "arg": "high"},
+    "HI_RES_LOSSLESS": {
+        "name": "Max",
+        "details": "Up to 24-bit, 192 kHz",
+        "arg": "master",
+    },
 }
 
 
