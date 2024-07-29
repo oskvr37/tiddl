@@ -2,12 +2,12 @@ from typing import TypedDict, Optional, List, Any, Literal
 
 
 TrackQuality = Literal["LOW", "HIGH", "LOSSLESS", "HI_RES_LOSSLESS"]
-
+TrackArg = Literal["low", "normal", "high", "master"]
 
 class QualityDetails(TypedDict):
     name: str
     details: str
-    arg: str
+    arg: TrackArg
 
 
 TRACK_QUALITY: dict[TrackQuality, QualityDetails] = {
