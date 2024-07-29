@@ -39,8 +39,7 @@ class Config:
         try:
             with open(self.config_path, "r") as f:
                 loaded_config = json.load(f)
-                self._config.update(loaded_config)
-                self._save()
+                self.update(loaded_config)
         except FileNotFoundError:
             self._save()  # save default config if file does not exist
 
