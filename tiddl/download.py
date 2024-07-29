@@ -66,6 +66,7 @@ def parseManifestXML(xml_content: str):
 
 def threadDownload(urls: list[str]) -> bytes:
     # TODO: implement threaded download ⚡️
+    # TODO: add progress bar ✨
 
     data = b""
     for index, url in enumerate(urls):
