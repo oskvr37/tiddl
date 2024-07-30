@@ -71,10 +71,10 @@ def main():
 
         logger.info(f"saved settings to {config.config_path}")
 
-        # TODO: pretty print settings ✨
         if settings:
+            print("Current Settings:")
             for k, v in settings.items():
-                print(k, v)
+                print(f"\t'{k.upper()}' {v}")
 
     if not config["token"]:
         auth = getDeviceAuth()
