@@ -1,6 +1,13 @@
+import os
 import argparse
 
 from .types import TRACK_QUALITY, TrackQuality
+
+
+def shouldNotColor() -> bool:
+    # TODO: add more checks ✨
+    checks = ["NO_COLOR" in os.environ]
+    return any(checks)
 
 
 parser = argparse.ArgumentParser(
@@ -51,4 +58,23 @@ parser.add_argument(
     help="save options to config // show config file",
     dest="save_options",
     action="store_true",
+)
+
+parser.add_argument(
+    "--silent",
+    help="silent mode",
+    action="store_true",
+)
+
+parser.add_argument(
+    "--verbose",
+    help="show debug logs",
+    action="store_true",
+)
+
+parser.add_argument(
+    "--no-color",
+    help="suppress output colors",
+    action="store_true",
+    default=shouldNotColor(),
 )

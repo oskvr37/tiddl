@@ -8,25 +8,43 @@ from .download import downloadTrack
 from .parser import QUALITY_ARGS, parser
 from .types import TRACK_QUALITY, TrackQuality
 
-stream_handler = logging.StreamHandler()
-stream_handler.setLevel(logging.INFO)
-# TODO: add option to suppress color output ✨
-colored_stream_format = (
-    "\033[1;34m%(levelname)s\033[0m \033[1;95m%(module)s\033[0m %(message)s"
-)
-stream_handler.setFormatter(logging.Formatter(colored_stream_format))
-
-file_handler = logging.FileHandler("tiddl.log", "w", "utf-8")
-file_handler.setLevel(logging.DEBUG)
-file_handler.setFormatter(
-    logging.Formatter("%(levelname)s\t%(name)s.%(module)s.%(funcName)s :: %(message)s")
-)
-
-logging.basicConfig(handlers=[file_handler, stream_handler], level=logging.DEBUG)
-
 
 def main():
     args = parser.parse_args()
+
+    if args.silent:
+        log_level = logging.ERROR
+    elif args.verbose:
+        log_level = logging.DEBUG
+    else:
+        log_level = logging.INFO
+
+    stream_handler = logging.StreamHandler()
+    stream_handler.setLevel(log_level)
+    stream_handler.setFormatter(
+        logging.Formatter(
+            "\033[1;34m%(levelname)s\033[0m \033[1;95m%(module)s\033[0m %(message)s"
+        )
+    )
+
+    if args.no_color:
+        stream_handler.setFormatter(
+            logging.Formatter("[ %(levelname)s %(module)s ] %(message)s")
+        )
+
+    file_handler = logging.FileHandler("tiddl.log", "w", "utf-8")
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(
+        logging.Formatter(
+            "%(levelname)s\t%(name)s.%(module)s.%(funcName)s :: %(message)s"
+        )
+    )
+
+    logging.basicConfig(
+        level=logging.DEBUG,
+        handlers=[file_handler, stream_handler],
+    )
+
     config = Config()
 
     download_path = args.download_path or config["settings"]["download_path"]
@@ -98,7 +116,7 @@ def main():
     track_id: str = args.input
 
     if not track_id:
-        logging.info("no ID nor URL provided...")
+        logging.warning("no ID nor URL provided")
         return
 
     api = TidalApi(
