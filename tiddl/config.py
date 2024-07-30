@@ -1,4 +1,5 @@
 import json
+import logging
 from typing import TypedDict, Any
 from .types import TrackQuality
 
@@ -38,14 +39,17 @@ class Config:
 
         try:
             with open(self.config_path, "r") as f:
+                logging.debug("loading from config file")
                 loaded_config = json.load(f)
                 self.update(loaded_config)
         except FileNotFoundError:
+            logging.debug("creating new config file")
             self._save()  # save default config if file does not exist
 
     def _save(self) -> None:
         with open(self.config_path, "w") as f:
             json.dump(self._config, f, indent=2)
+            logging.debug("saved config")
 
     def __getitem__(self, key: str) -> Any:
         return self._config[key]
@@ -58,5 +62,6 @@ class Config:
 
     def update(self, data: ConfigData) -> ConfigData:
         self._config.update(data)
+        logging.debug("updated config")
         self._save()
         return self._config.copy()

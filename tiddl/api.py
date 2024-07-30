@@ -1,3 +1,4 @@
+import logging
 from requests import Session
 from .types import SessionResponse, PlaylistResponse, TrackResponse, TrackQuality
 
@@ -27,6 +28,7 @@ class TidalApi:
         ).json()
 
     def getTrack(self, id: int, quality: TrackQuality) -> TrackResponse:
+        logging.debug((id, quality))
         return self.session.get(
             f"{API_URL}/tracks/{id}/playbackinfo",
             params={

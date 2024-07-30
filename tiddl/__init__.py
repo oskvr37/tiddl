@@ -1,5 +1,5 @@
 import time
-import json
+import logging
 
 from .api import TidalApi
 from .auth import getDeviceAuth, getToken, refreshToken
@@ -7,6 +7,22 @@ from .config import Config
 from .download import downloadTrack
 from .parser import QUALITY_ARGS, parser
 from .types import TRACK_QUALITY, TrackQuality
+
+stream_handler = logging.StreamHandler()
+stream_handler.setLevel(logging.INFO)
+# TODO: add option to suppress color output ✨
+colored_stream_format = (
+    "\033[1;34m%(levelname)s\033[0m \033[1;95m%(module)s\033[0m %(message)s"
+)
+stream_handler.setFormatter(logging.Formatter(colored_stream_format))
+
+file_handler = logging.FileHandler("tiddl.log", "w", "utf-8")
+file_handler.setLevel(logging.DEBUG)
+file_handler.setFormatter(
+    logging.Formatter("%(levelname)s\t%(name)s.%(module)s.%(funcName)s :: %(message)s")
+)
+
+logging.basicConfig(handlers=[file_handler, stream_handler], level=logging.DEBUG)
 
 
 def main():
@@ -30,7 +46,7 @@ def main():
             }
         ).get("settings")
 
-        print(f"✅ Saved settings to {config.config_path}")
+        logging.info(f"saved settings to {config.config_path}")
 
         # TODO: pretty print settings ✨
         if settings:
@@ -56,7 +72,7 @@ def main():
                 },
             }
         )
-        print("✅ Got token!")
+        logging.info(f"authenticated!")
 
     t_now = int(time.time())
     token_expired = t_now > config["token_expires_at"]
@@ -69,20 +85,20 @@ def main():
                 "token_expires_at": int(time.time()) + token["expires_in"],
             }
         )
-        print("✅ Refreshed token!")
+        logging.info(f"refreshed token!")
 
     time_to_expire = config["token_expires_at"] - t_now
     days, hours = time_to_expire // (24 * 3600), time_to_expire % (24 * 3600) // 3600
     days_text = f" {days} {'day' if days == 1 else 'days'}" if days else ""
     hours_text = f" {hours} {'hour' if hours == 1 else 'hours'}" if hours else ""
-    print(f"✅ Token good for{days_text}{hours_text}")
+    logging.info(f"token expires in{days_text}{hours_text}")
 
     # TODO: parse input type ✨
     # it can be track, album, playlist or artist
     track_id: str = args.input
 
     if not track_id:
-        print("No ID nor URL provided")
+        logging.info("no ID nor URL provided...")
         return
 
     api = TidalApi(
@@ -101,7 +117,7 @@ def main():
     else:
         details = quality["details"]
 
-    print(f"{quality['name']} Quality - {details}")
+    logging.info(f"{quality['name']} Quality - {details}")
 
     file_name: str = args.file_name or track_id
     track_path = downloadTrack(
@@ -111,7 +127,7 @@ def main():
         track["manifestMimeType"],
     )
 
-    print(f"✨ Track saved in {track_path}")
+    logging.info(f"track saved in {track_path}")
 
 
 if __name__ == "__main__":

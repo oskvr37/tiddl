@@ -1,5 +1,7 @@
+import logging
 import requests
 import json
+
 from os import makedirs
 from xml.etree.ElementTree import fromstring
 from base64 import b64decode
@@ -80,6 +82,7 @@ def threadDownload(urls: list[str]) -> bytes:
 def downloadTrack(
     path: str, file_name: str, encoded_manifest: str, mime_type: ManifestMimeType
 ):
+    logging.debug(mime_type)
     manifest = decodeManifest(encoded_manifest)
 
     match mime_type:
@@ -93,7 +96,7 @@ def downloadTrack(
 
     track_data = threadDownload(track_urls)
 
-    print("codecs:", codecs)
+    logging.debug(codecs)
 
     """
     known codecs
