@@ -131,12 +131,14 @@ def main():
     track = api.getTrack(int(track_id), track_quality)
     quality = TRACK_QUALITY[track["audioQuality"]]
 
-    # qualities below master dont have `bitDepth` and `sampleRate`
-    # TODO: add special types for master quality 🏷️
-
     MASTER_QUALITIES: list[TrackQuality] = ["HI_RES_LOSSLESS", "LOSSLESS"]
     if track["audioQuality"] in MASTER_QUALITIES:
-        details = f"{track['bitDepth']} bit {track['sampleRate']/1000:.1f} kHz"
+        bit_depth, sample_rate = track.get("bitDepth"), track.get("sampleRate")
+        if bit_depth is None or sample_rate is None:
+            raise ValueError(
+                "bitDepth and sampleRate must be provided for master qualities"
+            )
+        details = f"{bit_depth} bit {sample_rate/1000:.1f} kHz"
     else:
         details = quality["details"]
 

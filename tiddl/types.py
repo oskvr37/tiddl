@@ -1,8 +1,9 @@
-from typing import TypedDict, Optional, List, Any, Literal
+from typing import TypedDict, Optional, List, Any, Literal, NotRequired
 
 
 TrackQuality = Literal["LOW", "HIGH", "LOSSLESS", "HI_RES_LOSSLESS"]
 TrackArg = Literal["low", "normal", "high", "master"]
+
 
 class QualityDetails(TypedDict):
     name: str
@@ -135,5 +136,5 @@ class TrackResponse(TypedDict):
     albumPeakAmplitude: float
     trackReplayGain: float
     trackPeakAmplitude: float
-    bitDepth: int
-    sampleRate: int
+    bitDepth: NotRequired[int]
+    sampleRate: NotRequired[int]
