@@ -11,7 +11,6 @@ from .types import TRACK_QUALITY, TrackQuality
 
 def main():
     args = parser.parse_args()
-
     config = Config()
 
     download_path = args.download_path or config["settings"]["download_path"]
@@ -22,7 +21,6 @@ def main():
     )
 
     if args.save_options:
-        # TODO: pretty print settings ✨
         settings = config.update(
             {
                 "settings": {
@@ -34,14 +32,18 @@ def main():
 
         print(f"✅ Saved settings to {config.config_path}")
 
+        # TODO: pretty print settings ✨
         if settings:
-            print(json.dumps(settings, indent=2))
+            for k, v in settings.items():
+                print(k, v)
 
     if not config["token"]:
         auth = getDeviceAuth()
         input(
             f"⚙️ Go to https://{auth['verificationUriComplete']} and add device!\nHit enter when you are ready..."
         )
+
+        # TODO: refresh auth status automatically ✨
         token = getToken(auth["deviceCode"])
         config.update(
             {
@@ -75,37 +77,33 @@ def main():
     hours_text = f" {hours} {'hour' if hours == 1 else 'hours'}" if hours else ""
     print(f"✅ Token good for{days_text}{hours_text}")
 
-    if not args.input:
+    # TODO: parse input type ✨
+    # it can be track, album, playlist or artist
+    track_id: str = args.input
+
+    if not track_id:
+        print("No ID nor URL provided")
         return
 
     api = TidalApi(
         config["token"], config["user"]["user_id"], config["user"]["country_code"]
     )
 
-    # TODO: parse input type ✨
-    # it can be track, album, playlist or artist
-    track_id = args.input
-    file_name = args.file_name or track_id
-
     track = api.getTrack(int(track_id), track_quality)
+    quality = TRACK_QUALITY[track["audioQuality"]]
 
     # qualities below master dont have `bitDepth` and `sampleRate`
     # TODO: add special types for master quality 🏷️
 
     MASTER_QUALITIES: list[TrackQuality] = ["HI_RES_LOSSLESS", "LOSSLESS"]
-
     if track["audioQuality"] in MASTER_QUALITIES:
-        print(
-            "▶️  {0} quality - {1} bit, {2:.1f} kHz".format(
-                TRACK_QUALITY[track["audioQuality"]]["name"],
-                track["bitDepth"],
-                track["sampleRate"] / 1000,
-            )
-        )
+        details = f"{track['bitDepth']} bit {track['sampleRate']/1000:.1f} kHz"
     else:
-        quality = TRACK_QUALITY[track["audioQuality"]]
-        print(f"▶️  {quality['name']} quality - {quality['details']}")
+        details = quality["details"]
 
+    print(f"{quality['name']} Quality - {details}")
+
+    file_name: str = args.file_name or track_id
     track_path = downloadTrack(
         download_path,
         file_name,
