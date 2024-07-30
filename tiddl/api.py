@@ -13,23 +13,24 @@ class TidalApi:
         self.user_id = user_id
         self.country_code = country_code
 
-        self.session = Session()
-        self.session.headers = {"authorization": f"Bearer {token}"}
+        self._session = Session()
+        self._session.headers = {"authorization": f"Bearer {token}"}
+        self._logger = logging.getLogger("TidalApi")
 
     def getSession(self) -> SessionResponse:
-        return self.session.get(
+        return self._session.get(
             f"{API_URL}/sessions",
         ).json()
 
     def getPlaylists(self) -> PlaylistResponse:
-        return self.session.get(
+        return self._session.get(
             f"{API_URL}/users/{self.user_id}/playlists",
             params={"countryCode": self.country_code},
         ).json()
 
     def getTrack(self, id: int, quality: TrackQuality) -> TrackResponse:
-        logging.debug((id, quality))
-        return self.session.get(
+        self._logger.debug((id, quality))
+        return self._session.get(
             f"{API_URL}/tracks/{id}/playbackinfo",
             params={
                 "audioquality": quality,

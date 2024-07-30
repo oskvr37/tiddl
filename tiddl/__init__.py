@@ -12,32 +12,37 @@ from .types import TRACK_QUALITY, TrackQuality
 def main():
     args = parser.parse_args()
 
+    logger = logging.getLogger("TIDDL")
+    stream_handler = logging.StreamHandler()
+    function_log = ""
+
     if args.silent:
         log_level = logging.ERROR
     elif args.verbose:
         log_level = logging.DEBUG
+        function_log = " %(funcName)s"
     else:
         log_level = logging.INFO
 
-    stream_handler = logging.StreamHandler()
     stream_handler.setLevel(log_level)
-    stream_handler.setFormatter(
-        logging.Formatter(
-            "\033[1;34m%(levelname)s\033[0m \033[1;95m%(module)s\033[0m %(message)s"
-        )
-    )
 
     if args.no_color:
         stream_handler.setFormatter(
-            logging.Formatter("[ %(levelname)s %(module)s ] %(message)s")
+            logging.Formatter(
+                f"[ %(levelname)s ] (%(name)s){function_log} - %(message)s"
+            )
+        )
+    else:
+        stream_handler.setFormatter(
+            logging.Formatter(
+                f"\033[1;34m%(levelname)s\033[0m \033[1;95m%(name)s{function_log}\033[0m %(message)s"
+            )
         )
 
     file_handler = logging.FileHandler("tiddl.log", "w", "utf-8")
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(
-        logging.Formatter(
-            "%(levelname)s\t%(name)s.%(module)s.%(funcName)s :: %(message)s"
-        )
+        logging.Formatter("%(levelname)s\t%(name)s.%(funcName)s :: %(message)s")
     )
 
     logging.basicConfig(
@@ -64,7 +69,7 @@ def main():
             }
         ).get("settings")
 
-        logging.info(f"saved settings to {config.config_path}")
+        logger.info(f"saved settings to {config.config_path}")
 
         # TODO: pretty print settings ✨
         if settings:
@@ -90,7 +95,7 @@ def main():
                 },
             }
         )
-        logging.info(f"authenticated!")
+        logger.info(f"authenticated!")
 
     t_now = int(time.time())
     token_expired = t_now > config["token_expires_at"]
@@ -103,20 +108,20 @@ def main():
                 "token_expires_at": int(time.time()) + token["expires_in"],
             }
         )
-        logging.info(f"refreshed token!")
+        logger.info(f"refreshed token!")
 
     time_to_expire = config["token_expires_at"] - t_now
     days, hours = time_to_expire // (24 * 3600), time_to_expire % (24 * 3600) // 3600
     days_text = f" {days} {'day' if days == 1 else 'days'}" if days else ""
     hours_text = f" {hours} {'hour' if hours == 1 else 'hours'}" if hours else ""
-    logging.info(f"token expires in{days_text}{hours_text}")
+    logger.info(f"token expires in{days_text}{hours_text}")
 
     # TODO: parse input type ✨
     # it can be track, album, playlist or artist
     track_id: str = args.input
 
     if not track_id:
-        logging.warning("no ID nor URL provided")
+        logger.warning("no ID nor URL provided")
         return
 
     api = TidalApi(
@@ -135,7 +140,7 @@ def main():
     else:
         details = quality["details"]
 
-    logging.info(f"{quality['name']} Quality - {details}")
+    logger.info(f"{quality['name']} Quality - {details}")
 
     file_name: str = args.file_name or track_id
     track_path = downloadTrack(
@@ -145,7 +150,7 @@ def main():
         track["manifestMimeType"],
     )
 
-    logging.info(f"track saved in {track_path}")
+    logger.info(f"track saved in {track_path}")
 
 
 if __name__ == "__main__":

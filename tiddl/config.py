@@ -36,20 +36,21 @@ class Config:
     def __init__(self, config_path=DEFAULT_PATH) -> None:
         self.config_path = config_path
         self._config: ConfigData = DEFAULT_CONFIG
+        self._logger = logging.getLogger("Config")
 
         try:
             with open(self.config_path, "r") as f:
-                logging.debug("loading from config file")
+                self._logger.debug("loading from file")
                 loaded_config = json.load(f)
                 self.update(loaded_config)
         except FileNotFoundError:
-            logging.debug("creating new config file")
+            self._logger.debug("creating new file")
             self._save()  # save default config if file does not exist
 
     def _save(self) -> None:
         with open(self.config_path, "w") as f:
             json.dump(self._config, f, indent=2)
-            logging.debug("saved config")
+            self._logger.debug("saved")
 
     def __getitem__(self, key: str) -> Any:
         return self._config[key]
@@ -62,6 +63,6 @@ class Config:
 
     def update(self, data: ConfigData) -> ConfigData:
         self._config.update(data)
-        logging.debug("updated config")
+        self._logger.debug("updated")
         self._save()
         return self._config.copy()

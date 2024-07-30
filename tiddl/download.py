@@ -10,6 +10,9 @@ from typing import TypedDict, List
 from .types import ManifestMimeType
 
 
+logger = logging.getLogger("download")
+
+
 def decodeManifest(manifest: str):
     return b64decode(manifest).decode()
 
@@ -82,7 +85,7 @@ def threadDownload(urls: list[str]) -> bytes:
 def downloadTrack(
     path: str, file_name: str, encoded_manifest: str, mime_type: ManifestMimeType
 ):
-    logging.debug(mime_type)
+    logger.debug(mime_type)
     manifest = decodeManifest(encoded_manifest)
 
     match mime_type:
@@ -96,7 +99,7 @@ def downloadTrack(
 
     track_data = threadDownload(track_urls)
 
-    logging.debug(codecs)
+    logger.debug(codecs)
 
     """
     known codecs
