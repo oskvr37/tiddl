@@ -128,12 +128,12 @@ def main():
         config["token"], config["user"]["user_id"], config["user"]["country_code"]
     )
 
-    track = api.getTrack(int(track_id), track_quality)
-    quality = TRACK_QUALITY[track["audioQuality"]]
+    stream = api.getTrackStream(int(track_id), track_quality)
+    quality = TRACK_QUALITY[stream["audioQuality"]]
 
     MASTER_QUALITIES: list[TrackQuality] = ["HI_RES_LOSSLESS", "LOSSLESS"]
-    if track["audioQuality"] in MASTER_QUALITIES:
-        bit_depth, sample_rate = track.get("bitDepth"), track.get("sampleRate")
+    if stream["audioQuality"] in MASTER_QUALITIES:
+        bit_depth, sample_rate = stream.get("bitDepth"), stream.get("sampleRate")
         if bit_depth is None or sample_rate is None:
             raise ValueError(
                 "bitDepth and sampleRate must be provided for master qualities"
@@ -148,8 +148,8 @@ def main():
     track_path = downloadTrack(
         download_path,
         file_name,
-        track["manifest"],
-        track["manifestMimeType"],
+        stream["manifest"],
+        stream["manifestMimeType"],
     )
 
     logger.info(f"track saved in {track_path}")

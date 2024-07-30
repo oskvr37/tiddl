@@ -1,6 +1,13 @@
 import logging
 from requests import Session
-from .types import SessionResponse, PlaylistResponse, TrackResponse, TrackQuality
+
+from .types import (
+    PlaylistResponse,
+    SessionResponse,
+    TrackQuality,
+    Track,
+    TrackStream,
+)
 
 API_URL = "https://api.tidal.com/v1"
 
@@ -28,7 +35,7 @@ class TidalApi:
             params={"countryCode": self.country_code},
         ).json()
 
-    def getTrack(self, id: int, quality: TrackQuality) -> TrackResponse:
+    def getTrackStream(self, id: int, quality: TrackQuality) -> TrackStream:
         self._logger.debug((id, quality))
         return self._session.get(
             f"{API_URL}/tracks/{id}/playbackinfo",
@@ -37,4 +44,10 @@ class TidalApi:
                 "playbackmode": "STREAM",
                 "assetpresentation": "FULL",
             },
+        ).json()
+
+    def getTrackInfo(self, id: int) -> Track:
+        self._logger.debug(id)
+        return self._session.get(
+            f"{API_URL}/tracks/{id}", params={"countryCode": self.country_code}
         ).json()

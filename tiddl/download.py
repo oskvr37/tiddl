@@ -7,7 +7,7 @@ from xml.etree.ElementTree import fromstring
 from base64 import b64decode
 from typing import TypedDict, List
 
-from .types import ManifestMimeType
+from .types.track import ManifestMimeType
 
 
 logger = logging.getLogger("download")

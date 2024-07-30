@@ -1,12 +1,12 @@
 from requests import request
-from .types import DeviceAuthData, AuthResponse, AuthResponseWithRefresh
+from .types.auth import AuthDeviceResponse, AuthResponse, AuthResponseWithRefresh
 
 AUTH_URL = "https://auth.tidal.com/v1/oauth2"
 CLIENT_ID = "zU4XHVVkc2tDPo4t"
 CLIENT_SECRET = "VJKhDFqJPqvsPVNBV6ukXTJmwlvbttP7wlMlrc72se4="
 
 
-def getDeviceAuth() -> DeviceAuthData:
+def getDeviceAuth() -> AuthDeviceResponse:
     return request(
         "POST",
         f"{AUTH_URL}/device_authorization",
