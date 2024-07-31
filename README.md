@@ -5,6 +5,7 @@ Fully typed, no requirements.
 
 ![GitHub top language](https://img.shields.io/github/languages/top/oskvr37/tiddl?style=for-the-badge)
 ![PyPI - Version](https://img.shields.io/pypi/v/tiddl?style=for-the-badge)
+![GitHub commits since latest release](https://img.shields.io/github/commits-since/oskvr37/tiddl/latest?style=for-the-badge)
 [<img src="https://img.shields.io/badge/gitmoji-%20😜%20😍-FFDD67.svg?style=for-the-badge" />](https://gitmoji.dev)
 
 It's inspired by [Tidal-Media-Downloader](https://github.com/yaronzz/Tidal-Media-Downloader) - currently not mantained project.
@@ -56,3 +57,7 @@ my_playlists = api.getPlaylists()
 
 print(f"You have got {my_playlists['totalNumberOfItems']} playlists!")
 ```
+
+# Resources
+
+[Tidal API wiki](https://github.com/Fokka-Engineering/TIDAL)
