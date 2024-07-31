@@ -15,8 +15,6 @@ from .types import (
 
 API_URL = "https://api.tidal.com/v1"
 
-# TODO: endpoints error handling ✨
-
 
 class TidalApi:
     def __init__(self, token: str, user_id: str, country_code: str) -> None:
@@ -28,54 +26,51 @@ class TidalApi:
         self._session.headers = {"authorization": f"Bearer {token}"}
         self._logger = logging.getLogger("TidalApi")
 
+    def _request(self, endpoint: str, params={}):
+        self._logger.debug(f"{endpoint} {params}")
+        req = self._session.request(
+            method="GET", url=f"{API_URL}/{endpoint}", params=params
+        )
+
+        # TODO: endpoints error handling ✨
+
+        return req.json()
+
     def getSession(self) -> SessionResponse:
-        return self._session.get(
-            f"{API_URL}/sessions",
-        ).json()
+        return self._request(
+            f"sessions",
+        )
 
     def getTrackStream(self, id: int, quality: TrackQuality) -> TrackStream:
-        self._logger.debug((id, quality))
-        return self._session.get(
-            f"{API_URL}/tracks/{id}/playbackinfo",
-            params={
+        return self._request(
+            f"tracks/{id}/playbackinfo",
+            {
                 "audioquality": quality,
                 "playbackmode": "STREAM",
                 "assetpresentation": "FULL",
             },
-        ).json()
+        )
 
     def getTrack(self, id: int) -> Track:
-        self._logger.debug(id)
-        return self._session.get(
-            f"{API_URL}/tracks/{id}", params={"countryCode": self.country_code}
-        ).json()
+        return self._request(f"tracks/{id}", {"countryCode": self.country_code})
 
     def getArtistAlbums(self, id: int) -> AristAlbumsItems:
-        self._logger.debug(id)
-        return self._session.get(
-            f"{API_URL}/artists/{id}/albums", params={"countryCode": self.country_code}
-        ).json()
+        return self._request(f"artists/{id}/albums", {"countryCode": self.country_code})
 
     def getAlbum(self, id: int) -> Album:
-        self._logger.debug(id)
-        return self._session.get(
-            f"{API_URL}/albums/{id}", params={"countryCode": self.country_code}
-        ).json()
+        return self._request(f"albums/{id}", {"countryCode": self.country_code})
 
     def getAlbumItems(self, id: int) -> AlbumItems:
-        self._logger.debug(id)
-        return self._session.get(
-            f"{API_URL}/albums/{id}/items", params={"countryCode": self.country_code}
-        ).json()
+        return self._request(f"albums/{id}/items", {"countryCode": self.country_code})
 
     def getPlaylist(self, uuid: str) -> Playlist:
-        return self._session.get(
-            f"{API_URL}/playlists/{uuid}",
-            params={"countryCode": self.country_code},
-        ).json()
+        return self._request(
+            f"playlists/{uuid}",
+            {"countryCode": self.country_code},
+        )
 
     def getPlaylistItems(self, uuid: str) -> PlaylistItems:
-        return self._session.get(
-            f"{API_URL}/playlists/{uuid}/items",
-            params={"countryCode": self.country_code},
-        ).json()
+        return self._request(
+            f"playlists/{uuid}/items",
+            {"countryCode": self.country_code},
+        )
