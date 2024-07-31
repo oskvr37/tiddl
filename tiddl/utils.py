@@ -12,7 +12,7 @@ def parseURL(url: str) -> tuple[RESOURCE, str]:
 
     fragments = url.split("/")
 
-    if len(fragments) != 2:
+    if len(fragments) < 2:
         raise ValueError(f"Invalid input: {url}")
 
     parsed_type, parsed_id = fragments[-2], fragments[-1]
@@ -21,3 +21,5 @@ def parseURL(url: str) -> tuple[RESOURCE, str]:
         raise ValueError(f"Invalid resource type: {parsed_type} ({url})")
 
     return parsed_type, parsed_id
+
+
