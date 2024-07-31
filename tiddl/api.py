@@ -2,11 +2,15 @@ import logging
 from requests import Session
 
 from .types import (
-    PlaylistResponse,
     SessionResponse,
     TrackQuality,
     Track,
     TrackStream,
+    AristAlbumsItems,
+    Album,
+    AlbumItems,
+    Playlist,
+    PlaylistItems,
 )
 
 API_URL = "https://api.tidal.com/v1"
@@ -29,12 +33,6 @@ class TidalApi:
             f"{API_URL}/sessions",
         ).json()
 
-    def getPlaylists(self) -> PlaylistResponse:
-        return self._session.get(
-            f"{API_URL}/users/{self.user_id}/playlists",
-            params={"countryCode": self.country_code},
-        ).json()
-
     def getTrackStream(self, id: int, quality: TrackQuality) -> TrackStream:
         self._logger.debug((id, quality))
         return self._session.get(
@@ -46,8 +44,38 @@ class TidalApi:
             },
         ).json()
 
-    def getTrackInfo(self, id: int) -> Track:
+    def getTrack(self, id: int) -> Track:
         self._logger.debug(id)
         return self._session.get(
             f"{API_URL}/tracks/{id}", params={"countryCode": self.country_code}
+        ).json()
+
+    def getArtistAlbums(self, id: int) -> AristAlbumsItems:
+        self._logger.debug(id)
+        return self._session.get(
+            f"{API_URL}/artists/{id}/albums", params={"countryCode": self.country_code}
+        ).json()
+
+    def getAlbum(self, id: int) -> Album:
+        self._logger.debug(id)
+        return self._session.get(
+            f"{API_URL}/albums/{id}", params={"countryCode": self.country_code}
+        ).json()
+
+    def getAlbumItems(self, id: int) -> AlbumItems:
+        self._logger.debug(id)
+        return self._session.get(
+            f"{API_URL}/albums/{id}/items", params={"countryCode": self.country_code}
+        ).json()
+
+    def getPlaylist(self, uuid: str) -> Playlist:
+        return self._session.get(
+            f"{API_URL}/playlists/{uuid}",
+            params={"countryCode": self.country_code},
+        ).json()
+
+    def getPlaylistItems(self, uuid: str) -> PlaylistItems:
+        return self._session.get(
+            f"{API_URL}/playlists/{uuid}/items",
+            params={"countryCode": self.country_code},
         ).json()
