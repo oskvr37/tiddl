@@ -54,14 +54,20 @@ class TidalApi:
     def getTrack(self, id: str) -> Track:
         return self._request(f"tracks/{id}", {"countryCode": self.country_code})
 
-    def getArtistAlbums(self, id: str) -> AristAlbumsItems:
-        return self._request(f"artists/{id}/albums", {"countryCode": self.country_code})
+    def getArtistAlbums(self, id: str, limit=10, offset=0) -> AristAlbumsItems:
+        return self._request(
+            f"artists/{id}/albums",
+            {"countryCode": self.country_code, "limit": limit, "offset": offset},
+        )
 
     def getAlbum(self, id: str) -> Album:
         return self._request(f"albums/{id}", {"countryCode": self.country_code})
 
-    def getAlbumItems(self, id: str) -> AlbumItems:
-        return self._request(f"albums/{id}/items", {"countryCode": self.country_code})
+    def getAlbumItems(self, id: str, limit=10, offset=0) -> AlbumItems:
+        return self._request(
+            f"albums/{id}/items",
+            {"countryCode": self.country_code, "limit": limit, "offset": offset},
+        )
 
     def getPlaylist(self, uuid: str) -> Playlist:
         return self._request(
@@ -69,8 +75,8 @@ class TidalApi:
             {"countryCode": self.country_code},
         )
 
-    def getPlaylistItems(self, uuid: str) -> PlaylistItems:
+    def getPlaylistItems(self, uuid: str, limit=10, offset=0) -> PlaylistItems:
         return self._request(
             f"playlists/{uuid}/items",
-            {"countryCode": self.country_code},
+            {"countryCode": self.country_code, "limit": limit, "offset": offset},
         )
