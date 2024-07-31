@@ -41,7 +41,7 @@ class TidalApi:
             f"sessions",
         )
 
-    def getTrackStream(self, id: int, quality: TrackQuality) -> TrackStream:
+    def getTrackStream(self, id: str, quality: TrackQuality) -> TrackStream:
         return self._request(
             f"tracks/{id}/playbackinfo",
             {
@@ -51,16 +51,16 @@ class TidalApi:
             },
         )
 
-    def getTrack(self, id: int) -> Track:
+    def getTrack(self, id: str) -> Track:
         return self._request(f"tracks/{id}", {"countryCode": self.country_code})
 
-    def getArtistAlbums(self, id: int) -> AristAlbumsItems:
+    def getArtistAlbums(self, id: str) -> AristAlbumsItems:
         return self._request(f"artists/{id}/albums", {"countryCode": self.country_code})
 
-    def getAlbum(self, id: int) -> Album:
+    def getAlbum(self, id: str) -> Album:
         return self._request(f"albums/{id}", {"countryCode": self.country_code})
 
-    def getAlbumItems(self, id: int) -> AlbumItems:
+    def getAlbumItems(self, id: str) -> AlbumItems:
         return self._request(f"albums/{id}/items", {"countryCode": self.country_code})
 
     def getPlaylist(self, uuid: str) -> Playlist:
