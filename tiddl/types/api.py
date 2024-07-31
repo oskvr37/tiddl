@@ -1,5 +1,12 @@
 from typing import TypedDict, Optional, List, Literal
+
 from .track import Track
+
+
+class ErrorResponse(TypedDict):
+    status: int
+    subStatus: int
+    userMessage: str
 
 
 class Client(TypedDict):
