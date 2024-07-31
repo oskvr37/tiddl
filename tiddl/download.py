@@ -82,7 +82,7 @@ def threadDownload(urls: list[str]) -> bytes:
     return data
 
 
-def downloadTrack(
+def downloadTrackStream(
     path: str, file_name: str, encoded_manifest: str, mime_type: ManifestMimeType
 ):
     logger.debug(mime_type)

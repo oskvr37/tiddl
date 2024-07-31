@@ -4,9 +4,10 @@ import logging
 from .api import TidalApi
 from .auth import getDeviceAuth, getToken, refreshToken
 from .config import Config
-from .download import downloadTrack
+from .download import downloadTrackStream
 from .parser import QUALITY_ARGS, parser
 from .types import TRACK_QUALITY, TrackQuality
+from .utils import RESOURCE, parseURL
 
 
 def main():
@@ -116,43 +117,64 @@ def main():
     hours_text = f" {hours} {'hour' if hours == 1 else 'hours'}" if hours else ""
     logger.info(f"token expires in{days_text}{hours_text}")
 
-    # TODO: parse input type ✨
-    # it can be track, album, playlist or artist
-    track_id: str = args.input
+    user_input: str = args.input
 
-    if not track_id:
+    if not user_input:
         logger.warning("no ID nor URL provided")
         return
+
+    input_type: RESOURCE
+    input_id: str
+
+    if user_input.isdigit():
+        input_type = "track"
+        input_id = user_input
+    else:
+        input_type, input_id = parseURL(user_input)
 
     api = TidalApi(
         config["token"], config["user"]["user_id"], config["user"]["country_code"]
     )
 
-    stream = api.getTrackStream(int(track_id), track_quality)
-    quality = TRACK_QUALITY[stream["audioQuality"]]
+    def downloadTrack(track_id: str):
+        stream = api.getTrackStream(track_id, track_quality)
+        quality = TRACK_QUALITY[stream["audioQuality"]]
 
-    MASTER_QUALITIES: list[TrackQuality] = ["HI_RES_LOSSLESS", "LOSSLESS"]
-    if stream["audioQuality"] in MASTER_QUALITIES:
-        bit_depth, sample_rate = stream.get("bitDepth"), stream.get("sampleRate")
-        if bit_depth is None or sample_rate is None:
-            raise ValueError(
-                "bitDepth and sampleRate must be provided for master qualities"
-            )
-        details = f"{bit_depth} bit {sample_rate/1000:.1f} kHz"
-    else:
-        details = quality["details"]
+        MASTER_QUALITIES: list[TrackQuality] = ["HI_RES_LOSSLESS", "LOSSLESS"]
+        if stream["audioQuality"] in MASTER_QUALITIES:
+            bit_depth, sample_rate = stream.get("bitDepth"), stream.get("sampleRate")
+            if bit_depth is None or sample_rate is None:
+                raise ValueError(
+                    "bitDepth and sampleRate must be provided for master qualities"
+                )
+            details = f"{bit_depth} bit {sample_rate/1000:.1f} kHz"
+        else:
+            details = quality["details"]
 
-    logger.info(f"{quality['name']} Quality - {details}")
+        logger.info(f"{quality['name']} Quality - {details}")
 
-    file_name: str = args.file_name or track_id
-    track_path = downloadTrack(
-        download_path,
-        file_name,
-        stream["manifest"],
-        stream["manifestMimeType"],
-    )
+        file_name: str = args.file_name or track_id
+        track_path = downloadTrackStream(
+            download_path,
+            file_name,
+            stream["manifest"],
+            stream["manifestMimeType"],
+        )
 
-    logger.info(f"track saved in {track_path}")
+        logger.info(f"track saved in {track_path}")
+
+    match input_type:
+        case "track":
+            downloadTrack(input_id)
+
+        case "album":
+            album = api.getAlbumItems(input_id)
+
+            for item in album["items"]:
+                downloadTrack(str(item["item"]["id"]))
+
+        case _:
+            logger.info(f"`{input_type}` is not supported yet")
 
 
 if __name__ == "__main__":
