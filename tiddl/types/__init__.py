@@ -1,7 +1,6 @@
 from typing import TypedDict, Literal
 
 from .api import *
-from .playlist import *
 from .track import *
 
 TrackArg = Literal["low", "normal", "high", "master"]
