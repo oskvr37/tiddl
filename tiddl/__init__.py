@@ -138,7 +138,12 @@ def main():
         config["token"], config["user"]["user_id"], config["user"]["country_code"]
     )
 
-    def downloadTrack(track_id: str | int, file_name: str):
+    def downloadTrack(track_id: str | int, file_name: str, sleep=False):
+        if sleep:
+            sleep_time = randint(10, 30) / 10 + 1
+            logger.info(f"sleeping for {sleep_time}s")
+            time.sleep(sleep_time)
+
         stream = api.getTrackStream(track_id, track_quality)
         quality = TRACK_QUALITY[stream["audioQuality"]]
 
@@ -172,10 +177,7 @@ def main():
         for item in album["items"]:
             track = item["item"]
             track_id = str(track["id"])
-            downloadTrack(track_id, track["title"])
-            sleep_time = randint(10, 30) / 10 + 1
-            logger.info(f"sleeping for {sleep_time}s")
-            time.sleep(sleep_time)
+            downloadTrack(track_id, track["title"], sleep=True)
 
     match input_type:
         case "track":
@@ -195,7 +197,7 @@ def main():
             # TODO: add option to limit and set offset of playlist ✨
             playlist = api.getPlaylistItems(input_id)
             for item in playlist["items"]:
-                downloadTrack(item["item"]["id"], item["item"]["title"])
+                downloadTrack(item["item"]["id"], item["item"]["title"], sleep=True)
 
         case _:
             logger.warning(f"invalid input: `{input_type}`")
