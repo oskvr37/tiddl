@@ -1,7 +1,8 @@
 import os
 import argparse
 
-from .types import TRACK_QUALITY, TrackQuality
+from .types import TRACK_QUALITY
+from .types.track import TrackQuality
 
 
 def shouldNotColor() -> bool:
