@@ -40,11 +40,12 @@ You can download `tracks` `albums` `playlists` `artists albums`
 - `tiddl -s -q high` sets high quality as default quality
 - `tiddl <input>` downloads with high quality
 - `tiddl <input> -q master` downloads with best possible quality
-- `tiddl track/284165609 -p my_folder -o my_song` downloads track to `my_folder/my_song.flac`
-- `tiddl track/284165609 -p my_folder -o my_song -s` same as above, but saves `my_folder` as default download path
+- `tiddl 284165609 -p my_folder -o "{artist} - {title}"` downloads track to `my_folder/{artist} - {title}.flac`
+- `tiddl track/284165609 -p my_folder -o "{artist} - {title}" -s` same as above, but saves `my_folder` as default download path and `{artist} - {title}` as default file format
 
 ### Valid input
 
+- 284165609 (will treat this as track id)
 - https://tidal.com/browse/track/284165609
 - track/284165609
 - https://listen.tidal.com/album/284165608/track/284165609
