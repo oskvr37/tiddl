@@ -1,6 +1,8 @@
 import time
 import logging
 
+from random import randint
+
 from .api import TidalApi
 from .auth import getDeviceAuth, getToken, refreshToken
 from .config import Config
@@ -136,7 +138,7 @@ def main():
         config["token"], config["user"]["user_id"], config["user"]["country_code"]
     )
 
-    def downloadTrack(track_id: str):
+    def downloadTrack(track_id: str | int, file_name: str):
         stream = api.getTrackStream(track_id, track_quality)
         quality = TRACK_QUALITY[stream["audioQuality"]]
 
@@ -151,9 +153,8 @@ def main():
         else:
             details = quality["details"]
 
-        logger.info(f"{quality['name']} Quality - {details}")
+        logger.info(f"{file_name} :: {quality['name']} Quality - {details}")
 
-        file_name: str = args.file_name or track_id
         track_path = downloadTrackStream(
             download_path,
             file_name,
@@ -163,15 +164,32 @@ def main():
 
         logger.info(f"track saved in {track_path}")
 
+    def downloadAlbum(album_id: str | int):
+        # i dont know if limit 100 is suspicious
+        # but i will leave it here
+        album = api.getAlbumItems(album_id, limit=100)
+
+        for item in album["items"]:
+            track = item["item"]
+            track_id = str(track["id"])
+            downloadTrack(track_id, track["title"])
+            sleep_time = randint(10, 30) / 10 + 1
+            logger.info(f"sleeping for {sleep_time}s")
+            time.sleep(sleep_time)
+
     match input_type:
         case "track":
-            downloadTrack(input_id)
+            downloadTrack(input_id, args.file_name or input_id)
 
         case "album":
-            album = api.getAlbumItems(input_id)
+            downloadAlbum(input_id)
 
-            for item in album["items"]:
-                downloadTrack(str(item["item"]["id"]))
+        case "artist":
+            # TODO: include artist EPs and singles option ✨
+            artist_albums = api.getArtistAlbums(input_id)
+
+            for album in artist_albums["items"]:
+                downloadAlbum(album["id"])
 
         case _:
             logger.info(f"`{input_type}` is not supported yet")
