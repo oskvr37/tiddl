@@ -23,22 +23,39 @@ After installation you can use `tiddl` to set up auth token
 
 ```bash
 $ tiddl
-⚙️ Go to https://link.tidal.com/CYARD and add device!
-Hit enter when you are ready...
-✅ Token good for 7 days
+go to https://link.tidal.com/xxxxx and add device!
+hit enter when you are ready...
+authenticated!
+token expires in 7 days
 ```
 
 Use `tiddl -h` to show help message
 
-# Usage
+# CLI
 
-After authentication - when your token is ready - you can start downloading tracks
+After authentication - when your token is ready - you can start downloading!
+
+You can download `tracks` `albums` `playlists` `artists albums`
 
 - `tiddl -s -q high` sets high quality as default quality
-- `tiddl TRACK_ID` downloads track with high quality
-- `tiddl TRACK_ID -q master` downloads track with best possible quality
-- `tiddl TRACK_ID -p my_folder -o my_song` downloads track to `my_folder/my_song.flac`
-- `tiddl TRACK_ID -p my_folder -o my_song -s` same as above, but saves `my_folder` as default download path
+- `tiddl <input>` downloads with high quality
+- `tiddl <input> -q master` downloads with best possible quality
+- `tiddl track/284165609 -p my_folder -o my_song` downloads track to `my_folder/my_song.flac`
+- `tiddl track/284165609 -p my_folder -o my_song -s` same as above, but saves `my_folder` as default download path
+
+### Valid input
+
+- https://tidal.com/browse/track/284165609
+- track/284165609
+- https://listen.tidal.com/album/284165608/track/284165609
+- https://listen.tidal.com/album/284165608
+- album/284165608
+- https://listen.tidal.com/artist/7695548
+- artist/7695548
+- https://listen.tidal.com/playlist/803be625-97e4-4cbb-88dd-43f0b1c61ed7
+- playlist/803be625-97e4-4cbb-88dd-43f0b1c61ed7
+
+# Modules
 
 You can also use TIDDL as module, it's fully typed so you will get type hints
 
@@ -53,9 +70,11 @@ api = TidalApi(
 	config["user"]["country_code"]
 )
 
-my_playlists = api.getPlaylists()
+album_id = 284165608
 
-print(f"You have got {my_playlists['totalNumberOfItems']} playlists!")
+album = api.getAlbum(album_id)
+
+print(f"{album["title"]} has {album["numberOfTracks"]} tracks!")
 ```
 
 # Resources

@@ -82,7 +82,7 @@ def main():
     if not config["token"]:
         auth = getDeviceAuth()
         input(
-            f"⚙️ Go to https://{auth['verificationUriComplete']} and add device!\nHit enter when you are ready..."
+            f"go to https://{auth['verificationUriComplete']} and add device!\nhit enter when you are ready..."
         )
 
         # TODO: refresh auth status automatically ✨
