@@ -108,4 +108,4 @@ class _PlaylistItem(TypedDict):
 
 
 class PlaylistItems(Items):
-    items: _PlaylistItem
+    items: List[_PlaylistItem]
