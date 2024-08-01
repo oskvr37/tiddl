@@ -8,6 +8,7 @@ from .types import TrackQuality
 class Settings(TypedDict, total=False):
     download_path: str
     track_quality: TrackQuality
+    file_template: str
 
 
 class User(TypedDict, total=False):
@@ -28,7 +29,11 @@ DEFAULT_CONFIG: ConfigData = {
     "token": "",
     "refresh_token": "",
     "token_expires_at": 0,
-    "settings": {"download_path": "tidal_download", "track_quality": "HIGH"},
+    "settings": {
+        "download_path": "tidal_download",
+        "track_quality": "HIGH",
+        "file_template": "{artist} - {title}",
+    },
     "user": {"user_id": "", "country_code": ""},
 }
 

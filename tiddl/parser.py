@@ -29,8 +29,8 @@ parser.add_argument(
     type=str,
     nargs="?",
     const=True,
-    help="output file name",
-    dest="file_name",
+    help="output file template, possible values are {id} {title} {number} {artist} {album} {artists}",
+    dest="file_template",
 )
 
 parser.add_argument(
