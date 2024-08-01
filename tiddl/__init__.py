@@ -191,8 +191,14 @@ def main():
             for album in artist_albums["items"]:
                 downloadAlbum(album["id"])
 
+        case "playlist":
+            # TODO: add option to limit and set offset of playlist ✨
+            playlist = api.getPlaylistItems(input_id)
+            for item in playlist["items"]:
+                downloadTrack(item["item"]["id"], item["item"]["title"])
+
         case _:
-            logger.info(f"`{input_type}` is not supported yet")
+            logger.warning(f"invalid input: `{input_type}`")
 
 
 if __name__ == "__main__":
