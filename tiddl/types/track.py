@@ -1,4 +1,4 @@
-from typing import TypedDict, Optional, List, Dict, Literal, NotRequired
+from typing import TypedDict, Optional, List, Dict, Literal, Optional
 
 
 TrackQuality = Literal["LOW", "HIGH", "LOSSLESS", "HI_RES_LOSSLESS"]
@@ -17,8 +17,8 @@ class TrackStream(TypedDict):
     albumPeakAmplitude: float
     trackReplayGain: float
     trackPeakAmplitude: float
-    bitDepth: NotRequired[int]
-    sampleRate: NotRequired[int]
+    bitDepth: Optional[int]
+    sampleRate: Optional[int]
 
 
 class _Artist(TypedDict):
