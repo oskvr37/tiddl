@@ -8,8 +8,8 @@ from .auth import getDeviceAuth, getToken, refreshToken
 from .config import Config
 from .download import downloadTrackStream
 from .parser import QUALITY_ARGS, parser
-from .types import TRACK_QUALITY, TrackQuality
-from .utils import RESOURCE, parseURL
+from .types import TRACK_QUALITY, TrackQuality, Track
+from .utils import RESOURCE, parseURL, formatFilename
 
 
 def main():
@@ -138,13 +138,16 @@ def main():
         config["token"], config["user"]["user_id"], config["user"]["country_code"]
     )
 
-    def downloadTrack(track_id: str | int, file_name: str, sleep=False):
+    def downloadTrack(track: Track, sleep=False):
         if sleep:
             sleep_time = randint(10, 30) / 10 + 1
             logger.info(f"sleeping for {sleep_time}s")
             time.sleep(sleep_time)
 
-        stream = api.getTrackStream(track_id, track_quality)
+        file_name = formatFilename(
+            args.file_template or config["settings"]["file_template"], track
+        )
+        stream = api.getTrackStream(track["id"], track_quality)
         quality = TRACK_QUALITY[stream["audioQuality"]]
 
         MASTER_QUALITIES: list[TrackQuality] = ["HI_RES_LOSSLESS", "LOSSLESS"]
@@ -173,15 +176,14 @@ def main():
         # i dont know if limit 100 is suspicious
         # but i will leave it here
         album = api.getAlbumItems(album_id, limit=100)
-
         for item in album["items"]:
             track = item["item"]
-            track_id = str(track["id"])
-            downloadTrack(track_id, track["title"], sleep=True)
+            downloadTrack(track, sleep=True)
 
     match input_type:
         case "track":
-            downloadTrack(input_id, args.file_name or input_id)
+            track = api.getTrack(input_id)
+            downloadTrack(track)
 
         case "album":
             downloadAlbum(input_id)
@@ -197,7 +199,7 @@ def main():
             # TODO: add option to limit and set offset of playlist ✨
             playlist = api.getPlaylistItems(input_id)
             for item in playlist["items"]:
-                downloadTrack(item["item"]["id"], item["item"]["title"], sleep=True)
+                downloadTrack(item["item"], sleep=True)
 
         case _:
             logger.warning(f"invalid input: `{input_type}`")
