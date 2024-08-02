@@ -47,8 +47,11 @@ class Config:
         try:
             with open(self.config_path, "r") as f:
                 self._logger.debug("loading from file")
-                loaded_config = json.load(f)
-                self.update(loaded_config)
+                loaded_config: dict = json.load(f)
+                merged_config: ConfigData = merge(loaded_config, self._config)
+                self._config.update(merged_config)
+                self._save()
+
         except FileNotFoundError:
             self._logger.debug("creating new file")
             self._save()  # save default config if file does not exist
@@ -72,3 +75,16 @@ class Config:
         self._logger.debug("updated")
         self._save()
         return self._config.copy()
+
+
+def merge(source, destination):
+    # https://stackoverflow.com/a/20666342
+    for key, value in source.items():
+        if isinstance(value, dict):
+            # get node or create one
+            node = destination.setdefault(key, {})
+            merge(value, node)
+        else:
+            destination[key] = value
+
+    return destination
