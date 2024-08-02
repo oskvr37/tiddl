@@ -112,9 +112,12 @@ def threadDownload(urls: list[str]) -> bytes:
 
 
 def downloadTrackStream(
-    path: str, file_name: str, encoded_manifest: str, mime_type: ManifestMimeType
+    download_path: str,
+    file_name: str,
+    encoded_manifest: str,
+    mime_type: ManifestMimeType,
 ):
-    logger.debug(mime_type)
+    logger.debug(f"mime_type: {mime_type}")
     manifest = decodeManifest(encoded_manifest)
 
     match mime_type:
@@ -131,7 +134,7 @@ def downloadTrackStream(
     else:
         track_data = threadDownload(track_urls)
 
-    logger.debug(codecs)
+    logger.debug(f"codecs: {codecs}")
 
     """
     known codecs
@@ -141,7 +144,7 @@ def downloadTrackStream(
     """
 
     # TODO: use proper file extension ✨
-    file_path = f"{path}/{file_name}.flac"
+    file_path = f"{download_path}/{file_name}.flac"
 
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
