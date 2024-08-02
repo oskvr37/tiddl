@@ -1,8 +1,8 @@
 import logging
 import requests
 import json
+import os
 
-from os import makedirs
 from xml.etree.ElementTree import fromstring
 from base64 import b64decode
 from typing import TypedDict, List
@@ -140,10 +140,10 @@ def downloadTrackStream(
         mp4a.40.5 (low)
     """
 
-    makedirs(path, exist_ok=True)
-
     # TODO: use proper file extension ✨
     file_path = f"{path}/{file_name}.flac"
+
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
     with open(file_path, "wb+") as f:
         f.write(track_data)
