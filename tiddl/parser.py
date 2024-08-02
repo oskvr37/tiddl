@@ -62,6 +62,12 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "--no-skip",
+    help="dont skip already downloaded tracks",
+    action="store_true",
+)
+
+parser.add_argument(
     "--silent",
     help="silent mode",
     action="store_true",

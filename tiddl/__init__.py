@@ -1,3 +1,4 @@
+import os
 import time
 import logging
 
@@ -138,15 +139,21 @@ def main():
         config["token"], config["user"]["user_id"], config["user"]["country_code"]
     )
 
-    def downloadTrack(track: Track, sleep=False):
+    def downloadTrack(track: Track, skip_existing=True, sleep=False):
+        file_name = formatFilename(
+            args.file_template or config["settings"]["file_template"], track
+        )
+        file_path = f"{download_path}/{file_name}.flac"
+
+        if skip_existing and os.path.isfile(file_path):
+            logger.info(f"already exists: {file_path}")
+            return
+
         if sleep:
             sleep_time = randint(10, 30) / 10 + 1
             logger.info(f"sleeping for {sleep_time}s")
             time.sleep(sleep_time)
 
-        file_name = formatFilename(
-            args.file_template or config["settings"]["file_template"], track
-        )
         stream = api.getTrackStream(track["id"], track_quality)
         quality = TRACK_QUALITY[stream["audioQuality"]]
 
@@ -172,34 +179,36 @@ def main():
 
         logger.info(f"track saved in {track_path}")
 
-    def downloadAlbum(album_id: str | int):
+    def downloadAlbum(album_id: str | int, skip_existing: bool):
         # i dont know if limit 100 is suspicious
         # but i will leave it here
         album = api.getAlbumItems(album_id, limit=100)
         for item in album["items"]:
             track = item["item"]
-            downloadTrack(track, sleep=True)
+            downloadTrack(track, skip_existing, sleep=True)
+
+    skip_existing = not args.no_skip
 
     match input_type:
         case "track":
             track = api.getTrack(input_id)
-            downloadTrack(track)
+            downloadTrack(track, skip_existing)
 
         case "album":
-            downloadAlbum(input_id)
+            downloadAlbum(input_id, skip_existing)
 
         case "artist":
             # TODO: include artist EPs and singles option ✨
             artist_albums = api.getArtistAlbums(input_id)
 
             for album in artist_albums["items"]:
-                downloadAlbum(album["id"])
+                downloadAlbum(album["id"], skip_existing)
 
         case "playlist":
             # TODO: add option to limit and set offset of playlist ✨
             playlist = api.getPlaylistItems(input_id)
             for item in playlist["items"]:
-                downloadTrack(item["item"], sleep=True)
+                downloadTrack(item["item"], skip_existing, sleep=True)
 
         case _:
             logger.warning(f"invalid input: `{input_type}`")
