@@ -1,3 +1,5 @@
+import re
+
 from typing import TypedDict, Literal, List, get_args
 
 from .types.track import Track
@@ -54,3 +56,8 @@ def formatFilename(template: str, track: Track) -> str:
     except KeyError as e:
         missing_key = e.args[0]
         raise ValueError(f"Missing key in track dictionary: {missing_key}")
+
+
+def sanitizeDirName(dir_name):
+    # replace invalid characters with an underscore
+    return re.sub(r'[<>:"|?*]', "_", dir_name)

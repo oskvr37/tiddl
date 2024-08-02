@@ -10,7 +10,7 @@ from .config import Config
 from .download import downloadTrackStream
 from .parser import QUALITY_ARGS, parser
 from .types import TRACK_QUALITY, TrackQuality, Track
-from .utils import RESOURCE, parseURL, formatFilename
+from .utils import RESOURCE, parseURL, formatFilename, sanitizeDirName
 
 
 def main():
@@ -143,14 +143,16 @@ def main():
 
     def downloadTrack(track: Track, skip_existing=True, sleep=False):
         file_name = formatFilename(file_template, track)
-        file_path = f"{download_path}/{file_name}.flac"
+        full_path = sanitizeDirName(f"{download_path}/{file_name}")
 
-        if skip_existing and os.path.isfile(file_path):
-            logger.info(f"already exists: {file_path}")
+        # it will stop detecting existing file for other extensions
+        # TODO: create better existing file detecting ✨
+        if skip_existing and os.path.isfile(full_path + ".flac"):
+            logger.info(f"already exists: {full_path}")
             return
 
         if sleep:
-            sleep_time = randint(10, 30) / 10 + 1
+            sleep_time = randint(15, 25) / 10 + 1
             logger.info(f"sleeping for {sleep_time}s")
             time.sleep(sleep_time)
 
@@ -171,8 +173,7 @@ def main():
         logger.info(f"{file_name} :: {quality['name']} Quality - {details}")
 
         track_path = downloadTrackStream(
-            download_path,
-            file_name,
+            full_path,
             stream["manifest"],
             stream["manifestMimeType"],
         )

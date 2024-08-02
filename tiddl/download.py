@@ -112,8 +112,7 @@ def threadDownload(urls: list[str]) -> bytes:
 
 
 def downloadTrackStream(
-    download_path: str,
-    file_name: str,
+    full_path: str,
     encoded_manifest: str,
     mime_type: ManifestMimeType,
 ):
@@ -144,11 +143,14 @@ def downloadTrackStream(
     """
 
     # TODO: use proper file extension ✨
-    file_path = f"{download_path}/{file_name}.flac"
 
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    file_path = os.path.dirname(full_path)
+    file_name = f"{full_path}.flac"
+    logger.debug(f"file_path:{file_path}, file_name: {file_name}")
 
-    with open(file_path, "wb+") as f:
+    os.makedirs(file_path, exist_ok=True)
+
+    with open(file_name, "wb+") as f:
         f.write(track_data)
 
-    return file_path
+    return file_name
