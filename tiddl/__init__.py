@@ -10,7 +10,7 @@ from .config import Config
 from .download import downloadTrackStream
 from .parser import QUALITY_ARGS, parser
 from .types import TRACK_QUALITY, TrackQuality, Track
-from .utils import RESOURCE, parseURL, formatFilename, sanitizeDirName
+from .utils import RESOURCE, parseURL, formatFilename, sanitizeDirName, loadingSymbol
 
 
 def main():
@@ -84,24 +84,37 @@ def main():
 
     if not config["token"]:
         auth = getDeviceAuth()
-        input(
-            f"go to https://{auth['verificationUriComplete']} and add device!\nhit enter when you are ready..."
-        )
+        text = f"> go to https://{auth['verificationUriComplete']} and add device!"
+        expires_at = time.time() + auth["expiresIn"]
+        i = 0
+        while time.time() < expires_at:
+            for _ in range(50):
+                loadingSymbol(i, text)
+                i += 1
+                time.sleep(0.1)
+            token = getToken(auth["deviceCode"])
 
-        # TODO: refresh auth status automatically ✨
-        token = getToken(auth["deviceCode"])
-        config.update(
-            {
-                "token": token["access_token"],
-                "refresh_token": token["refresh_token"],
-                "token_expires_at": int(time.time()) + token["expires_in"],
-                "user": {
-                    "user_id": str(token["user"]["userId"]),
-                    "country_code": token["user"]["countryCode"],
-                },
-            }
-        )
-        logger.info(f"authenticated!")
+            if token.get("error"):
+                continue
+
+            print()
+
+            config.update(
+                {
+                    "token": token["access_token"],
+                    "refresh_token": token["refresh_token"],
+                    "token_expires_at": int(time.time()) + token["expires_in"],
+                    "user": {
+                        "user_id": str(token["user"]["userId"]),
+                        "country_code": token["user"]["countryCode"],
+                    },
+                }
+            )
+            logger.info(f"authenticated!")
+            break
+        else:
+            logger.info("time for authentication has expired")
+            return
 
     t_now = int(time.time())
     token_expired = t_now > config["token_expires_at"]

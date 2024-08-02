@@ -61,3 +61,9 @@ def formatFilename(template: str, track: Track) -> str:
 def sanitizeDirName(dir_name):
     # replace invalid characters with an underscore
     return re.sub(r'[<>:"|?*]', "_", dir_name)
+
+
+def loadingSymbol(i: int, text: str):
+    symbols = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
+    symbol = symbols[i % len(symbols)]
+    print(f"\r{text} {symbol}", end="\r")
