@@ -69,15 +69,44 @@ def parseManifestXML(xml_content: str):
     return urls, codecs
 
 
+def showProgressBar(iteration: int, total: int, text: str, length=30):
+    SQUARE, SQUARE_FILL = "□", "■"
+    iteration_mb = iteration / 1024 / 1024
+    total_mb = total / 1024 / 1024
+    percent = 100 * (iteration / total)
+    progress = int(length * iteration // total)
+    bar = f"{SQUARE_FILL * progress}{SQUARE * (length - progress)}"
+    print(
+        f"\r{text} {bar} {percent:.0f}% {iteration_mb:.2f} / {total_mb:.2f} MB",
+        end="\r",
+    )
+    if iteration >= total:
+        print()
+
+
+def download(url: str) -> bytes:
+    logger.debug(url)
+    # use session for performance
+    session = requests.Session()
+    req = session.get(url, stream=True)
+    total_size = int(req.headers.get("content-length", 0))
+    block_size = 1024 * 1024
+    data = b""
+
+    for block in req.iter_content(block_size):
+        data += block
+        showProgressBar(len(data), total_size, "Single URL")
+
+    return data
+
+
 def threadDownload(urls: list[str]) -> bytes:
     # TODO: implement threaded download ⚡️
-    # TODO: add progress bar ✨
-
     data = b""
     for index, url in enumerate(urls):
         req = requests.get(url)
         data += req.content
-        print(f"{round((index + 1) / len(urls) * 100)}%")
+        showProgressBar(index, len(urls), f"{len(urls)} URLs")
 
     return data
 
@@ -97,7 +126,10 @@ def downloadTrackStream(
         case _:
             raise ValueError(f"Unknown `mime_type`: {mime_type}")
 
-    track_data = threadDownload(track_urls)
+    if len(track_urls) == 1:
+        track_data = download(track_urls[0])
+    else:
+        track_data = threadDownload(track_urls)
 
     logger.debug(codecs)
 
