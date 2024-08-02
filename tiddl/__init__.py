@@ -62,6 +62,7 @@ def main():
         if args.quality
         else config["settings"]["track_quality"]
     )
+    file_template = args.file_template or config["settings"]["file_template"]
 
     if args.save_options:
         settings = config.update(
@@ -69,6 +70,7 @@ def main():
                 "settings": {
                     "download_path": download_path,
                     "track_quality": track_quality,
+                    "file_template": file_template,
                 }
             }
         ).get("settings")
@@ -140,9 +142,7 @@ def main():
     )
 
     def downloadTrack(track: Track, skip_existing=True, sleep=False):
-        file_name = formatFilename(
-            args.file_template or config["settings"]["file_template"], track
-        )
+        file_name = formatFilename(file_template, track)
         file_path = f"{download_path}/{file_name}.flac"
 
         if skip_existing and os.path.isfile(file_path):
