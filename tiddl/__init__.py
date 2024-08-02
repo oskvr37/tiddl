@@ -17,12 +17,14 @@ def main():
 
     logger = logging.getLogger("TIDDL")
     stream_handler = logging.StreamHandler()
+    level_name_log = ""
     function_log = ""
 
     if args.silent:
-        log_level = logging.ERROR
+        log_level = logging.WARNING
     elif args.verbose:
         log_level = logging.DEBUG
+        level_name_log = "\033[1;34m%(levelname)s "
         function_log = " %(funcName)s"
     else:
         log_level = logging.INFO
@@ -31,14 +33,12 @@ def main():
 
     if args.no_color:
         stream_handler.setFormatter(
-            logging.Formatter(
-                f"[ %(levelname)s ] (%(name)s){function_log} - %(message)s"
-            )
+            logging.Formatter(f"[ %(levelname)s ] %(name)s{function_log} - %(message)s")
         )
     else:
         stream_handler.setFormatter(
             logging.Formatter(
-                f"\033[1;34m%(levelname)s\033[0m \033[1;95m%(name)s{function_log}\033[0m %(message)s"
+                f"{level_name_log}\033[1;95m%(name)s\033[0;35m{function_log}\033[0m %(message)s"
             )
         )
 
