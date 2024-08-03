@@ -19,8 +19,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument(
     "input",
     type=str,
-    nargs="?",
-    const=True,
+    nargs='*',
     help="track, album, playlist or artist - must be url, single id will be treated as track",
 )
 

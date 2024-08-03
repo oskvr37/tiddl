@@ -147,20 +147,11 @@ def main():
     hours_text = f" {hours} {'hour' if hours == 1 else 'hours'}" if hours else ""
     logger.debug(f"token expires in{days_text}{hours_text}")
 
-    user_input: str = args.input
+    user_inputs: list[str] = args.input
 
-    if not user_input:
+    if len(user_inputs) == 0:
         logger.warning("no ID nor URL provided")
         return
-
-    input_type: RESOURCE
-    input_id: str
-
-    if user_input.isdigit():
-        input_type = "track"
-        input_id = user_input
-    else:
-        input_type, input_id = parseURL(user_input)
 
     api = TidalApi(
         config["token"], config["user"]["user_id"], config["user"]["country_code"]
@@ -219,30 +210,57 @@ def main():
             downloadTrack(track, skip_existing, sleep=True)
 
     skip_existing = not args.no_skip
+    failed_input = []
 
-    match input_type:
-        case "track":
-            track = api.getTrack(input_id)
-            downloadTrack(track, skip_existing)
+    for user_input in user_inputs:
+        input_type: RESOURCE
+        input_id: str
 
-        case "album":
-            downloadAlbum(input_id, skip_existing)
+        if user_input.isdigit():
+            input_type = "track"
+            input_id = user_input
+        else:
+            try:
+                input_type, input_id = parseURL(user_input)
+            except ValueError as e:
+                logger.error(e)
+                failed_input.append(user_input)
+                continue
 
-        case "artist":
-            # TODO: include artist EPs and singles option ✨
-            artist_albums = api.getArtistAlbums(input_id)
+        match input_type:
+            case "track":
+                track = api.getTrack(input_id)
+                downloadTrack(track, skip_existing)
+                continue
 
-            for album in artist_albums["items"]:
-                downloadAlbum(album["id"], skip_existing)
+            case "album":
+                downloadAlbum(input_id, skip_existing)
+                continue
 
-        case "playlist":
-            # TODO: add option to limit and set offset of playlist ✨
-            playlist = api.getPlaylistItems(input_id)
-            for item in playlist["items"]:
-                downloadTrack(item["item"], skip_existing, sleep=True)
+            case "artist":
+                # TODO: include artist EPs and singles option ✨
+                artist_albums = api.getArtistAlbums(input_id)
 
-        case _:
-            logger.warning(f"invalid input: `{input_type}`")
+                for album in artist_albums["items"]:
+                    downloadAlbum(album["id"], skip_existing)
+
+                continue
+
+            case "playlist":
+                # TODO: add option to limit and set offset of playlist ✨
+                playlist = api.getPlaylistItems(input_id)
+                for item in playlist["items"]:
+                    downloadTrack(item["item"], skip_existing, sleep=True)
+
+                continue
+
+            case _:
+                logger.warning(f"invalid input: `{input_type}`")
+
+        failed_input.append(input_id)
+
+    if len(failed_input) > 0:
+        logger.info(f"failed: {failed_input}")
 
 
 if __name__ == "__main__":
