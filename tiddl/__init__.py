@@ -20,6 +20,7 @@ from .utils import (
 
 
 def main():
+    config = Config()
     logger = logging.getLogger("TIDDL")
     stream_handler = logging.StreamHandler()
     level_name_log = ""
@@ -49,7 +50,9 @@ def main():
             )
         )
 
-    file_handler = logging.FileHandler("tiddl.log", "a", "utf-8")
+    file_handler = logging.FileHandler(
+        f"{config.config_directory}/tiddl.log", "a", "utf-8"
+    )
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(
         logging.Formatter(
@@ -64,8 +67,6 @@ def main():
     )
 
     logger.debug(args)
-
-    config = Config()
 
     download_path = args.download_path or config["settings"]["download_path"]
     track_quality = (

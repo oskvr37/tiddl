@@ -1,6 +1,7 @@
 import json
 import logging
 
+from pathlib import Path
 from typing import TypedDict, Any
 from .types import TrackQuality
 
@@ -24,7 +25,7 @@ class ConfigData(TypedDict, total=False):
     user: User
 
 
-DEFAULT_PATH = ".tiddl_config.json"
+CONFIG_FILENAME = ".tiddl_config.json"
 DEFAULT_CONFIG: ConfigData = {
     "token": "",
     "refresh_token": "",
@@ -39,8 +40,14 @@ DEFAULT_CONFIG: ConfigData = {
 
 
 class Config:
-    def __init__(self, config_path=DEFAULT_PATH) -> None:
-        self.config_path = config_path
+    def __init__(self, config_path="") -> None:
+        if config_path == "":
+            home_directory = str(Path.home())
+            self.config_directory = home_directory
+        else:
+            self.config_directory = config_path
+
+        self.config_path = f"{self.config_directory}/{CONFIG_FILENAME}"
         self._config: ConfigData = DEFAULT_CONFIG
         self._logger = logging.getLogger("Config")
 
