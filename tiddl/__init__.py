@@ -158,8 +158,8 @@ def main():
     )
 
     def downloadTrack(track: Track, skip_existing=True, sleep=False):
-        file_name = formatFilename(file_template, track)
-        full_path = sanitizeDirName(f"{download_path}/{file_name}")
+        file_name = sanitizeDirName(formatFilename(file_template, track))
+        full_path = f"{download_path}/{file_name}"
 
         # it will stop detecting existing file for other extensions
         # TODO: create better existing file detecting ✨
