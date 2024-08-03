@@ -21,7 +21,7 @@ parser.add_argument(
     type=str,
     nargs="?",
     const=True,
-    help="track, \033[9malbum, playlist or artist\033[0m - can be \033[9mlink\033[0m or id",
+    help="track, album, playlist or artist - must be url, single id will be treated as track",
 )
 
 parser.add_argument(
