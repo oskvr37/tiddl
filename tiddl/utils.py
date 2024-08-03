@@ -1,6 +1,9 @@
 import re
+import os
 
 from typing import TypedDict, Literal, List, get_args
+from mutagen.flac import FLAC as MutagenFLAC
+from mutagen.easymp4 import EasyMP4 as MutagenMP4
 
 from .types.track import Track
 
@@ -67,3 +70,29 @@ def loadingSymbol(i: int, text: str):
     symbols = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
     symbol = symbols[i % len(symbols)]
     print(f"\r{text} {symbol}", end="\r")
+
+
+def setMetadata(file_path: str, track: Track):
+    _, extension = os.path.splitext(file_path)
+
+    if extension == ".flac":
+        metadata = MutagenFLAC(file_path)
+    elif extension == ".m4a":
+        metadata = MutagenMP4(file_path)
+    else:
+        raise ValueError(f"Unknown file extension: {extension}")
+
+    # TODO: add `audioQuality` and other special tags ✨
+
+    new_metadata = {
+        # "id": str(track["id"]),
+        "title": track["title"],
+        "trackNumber": str(track["trackNumber"]),
+        "copyright": track["copyright"],
+        # "audioQuality": track["audioQuality"],
+        "artist": track["artist"]["name"],
+        "album": track["album"]["title"],
+    }
+
+    metadata.update(new_metadata)
+    metadata.save()

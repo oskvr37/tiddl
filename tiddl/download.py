@@ -133,8 +133,6 @@ def downloadTrackStream(
     else:
         track_data = threadDownload(track_urls)
 
-    logger.debug(f"codecs: {codecs}")
-
     """
     known codecs
         flac (master)
@@ -144,9 +142,24 @@ def downloadTrackStream(
 
     # TODO: use proper file extension ✨
 
+    # quick fix for file extension
+
+    if codecs is None:
+        raise Exception("Missing codecs")
+
+    if codecs == "flac":
+        extension = "flac"
+    elif codecs.startswith("mp4a"):
+        extension = "m4a"
+    else:
+        extension = "flac"
+        logger.warning(
+            f'unknown file codecs: "{codecs}", please submit this as issue on GitHub'
+        )
+
     file_path = os.path.dirname(full_path)
-    file_name = f"{full_path}.flac"
-    logger.debug(f"file_path:{file_path}, file_name: {file_name}")
+    file_name = f"{full_path}.{extension}"
+    logger.debug(f"file_path: {file_path}, file_name: {file_name}")
 
     os.makedirs(file_path, exist_ok=True)
 

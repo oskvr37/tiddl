@@ -1,7 +1,6 @@
 import os
 import time
 import logging
-
 from random import randint
 
 from .api import TidalApi
@@ -10,7 +9,14 @@ from .config import Config
 from .download import downloadTrackStream
 from .parser import QUALITY_ARGS, parser
 from .types import TRACK_QUALITY, TrackQuality, Track
-from .utils import RESOURCE, parseURL, formatFilename, sanitizeDirName, loadingSymbol
+from .utils import (
+    RESOURCE,
+    parseURL,
+    formatFilename,
+    sanitizeDirName,
+    loadingSymbol,
+    setMetadata,
+)
 
 
 def main():
@@ -139,7 +145,7 @@ def main():
     days, hours = time_to_expire // (24 * 3600), time_to_expire % (24 * 3600) // 3600
     days_text = f" {days} {'day' if days == 1 else 'days'}" if days else ""
     hours_text = f" {hours} {'hour' if hours == 1 else 'hours'}" if hours else ""
-    logger.info(f"token expires in{days_text}{hours_text}")
+    logger.debug(f"token expires in{days_text}{hours_text}")
 
     user_input: str = args.input
 
@@ -198,6 +204,11 @@ def main():
         )
 
         logger.info(f"track saved in {track_path}")
+
+        try:
+            setMetadata(track_path, track)
+        except Exception as e:
+            logger.error(e)
 
     def downloadAlbum(album_id: str | int, skip_existing: bool):
         # i dont know if limit 100 is suspicious
