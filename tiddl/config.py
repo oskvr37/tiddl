@@ -46,8 +46,9 @@ class Config:
 
         try:
             with open(self.config_path, "r") as f:
-                self._logger.debug("loading from file")
                 loaded_config: dict = json.load(f)
+                loaded_settings = loaded_config.get("settings")
+                self._logger.debug(f"loaded {loaded_settings}")
                 merged_config: ConfigData = merge(loaded_config, self._config)
                 self._config.update(merged_config)
                 self._save()
@@ -55,11 +56,12 @@ class Config:
         except FileNotFoundError:
             self._logger.debug("creating new file")
             self._save()  # save default config if file does not exist
+            self._logger.debug("created new file")
 
     def _save(self) -> None:
         with open(self.config_path, "w") as f:
+            self._logger.debug(self._config.get("settings"))
             json.dump(self._config, f, indent=2)
-            self._logger.debug("saved")
 
     def __getitem__(self, key: str) -> Any:
         return self._config[key]
@@ -71,9 +73,10 @@ class Config:
         return json.dumps(self._config, indent=2)
 
     def update(self, data: ConfigData) -> ConfigData:
+        self._logger.debug("updating")
         self._config.update(data)
-        self._logger.debug("updated")
         self._save()
+        self._logger.debug("updated")
         return self._config.copy()
 
 

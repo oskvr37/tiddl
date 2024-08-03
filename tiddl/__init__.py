@@ -14,12 +14,12 @@ from .utils import RESOURCE, parseURL, formatFilename, sanitizeDirName, loadingS
 
 
 def main():
-    args = parser.parse_args()
-
     logger = logging.getLogger("TIDDL")
     stream_handler = logging.StreamHandler()
     level_name_log = ""
     function_log = ""
+
+    args = parser.parse_args()
 
     if args.silent:
         log_level = logging.WARNING
@@ -43,16 +43,21 @@ def main():
             )
         )
 
-    file_handler = logging.FileHandler("tiddl.log", "w", "utf-8")
+    file_handler = logging.FileHandler("tiddl.log", "a", "utf-8")
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(
-        logging.Formatter("%(levelname)s\t%(name)s.%(funcName)s :: %(message)s")
+        logging.Formatter(
+            "%(asctime)s %(levelname)s\t%(name)s.%(funcName)s %(message)s",
+            datefmt="%x %X",
+        )
     )
 
     logging.basicConfig(
         level=logging.DEBUG,
         handlers=[file_handler, stream_handler],
     )
+
+    logger.debug(args)
 
     config = Config()
 
@@ -65,6 +70,7 @@ def main():
     file_template = args.file_template or config["settings"]["file_template"]
 
     if args.save_options:
+        logger.info("saving new settings...")
         settings = config.update(
             {
                 "settings": {
@@ -75,12 +81,12 @@ def main():
             }
         ).get("settings")
 
-        logger.info(f"saved settings to {config.config_path}")
-
         if settings:
             print("Current Settings:")
             for k, v in settings.items():
-                print(f"\t'{k.upper()}' {v}")
+                print(f'> {k.upper()} "{v}"')
+
+        logger.info(f"saved settings to {config.config_path}")
 
     if not config["token"]:
         auth = getDeviceAuth()
