@@ -54,10 +54,17 @@ class TidalApi:
     def getTrack(self, id: str | int) -> Track:
         return self._request(f"tracks/{id}", {"countryCode": self.country_code})
 
-    def getArtistAlbums(self, id: str | int, limit=50, offset=0) -> AristAlbumsItems:
+    def getArtistAlbums(
+        self, id: str | int, limit=50, offset=0, onlyNonAlbum=False
+    ) -> AristAlbumsItems:
+        params = {"countryCode": self.country_code, "limit": limit, "offset": offset}
+
+        if onlyNonAlbum:
+            params.update({"filter": "EPSANDSINGLES"})
+
         return self._request(
             f"artists/{id}/albums",
-            {"countryCode": self.country_code, "limit": limit, "offset": offset},
+            params,
         )
 
     def getAlbum(self, id: str | int) -> Album:
