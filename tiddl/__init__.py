@@ -75,6 +75,7 @@ def main():
         else config["settings"]["track_quality"]
     )
     file_template = args.file_template or config["settings"]["file_template"]
+    include_singles = args.include_singles
 
     if args.save_options:
         logger.info("saving new settings...")
@@ -239,10 +240,15 @@ def main():
                 continue
 
             case "artist":
-                # TODO: include artist EPs and singles option ✨
+                all_albums = []
                 artist_albums = api.getArtistAlbums(input_id)
+                all_albums.extend(artist_albums["items"])
 
-                for album in artist_albums["items"]:
+                if include_singles:
+                    artist_singles = api.getArtistAlbums(input_id, onlyNonAlbum=True)
+                    all_albums.extend(artist_singles["items"])
+
+                for album in all_albums:
                     downloadAlbum(album["id"], skip_existing)
 
                 continue

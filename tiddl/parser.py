@@ -19,7 +19,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument(
     "input",
     type=str,
-    nargs='*',
+    nargs="*",
     help="track, album, playlist or artist - must be url, single id will be treated as track",
 )
 
@@ -51,6 +51,13 @@ parser.add_argument(
     help="track quality",
     dest="quality",
     choices=QUALITY_ARGS.keys(),
+)
+
+parser.add_argument(
+    "-is",
+    help="include artist EPs and singles when downloading artist",
+    dest="include_singles",
+    action="store_true",
 )
 
 parser.add_argument(
