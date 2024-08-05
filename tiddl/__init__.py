@@ -163,7 +163,8 @@ def main():
         file_name = sanitizeDirName(formatFilename(file_template, track))
         full_path = f"{download_path}/{file_name}"
 
-        # it will stop detecting existing file for other extensions
+        # it will stop detecting existing file for other extensions.
+        # we need to store track `id + quality` in metadata to differentiate tracks
         # TODO: create better existing file detecting ✨
         if skip_existing and os.path.isfile(full_path + ".flac"):
             logger.info(f"already exists: {full_path}")
@@ -198,10 +199,7 @@ def main():
 
         logger.info(f"track saved in {track_path}")
 
-        try:
-            setMetadata(track_path, track)
-        except Exception as e:
-            logger.error(e)
+        setMetadata(track_path, track)
 
     def downloadAlbum(album_id: str | int, skip_existing: bool):
         # i dont know if limit 100 is suspicious

@@ -102,9 +102,10 @@ def download(url: str) -> bytes:
 
 def threadDownload(urls: list[str]) -> bytes:
     # TODO: implement threaded download ⚡️
+    session = requests.Session()
     data = b""
     for index, url in enumerate(urls):
-        req = requests.get(url)
+        req = session.get(url)
         data += req.content
         showProgressBar(index, len(urls), f"{len(urls)} URLs")
 
@@ -128,10 +129,13 @@ def downloadTrackStream(
         case _:
             raise ValueError(f"Unknown `mime_type`: {mime_type}")
 
+    logger.debug(f"codecs: {codecs}")
+
     if len(track_urls) == 1:
         track_data = download(track_urls[0])
     else:
         track_data = threadDownload(track_urls)
+        codecs = "mp4a"  # for tracks that has mulitple `mp4` fragments
 
     """
     known codecs

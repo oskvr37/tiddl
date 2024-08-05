@@ -1,5 +1,6 @@
 import re
 import os
+import logging
 
 from typing import TypedDict, Literal, List, get_args
 from mutagen.flac import FLAC as MutagenFLAC
@@ -9,6 +10,9 @@ from .types.track import Track
 
 RESOURCE = Literal["track", "album", "artist", "playlist"]
 RESOURCE_LIST: List[RESOURCE] = list(get_args(RESOURCE))
+
+
+logger = logging.getLogger("utils")
 
 
 def parseURL(url: str) -> tuple[RESOURCE, str]:
@@ -40,6 +44,9 @@ class FormattedTrack(TypedDict):
 
 
 def _formatTrackDict(track: Track) -> FormattedTrack:
+    # IDEA: propably sanitizing FormattedTrack values would be better
+    # than sanitizing full template
+
     artists = [artist["name"] for artist in track["artists"]]
     formatted_track: FormattedTrack = {
         "album": track["album"]["title"],
@@ -84,15 +91,23 @@ def setMetadata(file_path: str, track: Track):
 
     # TODO: add `audioQuality` and other special tags ✨
 
-    new_metadata = {
-        # "id": str(track["id"]),
+    new_metadata: dict[str, str] = {
         "title": track["title"],
         "trackNumber": str(track["trackNumber"]),
+        "discnumber": str(track["volumeNumber"]),
         "copyright": track["copyright"],
-        # "audioQuality": track["audioQuality"],
         "artist": track["artist"]["name"],
         "album": track["album"]["title"],
+        "date": track["streamStartDate"],
+        # "tags": track["audioQuality"],
+        # "id": str(track["id"]),
+        # "url": track["url"],
     }
 
-    metadata.update(new_metadata)
+    try:
+        metadata.update(new_metadata)
+    except Exception as e:
+        logger.error(e)
+        return
+
     metadata.save()
