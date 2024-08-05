@@ -98,7 +98,7 @@ def setMetadata(file_path: str, track: Track):
         "copyright": track["copyright"],
         "artist": track["artist"]["name"],
         "album": track["album"]["title"],
-        "date": track["streamStartDate"],
+        "date": track["streamStartDate"][:10],
         # "tags": track["audioQuality"],
         # "id": str(track["id"]),
         # "url": track["url"],
