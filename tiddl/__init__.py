@@ -158,7 +158,9 @@ def main():
         config["token"], config["user"]["user_id"], config["user"]["country_code"]
     )
 
-    def downloadTrack(track: Track, file_template: str, skip_existing=True, sleep=False, playlist=""):
+    def downloadTrack(
+        track: Track, file_template: str, skip_existing=True, sleep=False, playlist=""
+    ):
         file_name = formatFilename(file_template, track, playlist)
         full_path = f"{download_path}/{file_name}"
 
@@ -202,14 +204,19 @@ def main():
 
     def downloadAlbum(album_id: str | int, skip_existing: bool):
         album = api.getAlbum(album_id)
-        logger.info(f"album: {album["title"]}")
+        logger.info(f"album: {album['title']}")
 
         # i dont know if limit 100 is suspicious
         # but i will leave it here
         album_items = api.getAlbumItems(album_id, limit=100)
         for item in album_items["items"]:
             track = item["item"]
-            downloadTrack(track, file_template=config["settings"]["album_template"], skip_existing=skip_existing, sleep=True)
+            downloadTrack(
+                track,
+                file_template=config["settings"]["album_template"],
+                skip_existing=skip_existing,
+                sleep=True,
+            )
 
     skip_existing = not args.no_skip
     failed_input = []
@@ -232,7 +239,9 @@ def main():
         match input_type:
             case "track":
                 track = api.getTrack(input_id)
-                downloadTrack(track, file_template=track_template, skip_existing=skip_existing)
+                downloadTrack(
+                    track, file_template=track_template, skip_existing=skip_existing
+                )
                 continue
 
             case "album":
@@ -256,7 +265,7 @@ def main():
             case "playlist":
                 # TODO: add option to limit and set offset of playlist ✨
                 playlist = api.getPlaylist(input_id)
-                logger.info(f"playlist: {playlist["title"]} ({playlist["url"]})")
+                logger.info(f"playlist: {playlist['title']} ({playlist['url']})")
 
                 playlist_items = api.getPlaylistItems(input_id)
                 for item in playlist_items["items"]:
