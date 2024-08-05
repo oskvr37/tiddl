@@ -13,7 +13,6 @@ from .utils import (
     RESOURCE,
     parseURL,
     formatFilename,
-    sanitizeDirName,
     loadingSymbol,
     setMetadata,
 )
@@ -74,7 +73,7 @@ def main():
         if args.quality
         else config["settings"]["track_quality"]
     )
-    file_template = args.file_template or config["settings"]["file_template"]
+    track_template = args.file_template or config["settings"]["file_template"]
     include_singles = args.include_singles
 
     if args.save_options:
@@ -84,7 +83,7 @@ def main():
                 "settings": {
                     "download_path": download_path,
                     "track_quality": track_quality,
-                    "file_template": file_template,
+                    "track_template": track_template,
                 }
             }
         ).get("settings")
@@ -159,8 +158,8 @@ def main():
         config["token"], config["user"]["user_id"], config["user"]["country_code"]
     )
 
-    def downloadTrack(track: Track, skip_existing=True, sleep=False):
-        file_name = sanitizeDirName(formatFilename(file_template, track))
+    def downloadTrack(track: Track, file_template: str, skip_existing=True, sleep=False, playlist=""):
+        file_name = formatFilename(file_template, track, playlist)
         full_path = f"{download_path}/{file_name}"
 
         # it will stop detecting existing file for other extensions.
@@ -171,7 +170,7 @@ def main():
             return
 
         if sleep:
-            sleep_time = randint(15, 25) / 10 + 1
+            sleep_time = randint(5, 15) / 10 + 1
             logger.info(f"sleeping for {sleep_time}s")
             time.sleep(sleep_time)
 
@@ -202,12 +201,15 @@ def main():
         setMetadata(track_path, track)
 
     def downloadAlbum(album_id: str | int, skip_existing: bool):
+        album = api.getAlbum(album_id)
+        logger.info(f"album: {album["title"]}")
+
         # i dont know if limit 100 is suspicious
         # but i will leave it here
-        album = api.getAlbumItems(album_id, limit=100)
-        for item in album["items"]:
+        album_items = api.getAlbumItems(album_id, limit=100)
+        for item in album_items["items"]:
             track = item["item"]
-            downloadTrack(track, skip_existing, sleep=True)
+            downloadTrack(track, file_template=config["settings"]["album_template"], skip_existing=skip_existing, sleep=True)
 
     skip_existing = not args.no_skip
     failed_input = []
@@ -230,7 +232,7 @@ def main():
         match input_type:
             case "track":
                 track = api.getTrack(input_id)
-                downloadTrack(track, skip_existing)
+                downloadTrack(track, file_template=track_template, skip_existing=skip_existing)
                 continue
 
             case "album":
@@ -253,9 +255,18 @@ def main():
 
             case "playlist":
                 # TODO: add option to limit and set offset of playlist ✨
-                playlist = api.getPlaylistItems(input_id)
-                for item in playlist["items"]:
-                    downloadTrack(item["item"], skip_existing, sleep=True)
+                playlist = api.getPlaylist(input_id)
+                logger.info(f"playlist: {playlist["title"]} ({playlist["url"]})")
+
+                playlist_items = api.getPlaylistItems(input_id)
+                for item in playlist_items["items"]:
+                    downloadTrack(
+                        item["item"],
+                        file_template=config["settings"]["playlist_template"],
+                        skip_existing=skip_existing,
+                        sleep=True,
+                        playlist=playlist["title"],
+                    )
 
                 continue
 

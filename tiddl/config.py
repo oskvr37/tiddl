@@ -9,7 +9,9 @@ from .types import TrackQuality
 class Settings(TypedDict, total=False):
     download_path: str
     track_quality: TrackQuality
-    file_template: str
+    track_template: str
+    album_template: str
+    playlist_template: str
 
 
 class User(TypedDict, total=False):
@@ -33,7 +35,9 @@ DEFAULT_CONFIG: ConfigData = {
     "settings": {
         "download_path": "tidal_download",
         "track_quality": "HIGH",
-        "file_template": "{artist}/{album}/{title}",
+        "track_template": "{artist}/{title}",
+        "album_template": "{artist}/{album}/{title}",
+        "playlist_template": "{playlist}/{title}",
     },
     "user": {"user_id": "", "country_code": ""},
 }
