@@ -33,7 +33,7 @@ DEFAULT_CONFIG: ConfigData = {
     "settings": {
         "download_path": "tidal_download",
         "track_quality": "HIGH",
-        "file_template": "{artist} - {title}",
+        "file_template": "{artist}/{album}/{title}",
     },
     "user": {"user_id": "", "country_code": ""},
 }
