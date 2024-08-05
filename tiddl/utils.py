@@ -35,34 +35,40 @@ def parseURL(url: str) -> tuple[RESOURCE, str]:
 
 
 class FormattedTrack(TypedDict):
-    id: int
+    id: str
     title: str
-    number: int
+    number: str
     artist: str
     album: str
     artists: str
+    playlist: str
 
-
-def _formatTrackDict(track: Track) -> FormattedTrack:
     # IDEA: propably sanitizing FormattedTrack values would be better
     # than sanitizing full template
 
+
+def formatFilename(template: str, track: Track, playlist="") -> str:
     artists = [artist["name"] for artist in track["artists"]]
     formatted_track: FormattedTrack = {
         "album": track["album"]["title"],
         "artist": track["artist"]["name"],
         "artists": ", ".join(artists),
-        "id": track["id"],
+        "id": str(track["id"]),
         "title": track["title"],
-        "number": track["trackNumber"],
+        "number": str(track["trackNumber"]),
+        "playlist": playlist,
     }
-    return formatted_track
 
+    dirs = template.split("/")
+    filename = dirs.pop().format(**formatted_track)
 
-def formatFilename(template: str, track: Track) -> str:
-    formatted_track = _formatTrackDict(track)
+    template_without_filename = "/".join(dirs)
+    formatted_dir = template_without_filename.format(**formatted_track)
+
+    full_path = f"{sanitizeDirName(formatted_dir)}/{filename}"
+
     try:
-        return template.format(**formatted_track)
+        return full_path
     except KeyError as e:
         missing_key = e.args[0]
         raise ValueError(f"Missing key in track dictionary: {missing_key}")
