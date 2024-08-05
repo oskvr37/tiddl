@@ -3,6 +3,9 @@ import requests
 import json
 import os
 
+from queue import Queue
+from threading import Thread
+from time import time
 from xml.etree.ElementTree import fromstring
 from base64 import b64decode
 from typing import TypedDict, List
@@ -10,7 +13,60 @@ from typing import TypedDict, List
 from .types.track import ManifestMimeType
 
 
+WORKERS_COUNT = 4
+
 logger = logging.getLogger("download")
+
+
+class Worker(Thread):
+    def __init__(self, queue: Queue, function):
+        Thread.__init__(self)
+        self.queue = queue
+        self.function = function
+        self.daemon = True
+        self.start()
+
+    def run(self):
+        while True:
+            arg = self.queue.get()
+            self.function(arg)
+            self.queue.task_done()
+
+
+class Threader:
+    def __init__(self, workers_num: int, target, args: list) -> None:
+        self.queue = Queue()
+
+        for arg in args:
+            self.queue.put(arg)
+
+        self.workers: list[Worker] = [
+            Worker(self.queue, target) for _ in range(workers_num)
+        ]
+
+    def run(self):
+        ts = time()
+        self.queue.join()
+        return round(time() - ts, 2)
+
+
+class Downloader:
+    def __init__(self) -> None:
+        self.indexed_content: list[tuple[int, bytes]] = []
+        self.session = requests.Session()
+
+    def download(self, urls: list[str]) -> bytes:
+        indexed_urls = [(i, url) for (i, url) in enumerate(urls)]
+        threader = Threader(WORKERS_COUNT, self._downloadFragment, indexed_urls)
+        threader.run()
+        sorted_content = sorted(self.indexed_content, key=lambda x: x[0])
+        data = b"".join(content for _, content in sorted_content)
+        return data
+
+    def _downloadFragment(self, arg: tuple[int, str]):
+        index, url = arg
+        req = self.session.get(url)
+        self.indexed_content.append((index, req.content))
 
 
 def decodeManifest(manifest: str):
@@ -101,13 +157,8 @@ def download(url: str) -> bytes:
 
 
 def threadDownload(urls: list[str]) -> bytes:
-    # TODO: implement threaded download ⚡️
-    session = requests.Session()
-    data = b""
-    for index, url in enumerate(urls):
-        req = session.get(url)
-        data += req.content
-        showProgressBar(index, len(urls), f"{len(urls)} URLs")
+    dl = Downloader()
+    data = dl.download(urls)
 
     return data
 
@@ -135,7 +186,7 @@ def downloadTrackStream(
         track_data = download(track_urls[0])
     else:
         track_data = threadDownload(track_urls)
-        codecs = "mp4a"  # for tracks that has mulitple `mp4` fragments
+        codecs = "mp4a"  # for tracks that have mulitple `mp4` fragments
 
     """
     known codecs
