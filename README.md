@@ -1,7 +1,7 @@
 # Tidal Downloader
 
 TIDDL is the Python CLI application that allows downloading Tidal tracks.
-Fully typed, no requirements.
+Fully typed, only 2 requirements.
 
 ![GitHub top language](https://img.shields.io/github/languages/top/oskvr37/tiddl?style=for-the-badge)
 ![PyPI - Version](https://img.shields.io/pypi/v/tiddl?style=for-the-badge)
@@ -23,8 +23,7 @@ After installation you can use `tiddl` to set up auth token
 
 ```bash
 $ tiddl
-go to https://link.tidal.com/xxxxx and add device!
-hit enter when you are ready...
+> go to https://link.tidal.com/xxxxx and add device!
 authenticated!
 token expires in 7 days
 ```
