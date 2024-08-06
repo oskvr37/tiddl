@@ -195,10 +195,6 @@ def downloadTrackStream(
         mp4a.40.5 (low)
     """
 
-    # TODO: use proper file extension ✨
-
-    # quick fix for file extension
-
     if codecs is None:
         raise Exception("Missing codecs")
 

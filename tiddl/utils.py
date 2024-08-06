@@ -43,9 +43,6 @@ class FormattedTrack(TypedDict):
     artists: str
     playlist: str
 
-    # IDEA: propably sanitizing FormattedTrack values would be better
-    # than sanitizing full template
-
 
 def formatFilename(template: str, track: Track, playlist="") -> str:
     artists = [artist["name"] for artist in track["artists"]]
@@ -94,8 +91,6 @@ def setMetadata(file_path: str, track: Track):
         metadata = MutagenMP4(file_path)
     else:
         raise ValueError(f"Unknown file extension: {extension}")
-
-    # TODO: add `audioQuality` and other special tags ✨
 
     new_metadata: dict[str, str] = {
         "title": track["title"],
