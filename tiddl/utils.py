@@ -71,9 +71,13 @@ def formatFilename(template: str, track: Track, playlist="") -> str:
         raise ValueError(f"Missing key in track dictionary: {missing_key}")
 
 
-def sanitizeDirName(dir_name):
+def sanitizeDirName(dir_name: str):
     # replace invalid characters with an underscore
-    return re.sub(r'[<>:"|?*]', "_", dir_name)
+    sanitized_dir = re.sub(r'[<>:"|?*]', "_", dir_name)
+    # strip whitespace
+    sanitized_dir = sanitized_dir.strip()
+
+    return sanitized_dir
 
 
 def loadingSymbol(i: int, text: str):
