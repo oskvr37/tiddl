@@ -57,12 +57,10 @@ class Config:
 
         try:
             with open(self.config_path, "r") as f:
-                loaded_config: dict = json.load(f)
+                loaded_config: ConfigData = json.load(f)
                 loaded_settings = loaded_config.get("settings")
                 self._logger.debug(f"loaded {loaded_settings}")
-                merged_config: ConfigData = merge(loaded_config, self._config)
-                self._config.update(merged_config)
-                self._save()
+                self.update(loaded_config)
 
         except FileNotFoundError:
             self._logger.debug("creating new file")
@@ -85,7 +83,8 @@ class Config:
 
     def update(self, data: ConfigData) -> ConfigData:
         self._logger.debug("updating")
-        self._config.update(data)
+        merged_config: ConfigData = merge(data, self._config)
+        self._config.update(merged_config)
         self._save()
         self._logger.debug("updated")
         return self._config.copy()
