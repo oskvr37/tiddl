@@ -19,7 +19,6 @@ from .utils import (
 
 
 def main():
-    config = Config()
     logger = logging.getLogger("TIDDL")
     stream_handler = logging.StreamHandler()
     level_name_log = ""
@@ -49,6 +48,8 @@ def main():
             )
         )
 
+    config = Config()
+
     file_handler = logging.FileHandler(
         f"{config.config_directory}/tiddl.log", "a", "utf-8"
     )
@@ -73,7 +74,7 @@ def main():
         if args.quality
         else config["settings"]["track_quality"]
     )
-    track_template = args.file_template or config["settings"]["file_template"]
+    track_template = args.file_template or config["settings"]["track_template"]
     include_singles = args.include_singles
 
     if args.save_options:
