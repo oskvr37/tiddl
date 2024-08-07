@@ -136,30 +136,29 @@ class TestUtils(unittest.TestCase):
             "mixes": {"TRACK_MIX": "001ec78dae0d4a470999adefffd570"},
         }
 
-        self.assertEqual(formatFilename("{title}", track), "/HAUTE COUTURE")
+        self.assertEqual(formatFilename("{title}", track), ("", "HAUTE COUTURE"))
         self.assertEqual(
             formatFilename("{artist} - {title}", track),
-            "/Tuzza Globale - HAUTE COUTURE",
+            ("", "Tuzza Globale - HAUTE COUTURE"),
         )
         self.assertEqual(
             formatFilename("{album} - {title}", track),
-            "/HAUTE COUTURE - HAUTE COUTURE",
+            ("", "HAUTE COUTURE - HAUTE COUTURE"),
         )
         self.assertEqual(
-            formatFilename("{number}. {title}", track),
-            "/1. HAUTE COUTURE",
+            formatFilename("{number}. {title}", track), ("", "1. HAUTE COUTURE")
         )
         self.assertEqual(
             formatFilename("{artists} - {title}", track),
-            "/Tuzza Globale, Taco Hemingway - HAUTE COUTURE",
+            ("", "Tuzza Globale, Taco Hemingway - HAUTE COUTURE"),
         )
         self.assertEqual(
             formatFilename("{id}", track),
-            "/133017101",
+            ("", "133017101"),
         )
         self.assertEqual(
             formatFilename("{album}/{title}", track),
-            "HAUTE COUTURE/HAUTE COUTURE",
+            ("HAUTE COUTURE", "HAUTE COUTURE"),
         )
 
 
@@ -171,11 +170,17 @@ class TestTiddl(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        shutil.rmtree(DOWNLOAD_DIR)
+        try:
+            shutil.rmtree(DOWNLOAD_DIR)
+        except FileNotFoundError:
+            pass
 
     @classmethod
     def tearDownClass(cls):
-        shutil.rmtree(DOWNLOAD_DIR)
+        try:
+            shutil.rmtree(DOWNLOAD_DIR)
+        except FileNotFoundError:
+            pass
 
     def test_noInput(self):
         result = subprocess.run(["tiddl"])
