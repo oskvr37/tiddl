@@ -44,7 +44,7 @@ class FormattedTrack(TypedDict):
     playlist: str
 
 
-def formatFilename(template: str, track: Track, playlist="") -> str:
+def formatFilename(template: str, track: Track, playlist=""):
     artists = [artist["name"] for artist in track["artists"]]
     formatted_track: FormattedTrack = {
         "album": track["album"]["title"],
@@ -62,13 +62,9 @@ def formatFilename(template: str, track: Track, playlist="") -> str:
     template_without_filename = "/".join(dirs)
     formatted_dir = template_without_filename.format(**formatted_track)
 
-    full_path = f"{sanitizeDirName(formatted_dir)}/{filename}"
+    sanitized_dir = sanitizeDirName(formatted_dir)
 
-    try:
-        return full_path
-    except KeyError as e:
-        missing_key = e.args[0]
-        raise ValueError(f"Missing key in track dictionary: {missing_key}")
+    return sanitized_dir, filename
 
 
 def sanitizeDirName(dir_name: str):
