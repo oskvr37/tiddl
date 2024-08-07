@@ -164,7 +164,8 @@ def threadDownload(urls: list[str]) -> bytes:
 
 
 def downloadTrackStream(
-    full_path: str,
+    file_dir: str,
+    file_name: str,
     encoded_manifest: str,
     mime_type: ManifestMimeType,
 ):
@@ -208,13 +209,32 @@ def downloadTrackStream(
             f'unknown file codecs: "{codecs}", please submit this as issue on GitHub'
         )
 
-    file_path = os.path.dirname(full_path)
-    file_name = f"{full_path}.{extension}"
-    logger.debug(f"file_path: {file_path}, file_name: {file_name}")
+    logger.debug((file_dir, file_name))
 
-    os.makedirs(file_path, exist_ok=True)
+    os.makedirs(file_dir, exist_ok=True)
 
-    with open(file_name, "wb+") as f:
+    file_path = f"{file_dir}/{file_name}.{extension}"
+
+    with open(file_path, "wb+") as f:
         f.write(track_data)
 
-    return file_name
+    return file_path
+
+
+def downloadCover(uid: str, path: str, size=640):
+    formatted_uid = uid.replace("-", "/")
+    url = f"https://resources.tidal.com/images/{formatted_uid}/{size}x{size}.jpg"
+
+    req = requests.get(url)
+
+    if req.status_code != 200:
+        logger.error(f"could not download cover. ({req.status_code}) {url}")
+        return
+
+    file = f"{path}/cover.jpg"
+
+    try:
+        with open(file, "wb") as f:
+            f.write(req.content)
+    except FileNotFoundError as e:
+        logger.error(f"could not download cover. {file} -> {e}")

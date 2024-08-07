@@ -6,7 +6,7 @@ from random import randint
 from .api import TidalApi
 from .auth import getDeviceAuth, getToken, refreshToken
 from .config import Config
-from .download import downloadTrackStream
+from .download import downloadTrackStream, downloadCover
 from .parser import QUALITY_ARGS, parser
 from .types import TRACK_QUALITY, TrackQuality, Track
 from .utils import (
@@ -161,16 +161,18 @@ def main():
 
     def downloadTrack(
         track: Track, file_template: str, skip_existing=True, sleep=False, playlist=""
-    ):
-        file_name = formatFilename(file_template, track, playlist)
-        full_path = f"{download_path}/{file_name}"
+    ) -> tuple[str, str]:
+        file_dir, file_name = formatFilename(file_template, track, playlist)
 
         # it will stop detecting existing file for other extensions.
         # we need to store track `id + quality` in metadata to differentiate tracks
         # TODO: create better existing file detecting ✨
-        if skip_existing and os.path.isfile(full_path + ".flac"):
-            logger.info(f"already exists: {full_path}")
-            return
+        file_path = f"{download_path}/{file_dir}/{file_name}"
+        if skip_existing and (
+            os.path.isfile(file_path + ".m4a") or os.path.isfile(file_path + ".flac")
+        ):
+            logger.info(f"already exists: {file_path}")
+            return file_dir, file_name
 
         if sleep:
             sleep_time = randint(5, 15) / 10 + 1
@@ -194,14 +196,17 @@ def main():
         logger.info(f"{file_name} :: {quality['name']} Quality - {details}")
 
         track_path = downloadTrackStream(
-            full_path,
+            f"{download_path}/{file_dir}",
+            file_name,
             stream["manifest"],
             stream["manifestMimeType"],
         )
 
-        logger.info(f"track saved in {track_path}")
+        logger.info(f"track saved as {track_path}")
 
         setMetadata(track_path, track)
+
+        return f"{download_path}/{file_dir}", file_name
 
     def downloadAlbum(album_id: str | int, skip_existing: bool):
         album = api.getAlbum(album_id)
@@ -210,14 +215,19 @@ def main():
         # i dont know if limit 100 is suspicious
         # but i will leave it here
         album_items = api.getAlbumItems(album_id, limit=100)
+        file_dir = ""
+
         for item in album_items["items"]:
             track = item["item"]
-            downloadTrack(
+            file_dir, file_name = downloadTrack(
                 track,
                 file_template=config["settings"]["album_template"],
                 skip_existing=skip_existing,
                 sleep=True,
             )
+
+        if file_dir:
+            downloadCover(album["cover"], file_dir)
 
     skip_existing = not args.no_skip
     failed_input = []

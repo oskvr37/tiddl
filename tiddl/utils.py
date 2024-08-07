@@ -47,13 +47,13 @@ class FormattedTrack(TypedDict):
 def formatFilename(template: str, track: Track, playlist=""):
     artists = [artist["name"] for artist in track["artists"]]
     formatted_track: FormattedTrack = {
-        "album": track["album"]["title"],
-        "artist": track["artist"]["name"],
-        "artists": ", ".join(artists),
-        "id": str(track["id"]),
-        "title": track["title"],
-        "number": str(track["trackNumber"]),
-        "playlist": playlist,
+        "album": track["album"]["title"].strip(),
+        "artist": track["artist"]["name"].strip(),
+        "artists": ", ".join(artists).strip(),
+        "id": str(track["id"]).strip(),
+        "title": track["title"].strip(),
+        "number": str(track["trackNumber"]).strip(),
+        "playlist": playlist.strip(),
     }
 
     dirs = template.split("/")
