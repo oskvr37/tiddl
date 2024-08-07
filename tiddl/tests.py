@@ -1,4 +1,6 @@
 import unittest
+import subprocess
+import shutil
 
 from .utils import parseURL, formatFilename
 from .types.track import Track
@@ -134,26 +136,58 @@ class TestUtils(unittest.TestCase):
             "mixes": {"TRACK_MIX": "001ec78dae0d4a470999adefffd570"},
         }
 
-        self.assertEqual(formatFilename("{title}", track), "HAUTE COUTURE")
+        self.assertEqual(formatFilename("{title}", track), "/HAUTE COUTURE")
         self.assertEqual(
-            formatFilename("{artist} - {title}", track), "Tuzza Globale - HAUTE COUTURE"
+            formatFilename("{artist} - {title}", track),
+            "/Tuzza Globale - HAUTE COUTURE",
         )
         self.assertEqual(
             formatFilename("{album} - {title}", track),
-            "HAUTE COUTURE - HAUTE COUTURE",
+            "/HAUTE COUTURE - HAUTE COUTURE",
         )
         self.assertEqual(
             formatFilename("{number}. {title}", track),
-            "1. HAUTE COUTURE",
+            "/1. HAUTE COUTURE",
         )
         self.assertEqual(
             formatFilename("{artists} - {title}", track),
-            "Tuzza Globale, Taco Hemingway - HAUTE COUTURE",
+            "/Tuzza Globale, Taco Hemingway - HAUTE COUTURE",
         )
         self.assertEqual(
             formatFilename("{id}", track),
-            "133017101",
+            "/133017101",
         )
+        self.assertEqual(
+            formatFilename("{album}/{title}", track),
+            "HAUTE COUTURE/HAUTE COUTURE",
+        )
+
+
+TRACK_ID = "284165609"
+DOWNLOAD_DIR = "download_test"
+
+
+class TestTiddl(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        shutil.rmtree(DOWNLOAD_DIR)
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(DOWNLOAD_DIR)
+
+    def test_noInput(self):
+        result = subprocess.run(["tiddl"])
+        self.assertEqual(result.returncode, 0)
+
+    def test_downloadTrack(self):
+        result = subprocess.run(["tiddl", TRACK_ID, "-p", DOWNLOAD_DIR])
+        self.assertEqual(result.returncode, 0)
+
+    def test_downloadTrackExists(self):
+        result = subprocess.run(["tiddl", TRACK_ID, "-p", DOWNLOAD_DIR])
+        self.assertEqual(result.returncode, 0)
 
 
 if __name__ == "__main__":
