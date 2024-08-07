@@ -15,6 +15,7 @@ from .utils import (
     formatFilename,
     loadingSymbol,
     setMetadata,
+    convertToFlac,
 )
 
 
@@ -202,11 +203,13 @@ def main():
             stream["manifestMimeType"],
         )
 
-        logger.info(f"track saved as {track_path}")
-
         setMetadata(track_path, track)
 
-        return f"{download_path}/{file_dir}", file_name
+        track_path = convertToFlac(track_path)
+
+        logger.info(f"track saved as {track_path}")
+
+        return file_dir, file_name
 
     def downloadAlbum(album_id: str | int, skip_existing: bool):
         album = api.getAlbum(album_id)
@@ -227,7 +230,7 @@ def main():
             )
 
         if file_dir:
-            downloadCover(album["cover"], file_dir)
+            downloadCover(album["cover"], f"{download_path}/{file_dir}")
 
     skip_existing = not args.no_skip
     failed_input = []

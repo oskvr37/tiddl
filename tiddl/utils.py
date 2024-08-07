@@ -1,6 +1,7 @@
 import re
 import os
 import logging
+import subprocess
 
 from typing import TypedDict, Literal, List, get_args
 from mutagen.flac import FLAC as MutagenFLAC
@@ -112,3 +113,28 @@ def setMetadata(file_path: str, track: Track):
         return
 
     metadata.save()
+
+
+def convertToFlac(source_path: str, remove_source=True):
+    source_dir, source_extension = os.path.splitext(source_path)
+    dest_path = f"{source_dir}.flac"
+
+    logger.debug((source_path, source_dir, source_extension, dest_path))
+
+    if source_extension != ".m4a":
+        return source_path
+
+    logger.info(f"converting `{source_path}` to FLAC")
+    command = ["ffmpeg", "-i", source_path, dest_path]
+    result = subprocess.run(
+        command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+    )
+
+    if result.returncode != 0:
+        logger.error(result.stderr)
+        return source_path
+
+    if remove_source:
+        os.remove(source_path)
+
+    return dest_path
