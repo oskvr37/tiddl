@@ -54,8 +54,10 @@ class Downloader:
     def __init__(self) -> None:
         self.indexed_content: list[tuple[int, bytes]] = []
         self.session = requests.Session()
+        self.total = 0
 
     def download(self, urls: list[str]) -> bytes:
+        self.total = len(urls)
         indexed_urls = [(i, url) for (i, url) in enumerate(urls)]
         threader = Threader(WORKERS_COUNT, self._downloadFragment, indexed_urls)
         threader.run()
@@ -67,6 +69,9 @@ class Downloader:
         index, url = arg
         req = self.session.get(url)
         self.indexed_content.append((index, req.content))
+        showProgressBar(
+            len(self.indexed_content), self.total, "threaded download", show_size=False
+        )
 
 
 def decodeManifest(manifest: str):
@@ -125,15 +130,16 @@ def parseManifestXML(xml_content: str):
     return urls, codecs
 
 
-def showProgressBar(iteration: int, total: int, text: str, length=30):
+def showProgressBar(iteration: int, total: int, text: str, length=30, show_size=True):
     SQUARE, SQUARE_FILL = "□", "■"
     iteration_mb = iteration / 1024 / 1024
     total_mb = total / 1024 / 1024
     percent = 100 * (iteration / total)
     progress = int(length * iteration // total)
     bar = f"{SQUARE_FILL * progress}{SQUARE * (length - progress)}"
+    size = f" {iteration_mb:.2f} / {total_mb:.2f} MB" if show_size else ""
     print(
-        f"\r{text} {bar} {percent:.0f}% {iteration_mb:.2f} / {total_mb:.2f} MB",
+        f"\r{text} {bar} {percent:.0f}%{size}",
         end="\r",
     )
     if iteration >= total:
