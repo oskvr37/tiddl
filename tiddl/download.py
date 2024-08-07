@@ -12,8 +12,7 @@ from typing import TypedDict, List
 
 from .types.track import ManifestMimeType
 
-
-WORKERS_COUNT = 4
+THREADS_COUNT = 4
 
 logger = logging.getLogger("download")
 
@@ -59,7 +58,7 @@ class Downloader:
     def download(self, urls: list[str]) -> bytes:
         self.total = len(urls)
         indexed_urls = [(i, url) for (i, url) in enumerate(urls)]
-        threader = Threader(WORKERS_COUNT, self._downloadFragment, indexed_urls)
+        threader = Threader(THREADS_COUNT, self._downloadFragment, indexed_urls)
         threader.run()
         sorted_content = sorted(self.indexed_content, key=lambda x: x[0])
         data = b"".join(content for _, content in sorted_content)
@@ -243,4 +242,4 @@ def downloadCover(uid: str, path: str, size=640):
         with open(file, "wb") as f:
             f.write(req.content)
     except FileNotFoundError as e:
-        logger.error(f"could not download cover. {file} -> {e}")
+        logger.error(f"could not save cover. {file} -> {e}")

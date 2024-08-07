@@ -5,7 +5,7 @@ from random import randint
 
 from .api import TidalApi
 from .auth import getDeviceAuth, getToken, refreshToken
-from .config import Config
+from .config import Config, HOME_DIRECTORY
 from .download import downloadTrackStream, downloadCover
 from .parser import QUALITY_ARGS, parser
 from .types import TRACK_QUALITY, TrackQuality, Track
@@ -19,41 +19,105 @@ from .utils import (
 )
 
 
-def main():
-    logger = logging.getLogger("TIDDL")
+def initLogging(silent: bool, verbose: bool, colored_logging=True):
+    class Colors:
+        def __init__(self, colored=True) -> None:
+            if colored:
+                self.BLACK = "\033[0;30m"
+                self.GRAY = "\033[1;30m"
+
+                self.RED = "\033[0;31m"
+                self.LIGHT_RED = "\033[1;31m"
+
+                self.GREEN = "\033[0;32m"
+                self.LIGHT_GREEN = "\033[1;32m"
+
+                self.YELLOW = "\033[0;33m"
+                self.LIGHT_YELLOW = "\033[1;33m"
+
+                self.BLUE = "\033[0;34m"
+                self.LIGHT_BLUE = "\033[1;34m"
+
+                self.PURPLE = "\033[0;35m"
+                self.LIGHT_PURPLE = "\033[1;35m"
+
+                self.CYAN = "\033[0;36m"
+                self.LIGHT_CYAN = "\033[1;36m"
+
+                self.LIGHT_GRAY = "\033[0;37m"
+                self.LIGHT_WHITE = "\033[1;37m"
+
+                self.RESET = "\033[0m"
+                self.BOLD = "\033[1m"
+                self.FAINT = "\033[2m"
+                self.ITALIC = "\033[3m"
+                self.UNDERLINE = "\033[4m"
+                self.BLINK = "\033[5m"
+                self.NEGATIVE = "\033[7m"
+                self.CROSSED = "\033[9m"
+            else:
+                self.BLACK = ""
+                self.GRAY = ""
+
+                self.RED = ""
+                self.LIGHT_RED = ""
+
+                self.GREEN = ""
+                self.LIGHT_GREEN = ""
+
+                self.YELLOW = ""
+                self.LIGHT_YELLOW = ""
+
+                self.BLUE = ""
+                self.LIGHT_BLUE = ""
+
+                self.PURPLE = ""
+                self.LIGHT_PURPLE = ""
+
+                self.CYAN = ""
+                self.LIGHT_CYAN = ""
+
+                self.LIGHT_GRAY = ""
+                self.LIGHT_WHITE = ""
+
+                self.RESET = ""
+                self.BOLD = ""
+                self.FAINT = ""
+                self.ITALIC = ""
+                self.UNDERLINE = ""
+                self.BLINK = ""
+                self.NEGATIVE = ""
+                self.CROSSED = ""
+
+    c = Colors(colored_logging)
+
+    class StreamFormatter(logging.Formatter):
+        FORMATS = {
+            logging.DEBUG: f"{c.BLUE}[ %(name)s ] {c.CYAN}%(funcName)s {c.RESET}%(message)s",
+            logging.INFO: f"{c.GREEN}[ %(name)s ] {c.RESET}%(message)s",
+            logging.WARNING: f"{c.YELLOW}[ %(name)s ] {c.RESET}%(message)s",
+            logging.ERROR: f"{c.RED}[ %(name)s ] %(message)s",
+            logging.CRITICAL: f"{c.RED}[ %(name)s ] %(message)s",
+        }
+
+        def format(self, record):
+            log_fmt = self.FORMATS.get(record.levelno)
+            formatter = logging.Formatter(log_fmt)
+            return formatter.format(record) + c.RESET
+
     stream_handler = logging.StreamHandler()
-    level_name_log = ""
-    function_log = ""
+    file_handler = logging.FileHandler(f"{HOME_DIRECTORY}/tiddl.log", "a", "utf-8")
 
-    args = parser.parse_args()
-
-    if args.silent:
+    if silent:
         log_level = logging.WARNING
-    elif args.verbose:
+    elif verbose:
         log_level = logging.DEBUG
-        level_name_log = "\033[1;34m%(levelname)s "
-        function_log = " %(funcName)s"
     else:
         log_level = logging.INFO
 
     stream_handler.setLevel(log_level)
+    stream_handler.setFormatter(StreamFormatter())
 
-    if args.no_color:
-        stream_handler.setFormatter(
-            logging.Formatter(f"[ %(levelname)s ] %(name)s{function_log} - %(message)s")
-        )
-    else:
-        stream_handler.setFormatter(
-            logging.Formatter(
-                f"{level_name_log}\033[1;95m%(name)s\033[0;35m{function_log}\033[0m %(message)s"
-            )
-        )
-
-    config = Config()
-
-    file_handler = logging.FileHandler(
-        f"{config.config_directory}/tiddl.log", "a", "utf-8"
-    )
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(
         logging.Formatter(
@@ -62,21 +126,33 @@ def main():
         )
     )
 
+    # suppress logs from third-party libraries
+    logging.getLogger("requests").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+
     logging.basicConfig(
         level=logging.DEBUG,
         handlers=[file_handler, stream_handler],
     )
 
+
+def main():
+    args = parser.parse_args()
+    initLogging(args.silent, args.verbose, not args.no_color)
+
+    logger = logging.getLogger("TIDDL")
     logger.debug(args)
 
+    config = Config()
+
+    include_singles = args.include_singles
     download_path = args.download_path or config["settings"]["download_path"]
+    track_template = args.file_template or config["settings"]["track_template"]
     track_quality = (
         QUALITY_ARGS[args.quality]
         if args.quality
         else config["settings"]["track_quality"]
     )
-    track_template = args.file_template or config["settings"]["track_template"]
-    include_singles = args.include_singles
 
     if args.save_options:
         logger.info("saving new settings...")

@@ -27,6 +27,7 @@ class ConfigData(TypedDict, total=False):
     user: User
 
 
+HOME_DIRECTORY = str(Path.home())
 CONFIG_FILENAME = ".tiddl_config.json"
 DEFAULT_CONFIG: ConfigData = {
     "token": "",
@@ -46,8 +47,7 @@ DEFAULT_CONFIG: ConfigData = {
 class Config:
     def __init__(self, config_path="") -> None:
         if config_path == "":
-            home_directory = str(Path.home())
-            self.config_directory = home_directory
+            self.config_directory = HOME_DIRECTORY
         else:
             self.config_directory = config_path
 
