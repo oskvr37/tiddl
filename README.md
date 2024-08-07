@@ -77,6 +77,12 @@ album = api.getAlbum(album_id)
 print(f"{album["title"]} has {album["numberOfTracks"]} tracks!")
 ```
 
+# Testing
+
+```
+python -m unittest tiddl/tests.py
+```
+
 # Resources
 
 [Tidal API wiki](https://github.com/Fokka-Engineering/TIDAL)
