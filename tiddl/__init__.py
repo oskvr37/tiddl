@@ -16,129 +16,13 @@ from .utils import (
     loadingSymbol,
     setMetadata,
     convertToFlac,
+    initLogging,
 )
-
-
-def initLogging(silent: bool, verbose: bool, colored_logging=True):
-    class Colors:
-        def __init__(self, colored=True) -> None:
-            if colored:
-                self.BLACK = "\033[0;30m"
-                self.GRAY = "\033[1;30m"
-
-                self.RED = "\033[0;31m"
-                self.LIGHT_RED = "\033[1;31m"
-
-                self.GREEN = "\033[0;32m"
-                self.LIGHT_GREEN = "\033[1;32m"
-
-                self.YELLOW = "\033[0;33m"
-                self.LIGHT_YELLOW = "\033[1;33m"
-
-                self.BLUE = "\033[0;34m"
-                self.LIGHT_BLUE = "\033[1;34m"
-
-                self.PURPLE = "\033[0;35m"
-                self.LIGHT_PURPLE = "\033[1;35m"
-
-                self.CYAN = "\033[0;36m"
-                self.LIGHT_CYAN = "\033[1;36m"
-
-                self.LIGHT_GRAY = "\033[0;37m"
-                self.LIGHT_WHITE = "\033[1;37m"
-
-                self.RESET = "\033[0m"
-                self.BOLD = "\033[1m"
-                self.FAINT = "\033[2m"
-                self.ITALIC = "\033[3m"
-                self.UNDERLINE = "\033[4m"
-                self.BLINK = "\033[5m"
-                self.NEGATIVE = "\033[7m"
-                self.CROSSED = "\033[9m"
-            else:
-                self.BLACK = ""
-                self.GRAY = ""
-
-                self.RED = ""
-                self.LIGHT_RED = ""
-
-                self.GREEN = ""
-                self.LIGHT_GREEN = ""
-
-                self.YELLOW = ""
-                self.LIGHT_YELLOW = ""
-
-                self.BLUE = ""
-                self.LIGHT_BLUE = ""
-
-                self.PURPLE = ""
-                self.LIGHT_PURPLE = ""
-
-                self.CYAN = ""
-                self.LIGHT_CYAN = ""
-
-                self.LIGHT_GRAY = ""
-                self.LIGHT_WHITE = ""
-
-                self.RESET = ""
-                self.BOLD = ""
-                self.FAINT = ""
-                self.ITALIC = ""
-                self.UNDERLINE = ""
-                self.BLINK = ""
-                self.NEGATIVE = ""
-                self.CROSSED = ""
-
-    c = Colors(colored_logging)
-
-    class StreamFormatter(logging.Formatter):
-        FORMATS = {
-            logging.DEBUG: f"{c.BLUE}[ %(name)s ] {c.CYAN}%(funcName)s {c.RESET}%(message)s",
-            logging.INFO: f"{c.GREEN}[ %(name)s ] {c.RESET}%(message)s",
-            logging.WARNING: f"{c.YELLOW}[ %(name)s ] {c.RESET}%(message)s",
-            logging.ERROR: f"{c.RED}[ %(name)s ] %(message)s",
-            logging.CRITICAL: f"{c.RED}[ %(name)s ] %(message)s",
-        }
-
-        def format(self, record):
-            log_fmt = self.FORMATS.get(record.levelno)
-            formatter = logging.Formatter(log_fmt)
-            return formatter.format(record) + c.RESET
-
-    stream_handler = logging.StreamHandler()
-    file_handler = logging.FileHandler(f"{HOME_DIRECTORY}/tiddl.log", "a", "utf-8")
-
-    if silent:
-        log_level = logging.WARNING
-    elif verbose:
-        log_level = logging.DEBUG
-    else:
-        log_level = logging.INFO
-
-    stream_handler.setLevel(log_level)
-    stream_handler.setFormatter(StreamFormatter())
-
-    file_handler.setLevel(logging.DEBUG)
-    file_handler.setFormatter(
-        logging.Formatter(
-            "%(asctime)s %(levelname)s\t%(name)s.%(funcName)s %(message)s",
-            datefmt="%x %X",
-        )
-    )
-
-    # suppress logs from third-party libraries
-    logging.getLogger("requests").setLevel(logging.WARNING)
-    logging.getLogger("urllib3").setLevel(logging.WARNING)
-
-    logging.basicConfig(
-        level=logging.DEBUG,
-        handlers=[file_handler, stream_handler],
-    )
 
 
 def main():
     args = parser.parse_args()
-    initLogging(args.silent, args.verbose, not args.no_color)
+    initLogging(args.silent, args.verbose, HOME_DIRECTORY, not args.no_color)
 
     logger = logging.getLogger("TIDDL")
     logger.debug(args)
