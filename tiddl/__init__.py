@@ -162,8 +162,10 @@ def main():
             stream["manifest"],
             stream["manifestMimeType"],
         )
-
-        setMetadata(track_path, track)
+        try:
+            setMetadata(track_path, track)
+        except ValueError as e:
+            logger.error(f"setMetadata error: {e}")
 
         track_path = convertToFlac(track_path)
 
