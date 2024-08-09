@@ -6,7 +6,7 @@ from random import randint
 from .api import TidalApi
 from .auth import getDeviceAuth, getToken, refreshToken
 from .config import Config, HOME_DIRECTORY
-from .download import downloadTrackStream, downloadCover
+from .download import downloadTrackStream, Cover
 from .parser import QUALITY_ARGS, parser
 from .types import TRACK_QUALITY, TrackQuality, Track
 from .utils import (
@@ -18,6 +18,8 @@ from .utils import (
     convertToFlac,
     initLogging,
 )
+
+SAVE_COVER = True
 
 
 def main():
@@ -121,7 +123,12 @@ def main():
     )
 
     def downloadTrack(
-        track: Track, file_template: str, skip_existing=True, sleep=False, playlist=""
+        track: Track,
+        file_template: str,
+        skip_existing=True,
+        sleep=False,
+        playlist="",
+        cover_data=b"",
     ) -> tuple[str, str]:
         file_dir, file_name = formatFilename(file_template, track, playlist)
 
@@ -138,7 +145,11 @@ def main():
         if sleep:
             sleep_time = randint(5, 15) / 10 + 1
             logger.info(f"sleeping for {sleep_time}s")
-            time.sleep(sleep_time)
+            try:
+                time.sleep(sleep_time)
+            except KeyboardInterrupt:
+                logger.info("stopping...")
+                exit()
 
         stream = api.getTrackStream(track["id"], track_quality)
         quality = TRACK_QUALITY[stream["audioQuality"]]
@@ -162,12 +173,13 @@ def main():
             stream["manifest"],
             stream["manifestMimeType"],
         )
-        try:
-            setMetadata(track_path, track)
-        except ValueError as e:
-            logger.error(f"setMetadata error: {e}")
 
         track_path = convertToFlac(track_path)
+
+        try:
+            setMetadata(track_path, track, cover_data)
+        except ValueError as e:
+            logger.error(f"could not set metadata. {e}")
 
         logger.info(f"track saved as {track_path}")
 
@@ -182,6 +194,8 @@ def main():
         album_items = api.getAlbumItems(album_id, limit=100)
         file_dir = ""
 
+        cover = Cover(album["cover"])
+
         for item in album_items["items"]:
             track = item["item"]
             file_dir, file_name = downloadTrack(
@@ -189,10 +203,12 @@ def main():
                 file_template=config["settings"]["album_template"],
                 skip_existing=skip_existing,
                 sleep=True,
+                cover_data=cover.content,
             )
 
-        if file_dir:
-            downloadCover(album["cover"], f"{download_path}/{file_dir}")
+        # spaghetti
+        if SAVE_COVER and file_dir:
+            cover.save(f"{download_path}/{file_dir}")
 
     skip_existing = not args.no_skip
     failed_input = []
@@ -215,9 +231,24 @@ def main():
         match input_type:
             case "track":
                 track = api.getTrack(input_id)
-                downloadTrack(
-                    track, file_template=track_template, skip_existing=skip_existing
+                cover = Cover(track["album"]["cover"])
+
+                file_dir, file_name = downloadTrack(
+                    track,
+                    file_template=track_template,
+                    skip_existing=skip_existing,
+                    cover_data=cover.content,
                 )
+
+                # spaghetti
+                if SAVE_COVER and file_dir:
+                    cover.save(f"{download_path}/{file_dir}")
+
+                # saving cover as `cover.jpg` does not make sense
+                # as it will be overwrited with other track covers.
+                # we would need to save it as `{track_id}.jpg`
+                # but is this feature needed?
+
                 continue
 
             case "album":
@@ -243,15 +274,24 @@ def main():
                 playlist = api.getPlaylist(input_id)
                 logger.info(f"playlist: {playlist['title']} ({playlist['url']})")
 
+                cover = Cover(playlist["squareImage"])
+
                 playlist_items = api.getPlaylistItems(input_id)
+
+                file_dir = ""
+
                 for item in playlist_items["items"]:
-                    downloadTrack(
+                    file_dir, file_name = downloadTrack(
                         item["item"],
                         file_template=config["settings"]["playlist_template"],
                         skip_existing=skip_existing,
                         sleep=True,
                         playlist=playlist["title"],
                     )
+
+                # spaghetti
+                if SAVE_COVER and file_dir:
+                    cover.save(f"{download_path}/{file_dir}")
 
                 continue
 

@@ -4,7 +4,7 @@ import logging
 import subprocess
 
 from typing import TypedDict, Literal, List, get_args
-from mutagen.flac import FLAC as MutagenFLAC
+from mutagen.flac import FLAC as MutagenFLAC, Picture
 from mutagen.easymp4 import EasyMP4 as MutagenMP4
 
 from .types.track import Track
@@ -83,13 +83,18 @@ def loadingSymbol(i: int, text: str):
     print(f"\r{text} {symbol}", end="\r")
 
 
-def setMetadata(file_path: str, track: Track):
+def setMetadata(file_path: str, track: Track, cover_data=b""):
     _, extension = os.path.splitext(file_path)
 
     if extension == ".flac":
         metadata = MutagenFLAC(file_path)
+        if cover_data:
+            picture = Picture()
+            picture.data = cover_data
+            metadata.add_picture(picture)
     elif extension == ".m4a":
         metadata = MutagenMP4(file_path)
+        # i dont know if there is a way to add cover for m4a file
     else:
         raise ValueError(f"Unknown file extension: {extension}")
 
@@ -124,7 +129,7 @@ def convertToFlac(source_path: str, remove_source=True):
     if source_extension != ".m4a":
         return source_path
 
-    logger.info(f"converting `{source_path}` to FLAC")
+    logger.debug(f"converting `{source_path}` to FLAC")
     command = ["ffmpeg", "-i", source_path, dest_path]
     result = subprocess.run(
         command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
