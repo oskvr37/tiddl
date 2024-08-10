@@ -274,13 +274,16 @@ def main():
                 playlist = api.getPlaylist(input_id)
                 logger.info(f"playlist: {playlist['title']} ({playlist['url']})")
 
-                cover = Cover(playlist["squareImage"])
+                cover = Cover(
+                    playlist["squareImage"], 1080
+                )  # playlists have 1080x1080 size
 
                 playlist_items = api.getPlaylistItems(input_id)
 
                 file_dir = ""
 
                 for item in playlist_items["items"]:
+                    # tracks arent getting cover when downloaded from playlists
                     file_dir, file_name = downloadTrack(
                         item["item"],
                         file_template=config["settings"]["playlist_template"],
