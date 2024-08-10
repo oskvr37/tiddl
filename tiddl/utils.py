@@ -91,6 +91,7 @@ def setMetadata(file_path: str, track: Track, cover_data=b""):
         if cover_data:
             picture = Picture()
             picture.data = cover_data
+            picture.mime = "image/jpeg"
             metadata.add_picture(picture)
     elif extension == ".m4a":
         metadata = MutagenMP4(file_path)
