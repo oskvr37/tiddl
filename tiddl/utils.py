@@ -58,7 +58,7 @@ def formatFilename(template: str, track: Track, playlist=""):
     }
 
     dirs = template.split("/")
-    filename = dirs.pop().format(**formatted_track)
+    filename = sanitizeFileName(dirs.pop().format(**formatted_track))
 
     template_without_filename = "/".join(dirs)
     formatted_dir = template_without_filename.format(**formatted_track)
@@ -70,11 +70,20 @@ def formatFilename(template: str, track: Track, playlist=""):
 
 def sanitizeDirName(dir_name: str):
     # replace invalid characters with an underscore
-    sanitized_dir = re.sub(r'[<>:"|?*]', "_", dir_name)
+    sanitized = re.sub(r'[<>:"|?*]', "_", dir_name)
     # strip whitespace
-    sanitized_dir = sanitized_dir.strip()
+    sanitized = sanitized.strip()
 
-    return sanitized_dir
+    return sanitized
+
+
+def sanitizeFileName(file_name: str):
+    # replace invalid characters with an underscore
+    sanitized = re.sub(r'[<>:"|?*/\\]', "_", file_name)
+    # strip whitespace
+    sanitized = sanitized.strip()
+
+    return sanitized
 
 
 def loadingSymbol(i: int, text: str):
