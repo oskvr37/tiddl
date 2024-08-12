@@ -226,7 +226,13 @@ def downloadTrackStream(
     return file_path
 
 
-def downloadCover(uid: str, path: str, size=640):
+def downloadCover(uid: str, path: str, size=1280):
+    file = f"{path}/cover.jpg"
+
+    if os.path.isfile(file):
+        logger.debug(f"cover already exists ({file})")
+        return
+
     formatted_uid = uid.replace("-", "/")
     url = f"https://resources.tidal.com/images/{formatted_uid}/{size}x{size}.jpg"
 
@@ -235,8 +241,6 @@ def downloadCover(uid: str, path: str, size=640):
     if req.status_code != 200:
         logger.error(f"could not download cover. ({req.status_code}) {url}")
         return
-
-    file = f"{path}/cover.jpg"
 
     try:
         with open(file, "wb") as f:
@@ -275,13 +279,15 @@ class Cover:
         return req.content
 
     def save(self, path: str):
-        logger.debug(path)
-
         if not self.content:
             logger.error("cover file content is empty")
             return
 
         file = f"{path}/cover.jpg"
+
+        if os.path.isfile(file):
+            logger.debug(f"cover already exists ({file})")
+            return
 
         try:
             with open(file, "wb") as f:

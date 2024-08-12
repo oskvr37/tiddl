@@ -132,9 +132,6 @@ def main():
     ) -> tuple[str, str]:
         file_dir, file_name = formatFilename(file_template, track, playlist)
 
-        # it will stop detecting existing file for other extensions.
-        # we need to store track `id + quality` in metadata to differentiate tracks
-        # TODO: create better existing file detecting ✨
         file_path = f"{download_path}/{file_dir}/{file_name}"
         if skip_existing and (
             os.path.isfile(file_path + ".m4a") or os.path.isfile(file_path + ".flac")
@@ -192,9 +189,7 @@ def main():
         # i dont know if limit 100 is suspicious
         # but i will leave it here
         album_items = api.getAlbumItems(album_id, limit=100)
-        file_dir = ""
-
-        cover = Cover(album["cover"])
+        album_cover = Cover(album["cover"])
 
         for item in album_items["items"]:
             track = item["item"]
@@ -203,12 +198,11 @@ def main():
                 file_template=config["settings"]["album_template"],
                 skip_existing=skip_existing,
                 sleep=True,
-                cover_data=cover.content,
+                cover_data=album_cover.content,
             )
 
-        # spaghetti
-        if SAVE_COVER and file_dir:
-            cover.save(f"{download_path}/{file_dir}")
+            if SAVE_COVER:
+                album_cover.save(f"{download_path}/{file_dir}")
 
     skip_existing = not args.no_skip
     failed_input = []
@@ -240,8 +234,7 @@ def main():
                     cover_data=cover.content,
                 )
 
-                # spaghetti
-                if SAVE_COVER and file_dir:
+                if SAVE_COVER:
                     cover.save(f"{download_path}/{file_dir}")
 
                 # saving cover as `cover.jpg` does not make sense
@@ -274,27 +267,27 @@ def main():
                 playlist = api.getPlaylist(input_id)
                 logger.info(f"playlist: {playlist['title']} ({playlist['url']})")
 
-                cover = Cover(
+                playlist_cover = Cover(
                     playlist["squareImage"], 1080
                 )  # playlists have 1080x1080 size
 
                 playlist_items = api.getPlaylistItems(input_id)
 
-                file_dir = ""
-
                 for item in playlist_items["items"]:
-                    # tracks arent getting cover when downloaded from playlists
+                    track = item["item"]
+                    cover = Cover(track["album"]["cover"])
+
                     file_dir, file_name = downloadTrack(
-                        item["item"],
+                        track,
                         file_template=config["settings"]["playlist_template"],
                         skip_existing=skip_existing,
                         sleep=True,
                         playlist=playlist["title"],
+                        cover_data=cover.content,
                     )
 
-                # spaghetti
-                if SAVE_COVER and file_dir:
-                    cover.save(f"{download_path}/{file_dir}")
+                    if SAVE_COVER:
+                        playlist_cover.save(f"{download_path}/{file_dir}")
 
                 continue
 
