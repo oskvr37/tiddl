@@ -173,6 +173,10 @@ def main():
 
         track_path = convertToFlac(track_path)
 
+        if not cover_data:
+            cover = Cover(track["album"]["cover"])
+            cover_data = cover.content
+
         try:
             setMetadata(track_path, track, cover_data)
         except ValueError as e:
@@ -225,22 +229,12 @@ def main():
         match input_type:
             case "track":
                 track = api.getTrack(input_id)
-                cover = Cover(track["album"]["cover"])
 
-                file_dir, file_name = downloadTrack(
+                downloadTrack(
                     track,
                     file_template=track_template,
                     skip_existing=skip_existing,
-                    cover_data=cover.content,
                 )
-
-                if SAVE_COVER:
-                    cover.save(f"{download_path}/{file_dir}")
-
-                # saving cover as `cover.jpg` does not make sense
-                # as it will be overwrited with other track covers.
-                # we would need to save it as `{track_id}.jpg`
-                # but is this feature needed?
 
                 continue
 
@@ -275,7 +269,6 @@ def main():
 
                 for item in playlist_items["items"]:
                     track = item["item"]
-                    cover = Cover(track["album"]["cover"])
 
                     file_dir, file_name = downloadTrack(
                         track,
@@ -283,7 +276,6 @@ def main():
                         skip_existing=skip_existing,
                         sleep=True,
                         playlist=playlist["title"],
-                        cover_data=cover.content,
                     )
 
                     if SAVE_COVER:
