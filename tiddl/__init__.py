@@ -6,7 +6,7 @@ from random import randint
 from .api import TidalApi
 from .auth import getDeviceAuth, getToken, refreshToken
 from .config import Config, HOME_DIRECTORY
-from .download import downloadTrackStream, downloadCover
+from .download import downloadTrackStream, Cover
 from .parser import QUALITY_ARGS, parser
 from .types import TRACK_QUALITY, TrackQuality, Track
 from .utils import (
@@ -18,6 +18,8 @@ from .utils import (
     convertToFlac,
     initLogging,
 )
+
+SAVE_COVER = True
 
 
 def main():
@@ -121,13 +123,15 @@ def main():
     )
 
     def downloadTrack(
-        track: Track, file_template: str, skip_existing=True, sleep=False, playlist=""
+        track: Track,
+        file_template: str,
+        skip_existing=True,
+        sleep=False,
+        playlist="",
+        cover_data=b"",
     ) -> tuple[str, str]:
         file_dir, file_name = formatFilename(file_template, track, playlist)
 
-        # it will stop detecting existing file for other extensions.
-        # we need to store track `id + quality` in metadata to differentiate tracks
-        # TODO: create better existing file detecting ✨
         file_path = f"{download_path}/{file_dir}/{file_name}"
         if skip_existing and (
             os.path.isfile(file_path + ".m4a") or os.path.isfile(file_path + ".flac")
@@ -138,7 +142,11 @@ def main():
         if sleep:
             sleep_time = randint(5, 15) / 10 + 1
             logger.info(f"sleeping for {sleep_time}s")
-            time.sleep(sleep_time)
+            try:
+                time.sleep(sleep_time)
+            except KeyboardInterrupt:
+                logger.info("stopping...")
+                exit()
 
         stream = api.getTrackStream(track["id"], track_quality)
         quality = TRACK_QUALITY[stream["audioQuality"]]
@@ -162,12 +170,17 @@ def main():
             stream["manifest"],
             stream["manifestMimeType"],
         )
-        try:
-            setMetadata(track_path, track)
-        except ValueError as e:
-            logger.error(f"setMetadata error: {e}")
 
         track_path = convertToFlac(track_path)
+
+        if not cover_data:
+            cover = Cover(track["album"]["cover"])
+            cover_data = cover.content
+
+        try:
+            setMetadata(track_path, track, cover_data)
+        except ValueError as e:
+            logger.error(f"could not set metadata. {e}")
 
         logger.info(f"track saved as {track_path}")
 
@@ -180,7 +193,7 @@ def main():
         # i dont know if limit 100 is suspicious
         # but i will leave it here
         album_items = api.getAlbumItems(album_id, limit=100)
-        file_dir = ""
+        album_cover = Cover(album["cover"])
 
         for item in album_items["items"]:
             track = item["item"]
@@ -189,10 +202,11 @@ def main():
                 file_template=config["settings"]["album_template"],
                 skip_existing=skip_existing,
                 sleep=True,
+                cover_data=album_cover.content,
             )
 
-        if file_dir:
-            downloadCover(album["cover"], f"{download_path}/{file_dir}")
+            if SAVE_COVER:
+                album_cover.save(f"{download_path}/{file_dir}")
 
     skip_existing = not args.no_skip
     failed_input = []
@@ -215,9 +229,13 @@ def main():
         match input_type:
             case "track":
                 track = api.getTrack(input_id)
+
                 downloadTrack(
-                    track, file_template=track_template, skip_existing=skip_existing
+                    track,
+                    file_template=track_template,
+                    skip_existing=skip_existing,
                 )
+
                 continue
 
             case "album":
@@ -243,15 +261,25 @@ def main():
                 playlist = api.getPlaylist(input_id)
                 logger.info(f"playlist: {playlist['title']} ({playlist['url']})")
 
+                playlist_cover = Cover(
+                    playlist["squareImage"], 1080
+                )  # playlists have 1080x1080 size
+
                 playlist_items = api.getPlaylistItems(input_id)
+
                 for item in playlist_items["items"]:
-                    downloadTrack(
-                        item["item"],
+                    track = item["item"]
+
+                    file_dir, file_name = downloadTrack(
+                        track,
                         file_template=config["settings"]["playlist_template"],
                         skip_existing=skip_existing,
                         sleep=True,
                         playlist=playlist["title"],
                     )
+
+                    if SAVE_COVER:
+                        playlist_cover.save(f"{download_path}/{file_dir}")
 
                 continue
 

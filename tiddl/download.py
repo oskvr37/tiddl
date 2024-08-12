@@ -226,7 +226,13 @@ def downloadTrackStream(
     return file_path
 
 
-def downloadCover(uid: str, path: str, size=640):
+def downloadCover(uid: str, path: str, size=1280):
+    file = f"{path}/cover.jpg"
+
+    if os.path.isfile(file):
+        logger.debug(f"cover already exists ({file})")
+        return
+
     formatted_uid = uid.replace("-", "/")
     url = f"https://resources.tidal.com/images/{formatted_uid}/{size}x{size}.jpg"
 
@@ -236,10 +242,56 @@ def downloadCover(uid: str, path: str, size=640):
         logger.error(f"could not download cover. ({req.status_code}) {url}")
         return
 
-    file = f"{path}/cover.jpg"
-
     try:
         with open(file, "wb") as f:
             f.write(req.content)
     except FileNotFoundError as e:
         logger.error(f"could not save cover. {file} -> {e}")
+
+
+class Cover:
+    def __init__(self, uid: str, size=1280) -> None:
+        if size > 1280:
+            logger.warning(
+                f"can not set cover size higher than 1280 (user set: {size})"
+            )
+            size = 1280
+
+        self.uid = uid
+
+        formatted_uid = uid.replace("-", "/")
+        self.url = (
+            f"https://resources.tidal.com/images/{formatted_uid}/{size}x{size}.jpg"
+        )
+
+        logger.debug((self.uid, self.url))
+        self.content = self.get()
+
+    def get(self) -> bytes:
+        req = requests.get(self.url)
+
+        if req.status_code != 200:
+            logger.error(f"could not download cover. ({req.status_code}) {self.url}")
+            return b""
+
+        logger.debug("got cover")
+
+        return req.content
+
+    def save(self, path: str):
+        if not self.content:
+            logger.error("cover file content is empty")
+            return
+
+        file = f"{path}/cover.jpg"
+
+        if os.path.isfile(file):
+            logger.debug(f"cover already exists ({file})")
+            return
+
+        try:
+            with open(file, "wb") as f:
+                logger.debug(file)
+                f.write(self.content)
+        except FileNotFoundError as e:
+            logger.error(f"could not save cover. {file} -> {e}")
