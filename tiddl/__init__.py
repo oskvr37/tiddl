@@ -5,7 +5,7 @@ from random import randint
 
 from .api import TidalApi
 from .auth import getDeviceAuth, getToken, refreshToken
-from .config import Config, HOME_DIRECTORY
+from .config import Config
 from .download import downloadTrackStream, Cover
 from .parser import QUALITY_ARGS, parser
 from .types import TRACK_QUALITY, TrackQuality, Track
@@ -24,7 +24,9 @@ SAVE_COVER = True
 
 def main():
     args = parser.parse_args()
-    initLogging(args.silent, args.verbose, HOME_DIRECTORY, not args.no_color)
+    initLogging(
+        silent=args.silent, verbose=args.verbose, colored_logging=not args.no_color
+    )
 
     logger = logging.getLogger("TIDDL")
     logger.debug(args)

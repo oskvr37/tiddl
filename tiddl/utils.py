@@ -8,6 +8,7 @@ from mutagen.flac import FLAC as MutagenFLAC, Picture
 from mutagen.easymp4 import EasyMP4 as MutagenMP4
 
 from .types.track import Track
+from .config import HOME_DIRECTORY
 
 RESOURCE = Literal["track", "album", "artist", "playlist"]
 RESOURCE_LIST: List[RESOURCE] = list(get_args(RESOURCE))
@@ -225,7 +226,9 @@ class Colors:
             self.CROSSED = ""
 
 
-def initLogging(silent: bool, verbose: bool, directory: str, colored_logging=True):
+def initLogging(
+    silent: bool, verbose: bool, directory=HOME_DIRECTORY, colored_logging=True
+):
     c = Colors(colored_logging)
 
     class StreamFormatter(logging.Formatter):
@@ -243,6 +246,7 @@ def initLogging(silent: bool, verbose: bool, directory: str, colored_logging=Tru
             return formatter.format(record) + c.RESET
 
     stream_handler = logging.StreamHandler()
+
     file_handler = logging.FileHandler(f"{directory}/tiddl.log", "a", "utf-8")
 
     if silent:
