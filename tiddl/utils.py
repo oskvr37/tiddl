@@ -131,16 +131,16 @@ def setMetadata(file_path: str, track: Track, cover_data=b""):
     metadata.save()
 
 
-def convertToFlac(source_path: str, remove_source=True):
+def convertToFlac(source_path: str, file_extension: str,remove_source=True):
     source_dir, source_extension = os.path.splitext(source_path)
-    dest_path = f"{source_dir}.flac"
+    dest_path = f"{source_dir}.{file_extension}"
 
     logger.debug((source_path, source_dir, source_extension, dest_path))
 
-    if source_extension != ".m4a":
+    if source_extension == f".{file_extension}":
         return source_path
 
-    logger.debug(f"converting `{source_path}` to FLAC")
+    logger.debug(f"converting `{source_path}` to `{file_extension}`")
     command = ["ffmpeg", "-i", source_path, dest_path]
     result = subprocess.run(
         command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL

@@ -41,6 +41,15 @@ parser.add_argument(
     dest="download_path",
 )
 
+parser.add_argument(
+    "-e",
+    type=str,
+    nargs="?",
+    const=True,
+    help="choose file extension",
+    dest="file_extension",
+)
+
 QUALITY_ARGS: dict[str, TrackQuality] = {
     details["arg"]: quality for quality, details in TRACK_QUALITY.items()
 }
