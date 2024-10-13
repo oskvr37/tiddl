@@ -41,6 +41,7 @@ def main():
         if args.quality
         else config["settings"]["track_quality"]
     )
+    file_extension = args.file_extension or config["settings"]["file_extension"]
 
     if args.save_options:
         logger.info("saving new settings...")
@@ -50,6 +51,7 @@ def main():
                     "download_path": download_path,
                     "track_quality": track_quality,
                     "track_template": track_template,
+                    "file_extension": file_extension
                 }
             }
         ).get("settings")
@@ -173,7 +175,8 @@ def main():
             stream["manifestMimeType"],
         )
 
-        track_path = convertToFlac(track_path)
+        if file_extension:
+            track_path = convertToFlac(source_path=track_path, file_extension=file_extension)
 
         if not cover_data:
             cover = Cover(track["album"]["cover"])
