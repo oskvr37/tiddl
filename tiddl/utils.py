@@ -49,7 +49,7 @@ class FormattedTrack(TypedDict):
 def formatFilename(template: str, track: Track, playlist=""):
     artists = [artist["name"] for artist in track["artists"]]
     formatted_track: FormattedTrack = {
-        "album": track["album"]["title"].strip(),
+        "album": re.sub(r'[<>:"|?*/\\]', "_", track["album"]["title"].strip()),
         "artist": track["artist"]["name"].strip(),
         "artists": ", ".join(artists).strip(),
         "id": str(track["id"]).strip(),
