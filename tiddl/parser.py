@@ -77,6 +77,16 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "-i",
+    type=str,
+    nargs="?",
+    const=True,
+    help="choose a file with urls (.txt file separated with newlines or .json list)",
+    dest="input_file",
+    default="",
+)
+
+parser.add_argument(
     "--no-skip",
     help="dont skip already downloaded tracks",
     action="store_true",

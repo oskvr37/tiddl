@@ -1,5 +1,6 @@
 import re
 import os
+import json
 import logging
 import subprocess
 
@@ -15,6 +16,26 @@ RESOURCE_LIST: List[RESOURCE] = list(get_args(RESOURCE))
 
 
 logger = logging.getLogger("utils")
+
+
+def parseFileInput(file: str) -> list[str]:
+    _, file_extension = os.path.splitext(file)
+    urls_set: set[str] = set()
+
+    if file_extension == ".txt":
+        with open(file) as f:
+            data = f.read()
+        urls_set.update(data.splitlines())
+    elif file_extension == ".json":
+        with open(file) as f:
+            data = json.load(f)
+        urls_set.update(data)
+    else:
+        logger.warning(f"a file with '{file_extension}' extension is not supported!")
+
+    filtered_urls = [url for url in urls_set if type(url) == str]
+
+    return filtered_urls
 
 
 def parseURL(url: str) -> tuple[RESOURCE, str]:
@@ -131,7 +152,7 @@ def setMetadata(file_path: str, track: Track, cover_data=b""):
     metadata.save()
 
 
-def convertToFlac(source_path: str, file_extension: str,remove_source=True):
+def convertToFlac(source_path: str, file_extension: str, remove_source=True):
     source_dir, source_extension = os.path.splitext(source_path)
     dest_path = f"{source_dir}.{file_extension}"
 

@@ -17,6 +17,7 @@ from .utils import (
     setMetadata,
     convertToFlac,
     initLogging,
+    parseFileInput,
 )
 
 SAVE_COVER = True
@@ -51,7 +52,7 @@ def main():
                     "download_path": download_path,
                     "track_quality": track_quality,
                     "track_template": track_template,
-                    "file_extension": file_extension
+                    "file_extension": file_extension,
                 }
             }
         ).get("settings")
@@ -118,6 +119,9 @@ def main():
 
     user_inputs: list[str] = args.input
 
+    file_inputs = parseFileInput(args.input_file)
+    user_inputs.extend(file_inputs)
+
     if len(user_inputs) == 0:
         logger.warning("no ID nor URL provided")
         return
@@ -176,7 +180,9 @@ def main():
         )
 
         if file_extension:
-            track_path = convertToFlac(source_path=track_path, file_extension=file_extension)
+            track_path = convertToFlac(
+                source_path=track_path, file_extension=file_extension
+            )
 
         if not cover_data:
             cover = Cover(track["album"]["cover"])
