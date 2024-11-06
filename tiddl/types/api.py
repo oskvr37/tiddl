@@ -109,3 +109,11 @@ class _PlaylistItem(TypedDict):
 
 class PlaylistItems(Items):
     items: List[_PlaylistItem]
+
+
+class Favorites(TypedDict):
+    PLAYLIST: List[str]
+    ALBUM: List[str]
+    VIDEO: List[str]
+    TRACK: List[str]
+    ARTIST: List[str]

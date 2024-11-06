@@ -11,6 +11,7 @@ from .types import (
     AlbumItems,
     Playlist,
     PlaylistItems,
+    Favorites,
 )
 
 API_URL = "https://api.tidal.com/v1"
@@ -86,4 +87,10 @@ class TidalApi:
         return self._request(
             f"playlists/{uuid}/items",
             {"countryCode": self.country_code, "limit": limit, "offset": offset},
+        )
+
+    def getFavorites(self) -> Favorites:
+        return self._request(
+            f"users/{self.user_id}/favorites/ids",
+            {"countryCode": self.country_code},
         )

@@ -41,6 +41,15 @@ parser.add_argument(
     dest="download_path",
 )
 
+parser.add_argument(
+    "-e",
+    type=str,
+    nargs="?",
+    const=True,
+    help="choose file extension",
+    dest="file_extension",
+)
+
 QUALITY_ARGS: dict[str, TrackQuality] = {
     details["arg"]: quality for quality, details in TRACK_QUALITY.items()
 }
@@ -65,6 +74,16 @@ parser.add_argument(
     help="save options to config // show config file",
     dest="save_options",
     action="store_true",
+)
+
+parser.add_argument(
+    "-i",
+    type=str,
+    nargs="?",
+    const=True,
+    help="choose a file with urls (.txt file separated with newlines or .json list)",
+    dest="input_file",
+    default="",
 )
 
 parser.add_argument(

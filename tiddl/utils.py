@@ -1,5 +1,6 @@
 import re
 import os
+import json
 import logging
 import subprocess
 
@@ -8,12 +9,33 @@ from mutagen.flac import FLAC as MutagenFLAC, Picture
 from mutagen.easymp4 import EasyMP4 as MutagenMP4
 
 from .types.track import Track
+from .config import HOME_DIRECTORY
 
 RESOURCE = Literal["track", "album", "artist", "playlist"]
 RESOURCE_LIST: List[RESOURCE] = list(get_args(RESOURCE))
 
 
 logger = logging.getLogger("utils")
+
+
+def parseFileInput(file: str) -> list[str]:
+    _, file_extension = os.path.splitext(file)
+    urls_set: set[str] = set()
+
+    if file_extension == ".txt":
+        with open(file) as f:
+            data = f.read()
+        urls_set.update(data.splitlines())
+    elif file_extension == ".json":
+        with open(file) as f:
+            data = json.load(f)
+        urls_set.update(data)
+    else:
+        logger.warning(f"a file with '{file_extension}' extension is not supported!")
+
+    filtered_urls = [url for url in urls_set if type(url) == str]
+
+    return filtered_urls
 
 
 def parseURL(url: str) -> tuple[RESOURCE, str]:
@@ -48,7 +70,7 @@ class FormattedTrack(TypedDict):
 def formatFilename(template: str, track: Track, playlist=""):
     artists = [artist["name"] for artist in track["artists"]]
     formatted_track: FormattedTrack = {
-        "album": track["album"]["title"].strip(),
+        "album": re.sub(r'[<>:"|?*/\\]', "_", track["album"]["title"].strip()),
         "artist": track["artist"]["name"].strip(),
         "artists": ", ".join(artists).strip(),
         "id": str(track["id"]).strip(),
@@ -130,16 +152,16 @@ def setMetadata(file_path: str, track: Track, cover_data=b""):
     metadata.save()
 
 
-def convertToFlac(source_path: str, remove_source=True):
+def convertToFlac(source_path: str, file_extension: str, remove_source=True):
     source_dir, source_extension = os.path.splitext(source_path)
-    dest_path = f"{source_dir}.flac"
+    dest_path = f"{source_dir}.{file_extension}"
 
     logger.debug((source_path, source_dir, source_extension, dest_path))
 
-    if source_extension != ".m4a":
+    if source_extension == f".{file_extension}":
         return source_path
 
-    logger.debug(f"converting `{source_path}` to FLAC")
+    logger.debug(f"converting `{source_path}` to `{file_extension}`")
     command = ["ffmpeg", "-i", source_path, dest_path]
     result = subprocess.run(
         command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
@@ -225,7 +247,9 @@ class Colors:
             self.CROSSED = ""
 
 
-def initLogging(silent: bool, verbose: bool, directory: str, colored_logging=True):
+def initLogging(
+    silent: bool, verbose: bool, directory=HOME_DIRECTORY, colored_logging=True
+):
     c = Colors(colored_logging)
 
     class StreamFormatter(logging.Formatter):
@@ -243,6 +267,7 @@ def initLogging(silent: bool, verbose: bool, directory: str, colored_logging=Tru
             return formatter.format(record) + c.RESET
 
     stream_handler = logging.StreamHandler()
+
     file_handler = logging.FileHandler(f"{directory}/tiddl.log", "a", "utf-8")
 
     if silent:

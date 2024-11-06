@@ -12,6 +12,7 @@ class Settings(TypedDict, total=False):
     track_template: str
     album_template: str
     playlist_template: str
+    file_extension: str
 
 
 class User(TypedDict, total=False):
@@ -34,11 +35,12 @@ DEFAULT_CONFIG: ConfigData = {
     "refresh_token": "",
     "token_expires_at": 0,
     "settings": {
-        "download_path": "tidal_download",
+        "download_path": f"{HOME_DIRECTORY}/tidal_download",
         "track_quality": "HIGH",
         "track_template": "{artist}/{title}",
         "album_template": "{artist}/{album}/{title}",
         "playlist_template": "{playlist}/{title}",
+        "file_extension": ""
     },
     "user": {"user_id": "", "country_code": ""},
 }

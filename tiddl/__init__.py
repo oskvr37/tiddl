@@ -5,7 +5,7 @@ from random import randint
 
 from .api import TidalApi
 from .auth import getDeviceAuth, getToken, refreshToken
-from .config import Config, HOME_DIRECTORY
+from .config import Config
 from .download import downloadTrackStream, Cover
 from .parser import QUALITY_ARGS, parser
 from .types import TRACK_QUALITY, TrackQuality, Track
@@ -17,6 +17,7 @@ from .utils import (
     setMetadata,
     convertToFlac,
     initLogging,
+    parseFileInput,
 )
 
 SAVE_COVER = True
@@ -24,7 +25,9 @@ SAVE_COVER = True
 
 def main():
     args = parser.parse_args()
-    initLogging(args.silent, args.verbose, HOME_DIRECTORY, not args.no_color)
+    initLogging(
+        silent=args.silent, verbose=args.verbose, colored_logging=not args.no_color
+    )
 
     logger = logging.getLogger("TIDDL")
     logger.debug(args)
@@ -39,6 +42,7 @@ def main():
         if args.quality
         else config["settings"]["track_quality"]
     )
+    file_extension = args.file_extension or config["settings"]["file_extension"]
 
     if args.save_options:
         logger.info("saving new settings...")
@@ -48,6 +52,7 @@ def main():
                     "download_path": download_path,
                     "track_quality": track_quality,
                     "track_template": track_template,
+                    "file_extension": file_extension,
                 }
             }
         ).get("settings")
@@ -114,6 +119,9 @@ def main():
 
     user_inputs: list[str] = args.input
 
+    file_inputs = parseFileInput(args.input_file)
+    user_inputs.extend(file_inputs)
+
     if len(user_inputs) == 0:
         logger.warning("no ID nor URL provided")
         return
@@ -171,7 +179,10 @@ def main():
             stream["manifestMimeType"],
         )
 
-        track_path = convertToFlac(track_path)
+        if file_extension:
+            track_path = convertToFlac(
+                source_path=track_path, file_extension=file_extension
+            )
 
         if not cover_data:
             cover = Cover(track["album"]["cover"])
