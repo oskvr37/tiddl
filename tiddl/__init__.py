@@ -119,8 +119,9 @@ def main():
 
     user_inputs: list[str] = args.input
 
-    file_inputs = parseFileInput(args.input_file)
-    user_inputs.extend(file_inputs)
+    if args.input_file:
+        file_inputs = parseFileInput(args.input_file)
+        user_inputs.extend(file_inputs)
 
     if len(user_inputs) == 0:
         logger.warning("no ID nor URL provided")

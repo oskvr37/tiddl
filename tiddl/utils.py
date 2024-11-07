@@ -20,6 +20,7 @@ logger = logging.getLogger("utils")
 
 def parseFileInput(file: str) -> list[str]:
     _, file_extension = os.path.splitext(file)
+    logger.debug(file, file_extension)
     urls_set: set[str] = set()
 
     if file_extension == ".txt":
