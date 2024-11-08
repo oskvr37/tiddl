@@ -4,6 +4,7 @@ import json
 import logging
 import subprocess
 
+from datetime import datetime
 from typing import TypedDict, Literal, List, get_args
 from mutagen.flac import FLAC as MutagenFLAC, Picture
 from mutagen.easymp4 import EasyMP4 as MutagenMP4
@@ -62,33 +63,42 @@ class FormattedTrack(TypedDict):
     id: str
     title: str
     number: str
+    disc_number: str
     artist: str
     album: str
     artists: str
     playlist: str
+    released: str
+    year: str
 
 
 def formatFilename(template: str, track: Track, playlist=""):
-    artists = [artist["name"] for artist in track["artists"]]
+    artists = [artist["name"].strip() for artist in track["artists"]]
+
+    release_date = datetime.strptime(
+        track["streamStartDate"], "%Y-%m-%dT00:00:00.000+0000"
+    )
+
     formatted_track: FormattedTrack = {
         "album": re.sub(r'[<>:"|?*/\\]', "_", track["album"]["title"].strip()),
         "artist": track["artist"]["name"].strip(),
-        "artists": ", ".join(artists).strip(),
-        "id": str(track["id"]).strip(),
+        "artists": ", ".join(artists),
+        "id": str(track["id"]),
         "title": track["title"].strip(),
-        "number": str(track["trackNumber"]).strip(),
+        "number": str(track["trackNumber"]),
+        "disc_number": str(track["volumeNumber"]),
         "playlist": playlist.strip(),
+        "released": release_date.strftime("%m-%d-%Y"),
+        "year": release_date.strftime("%Y"),
     }
 
     dirs = template.split("/")
-    filename = sanitizeFileName(dirs.pop().format(**formatted_track))
+    filename = dirs.pop()
 
-    template_without_filename = "/".join(dirs)
-    formatted_dir = template_without_filename.format(**formatted_track)
+    formatted_filename = filename.format(**formatted_track)
+    formatted_dir = "/".join(dirs).format(**formatted_track)
 
-    sanitized_dir = sanitizeDirName(formatted_dir)
-
-    return sanitized_dir, filename
+    return sanitizeDirName(formatted_dir), sanitizeFileName(formatted_filename)
 
 
 def sanitizeDirName(dir_name: str):
