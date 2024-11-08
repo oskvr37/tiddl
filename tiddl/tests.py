@@ -134,6 +134,7 @@ class TestUtils(unittest.TestCase):
                 "videoCover": None,
             },
             "mixes": {"TRACK_MIX": "001ec78dae0d4a470999adefffd570"},
+            "playlistNumber": None
         }
 
         self.assertEqual(formatFilename("{title}", track), ("", "HAUTE COUTURE"))
