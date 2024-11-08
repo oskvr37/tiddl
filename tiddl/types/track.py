@@ -66,3 +66,6 @@ class Track(TypedDict):
     artists: List[_Artist]
     album: _Album
     mixes: Dict[str, str]
+
+    # this is used only when downloading playlist
+    playlistNumber: Optional[int]

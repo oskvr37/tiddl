@@ -70,6 +70,7 @@ class FormattedTrack(TypedDict):
     playlist: str
     released: str
     year: str
+    playlist_number: str
 
 
 def formatFilename(template: str, track: Track, playlist=""):
@@ -90,6 +91,7 @@ def formatFilename(template: str, track: Track, playlist=""):
         "playlist": playlist.strip(),
         "released": release_date.strftime("%m-%d-%Y"),
         "year": release_date.strftime("%Y"),
+        "playlist_number": str(track["playlistNumber"]) or ""
     }
 
     dirs = template.split("/")

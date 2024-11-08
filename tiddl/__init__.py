@@ -9,6 +9,7 @@ from .config import Config
 from .download import downloadTrackStream, Cover
 from .parser import QUALITY_ARGS, parser
 from .types import TRACK_QUALITY, TrackQuality, Track
+from .types.api import _PlaylistItem
 from .utils import (
     RESOURCE,
     parseURL,
@@ -211,7 +212,8 @@ def main():
             track = item["item"]
             file_dir, file_name = downloadTrack(
                 track,
-                file_template=config["settings"]["album_template"],
+                file_template=args.file_template
+                or config["settings"]["album_template"],
                 skip_existing=skip_existing,
                 sleep=True,
                 cover_data=album_cover.content,
@@ -270,6 +272,9 @@ def main():
 
             case "playlist":
                 # TODO: add option to limit and set offset of playlist ✨
+                # or just make a feature in GUI that lets user choose
+                # which tracks from playlist to download
+
                 playlist = api.getPlaylist(input_id)
                 logger.info(f"playlist: {playlist['title']} ({playlist['url']})")
 
@@ -277,14 +282,30 @@ def main():
                     playlist["squareImage"], 1080
                 )  # playlists have 1080x1080 size
 
-                playlist_items = api.getPlaylistItems(input_id)
+                items: list[_PlaylistItem] = []
+                offset = 0
 
-                for item in playlist_items["items"]:
+                while True:
+                    playlist_items = api.getPlaylistItems(input_id, offset=offset)
+                    items.extend(playlist_items["items"])
+
+                    if (
+                        playlist_items["limit"] + playlist_items["offset"]
+                        > playlist_items["totalNumberOfItems"]
+                    ):
+                        break
+
+                    offset += playlist_items["limit"]
+
+                for index, item in enumerate(items, 1):
                     track = item["item"]
+
+                    track["playlistNumber"] = index
 
                     file_dir, file_name = downloadTrack(
                         track,
-                        file_template=config["settings"]["playlist_template"],
+                        file_template=args.file_template
+                        or config["settings"]["playlist_template"],
                         skip_existing=skip_existing,
                         sleep=True,
                         playlist=playlist["title"],
