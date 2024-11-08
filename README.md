@@ -55,6 +55,22 @@ You can download `tracks` `albums` `playlists` `artists albums`
 - https://listen.tidal.com/playlist/803be625-97e4-4cbb-88dd-43f0b1c61ed7
 - playlist/803be625-97e4-4cbb-88dd-43f0b1c61ed7
 
+### File formatting
+
+| Key             | Example                   | Comment                                                       |
+| --------------- | ------------------------- | ------------------------------------------------------------- |
+| title           | Money Trees               |                                                               |
+| artist          | Kendrick Lamar            |                                                               |
+| artists         | Kendrick Lamar, Jay Rock  |                                                               |
+| album           | good kid, m.A.A.d city    |                                                               |
+| number          | 5                         | number on album                                               |
+| disc_number     | 1                         | number of album volume                                        |
+| released        | 10/22/2012                | release date                                                  |
+| year            | 2012                      | year of release date                                          |
+| playlist        | Kendrick Lamar Essentials | title of playlist will only appear when you download playlist |
+| playlist_number | 15                        | index of track on the playlist                                |
+| id              | 20556797                  | id on Tidal                                                   |
+
 # Modules
 
 You can also use TIDDL as module, it's fully typed so you will get type hints

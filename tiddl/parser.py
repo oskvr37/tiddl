@@ -28,7 +28,7 @@ parser.add_argument(
     type=str,
     nargs="?",
     const=True,
-    help="output file template, possible values are {id} {title} {number} {artist} {album} {artists}",
+    help="output file template, more info https://github.com/oskvr37/tiddl?tab=readme-ov-file#file-formatting",
     dest="file_template",
 )
 
