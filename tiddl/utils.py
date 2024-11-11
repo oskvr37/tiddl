@@ -91,7 +91,7 @@ def formatFilename(template: str, track: Track, playlist=""):
         "playlist": playlist.strip(),
         "released": release_date.strftime("%m-%d-%Y"),
         "year": release_date.strftime("%Y"),
-        "playlist_number": str(track["playlistNumber"]) or ""
+        "playlist_number": str(track.get("playlistNumber", ""))
     }
 
     dirs = template.split("/")
