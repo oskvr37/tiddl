@@ -7,7 +7,7 @@ from .api import TidalApi
 from .auth import getDeviceAuth, getToken, refreshToken
 from .config import Config
 from .download import downloadTrackStream, Cover
-from .parser import QUALITY_ARGS, parser
+from .parser import parser
 from .types import TRACK_QUALITY, TrackQuality, Track
 from .types.api import _PlaylistItem
 from .utils import (
@@ -34,27 +34,22 @@ def main():
     logger.debug(args)
 
     config = Config()
+    current_config = config._config
 
     include_singles = args.include_singles
-    download_path = args.download_path or config["settings"]["download_path"]
-    track_template = args.file_template or config["settings"]["track_template"]
-    track_quality = (
-        QUALITY_ARGS[args.quality]
-        if args.quality
-        else config["settings"]["track_quality"]
-    )
-    file_extension = args.file_extension or config["settings"]["file_extension"]
+    download_path = args.download_path or current_config["download_path"]
+    track_template = args.file_template or current_config["track_template"]
+    track_quality = args.quality or current_config["track_quality"]
+    file_extension = args.file_extension or current_config["file_extension"]
 
     if args.save_options:
         logger.info("saving new settings...")
         settings = config.update(
             {
-                "settings": {
-                    "download_path": download_path,
-                    "track_quality": track_quality,
-                    "track_template": track_template,
-                    "file_extension": file_extension,
-                }
+                "download_path": download_path,
+                "track_quality": track_quality,
+                "track_template": track_template,
+                "file_extension": file_extension,
             }
         ).get("settings")
 
@@ -158,8 +153,12 @@ def main():
                 logger.info("stopping...")
                 exit()
 
-        stream = api.getTrackStream(track["id"], track_quality)
-        quality = TRACK_QUALITY[stream["audioQuality"]]
+        stream = api.getTrackStream(
+            track["id"], TRACK_QUALITY[track_quality]["quality"]
+        )
+        quality = [
+            i for i in TRACK_QUALITY.values() if i["quality"] == stream["audioQuality"]
+        ][0]
 
         MASTER_QUALITIES: list[TrackQuality] = ["HI_RES_LOSSLESS", "LOSSLESS"]
         if stream["audioQuality"] in MASTER_QUALITIES:

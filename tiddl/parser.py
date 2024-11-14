@@ -2,7 +2,6 @@ import os
 import argparse
 
 from .types import TRACK_QUALITY
-from .types.track import TrackQuality
 
 
 def shouldNotColor() -> bool:
@@ -50,16 +49,12 @@ parser.add_argument(
     dest="file_extension",
 )
 
-QUALITY_ARGS: dict[str, TrackQuality] = {
-    details["arg"]: quality for quality, details in TRACK_QUALITY.items()
-}
-
 parser.add_argument(
     "-q",
     nargs="?",
     help="track quality",
     dest="quality",
-    choices=QUALITY_ARGS.keys(),
+    choices=TRACK_QUALITY.keys(),
 )
 
 parser.add_argument(
