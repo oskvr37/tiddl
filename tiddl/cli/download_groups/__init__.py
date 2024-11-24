@@ -5,7 +5,7 @@ from .file import FileGroup
 from .search import SearchGroup
 from .url import UrlGroup
 
-from utils import Context, passContext
+from ..utils import Context, passContext
 
 from tiddl.types import TrackArg
 

@@ -1,6 +1,6 @@
 import click
 
-from utils import Context, passContext
+from ..utils import Context, passContext
 from io import TextIOWrapper
 from tiddl.types import Track
 

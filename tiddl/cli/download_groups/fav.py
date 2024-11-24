@@ -1,6 +1,6 @@
 import click
 
-from utils import Context, passContext
+from ..utils import Context, passContext
 
 from tiddl.types import Track
 
