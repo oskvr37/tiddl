@@ -140,6 +140,13 @@ def main():
         playlist="",
         cover_data=b"",
     ) -> tuple[str, str]:
+        if "status" in track and track["status"] == 404:
+            logger.warning(f"Error downloading track: {track['userMessage']}")
+            return "", ""
+        elif "allowStreaming" in track and track["allowStreaming"] is False:
+            logger.warning(f"Track \'{track['title']}\' ({track['id']}) is not available")
+            return "", ""
+
         file_dir, file_name = formatFilename(file_template, track, playlist)
 
         file_path = f"{download_path}/{file_dir}/{file_name}"
@@ -218,6 +225,9 @@ def main():
                 sleep=True,
                 cover_data=album_cover.content,
             )
+
+            if len(file_dir) == 0 and len(file_name) == 0:
+                continue
 
             if SAVE_COVER:
                 album_cover.save(f"{download_path}/{file_dir}")
@@ -310,6 +320,9 @@ def main():
                         sleep=True,
                         playlist=playlist["title"],
                     )
+
+                    if len(file_dir) == 0 and len(file_name) == 0:
+                        continue
 
                     if SAVE_COVER:
                         playlist_cover.save(f"{download_path}/{file_dir}")
