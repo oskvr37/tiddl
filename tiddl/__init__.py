@@ -140,6 +140,9 @@ def main():
         playlist="",
         cover_data=b"",
     ) -> tuple[str, str]:
+        if track.get("status") == 404:
+            raise ValueError(track)
+
         file_dir, file_name = formatFilename(file_template, track, playlist)
 
         file_path = f"{download_path}/{file_dir}/{file_name}"
@@ -210,17 +213,21 @@ def main():
 
         for item in album_items["items"]:
             track = item["item"]
-            file_dir, file_name = downloadTrack(
-                track,
-                file_template=args.file_template
-                or config["settings"]["album_template"],
-                skip_existing=skip_existing,
-                sleep=True,
-                cover_data=album_cover.content,
-            )
+            try:
+                file_dir, file_name = downloadTrack(
+                    track,
+                    file_template=args.file_template
+                    or config["settings"]["album_template"],
+                    skip_existing=skip_existing,
+                    sleep=True,
+                    cover_data=album_cover.content,
+                )
 
-            if SAVE_COVER:
-                album_cover.save(f"{download_path}/{file_dir}")
+                if SAVE_COVER:
+                    album_cover.save(f"{download_path}/{file_dir}")
+
+            except ValueError:
+                logger.warning(f"track unavailable")
 
     skip_existing = not args.no_skip
     failed_input = []
@@ -244,11 +251,14 @@ def main():
             case "track":
                 track = api.getTrack(input_id)
 
-                downloadTrack(
-                    track,
-                    file_template=track_template,
-                    skip_existing=skip_existing,
-                )
+                try:
+                    downloadTrack(
+                        track,
+                        file_template=track_template,
+                        skip_existing=skip_existing,
+                    )
+                except ValueError as e:
+                    logger.warning(f"track unavailable")
 
                 continue
 
@@ -301,18 +311,21 @@ def main():
                     track = item["item"]
 
                     track["playlistNumber"] = index
+                    try:
+                        file_dir, file_name = downloadTrack(
+                            track,
+                            file_template=args.file_template
+                            or config["settings"]["playlist_template"],
+                            skip_existing=skip_existing,
+                            sleep=True,
+                            playlist=playlist["title"],
+                        )
 
-                    file_dir, file_name = downloadTrack(
-                        track,
-                        file_template=args.file_template
-                        or config["settings"]["playlist_template"],
-                        skip_existing=skip_existing,
-                        sleep=True,
-                        playlist=playlist["title"],
-                    )
+                        if SAVE_COVER:
+                            playlist_cover.save(f"{download_path}/{file_dir}")
 
-                    if SAVE_COVER:
-                        playlist_cover.save(f"{download_path}/{file_dir}")
+                    except ValueError as e:
+                        logger.warning(f"track unavailable")
 
                 continue
 
