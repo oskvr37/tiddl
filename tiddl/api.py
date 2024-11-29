@@ -22,6 +22,12 @@ ALBUM_ITEMS_LIMIT = 10
 PLAYLIST_LIMIT = 50
 
 
+class ApiError(Exception):
+    def __init__(self, message: str, status_code: int):
+        super().__init__(message)
+        self.status_code = status_code
+
+
 class TidalApi:
     def __init__(self, token: str, user_id: str, country_code: str) -> None:
         self.token = token
@@ -38,7 +44,8 @@ class TidalApi:
             method="GET", url=f"{API_URL}/{endpoint}", params=params
         )
 
-        # TODO: endpoints error handling ✨
+        if req.status_code != 200:
+            raise ApiError(req.text, req.status_code)
 
         return req.json()
 
