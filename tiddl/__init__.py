@@ -3,7 +3,7 @@ import time
 import logging
 from random import randint
 
-from .api import TidalApi
+from .api import TidalApi, ApiError
 from .auth import getDeviceAuth, getToken, refreshToken
 from .config import Config
 from .download import downloadTrackStream, Cover
@@ -249,16 +249,17 @@ def main():
 
         match input_type:
             case "track":
-                track = api.getTrack(input_id)
-
                 try:
-                    downloadTrack(
-                        track,
-                        file_template=track_template,
-                        skip_existing=skip_existing,
-                    )
-                except ValueError as e:
-                    logger.warning(f"track unavailable")
+                    track = api.getTrack(input_id)
+                except ApiError as e:
+                    logger.warning(f"{e.error['userMessage']} ({e.error['status']})")
+                    continue
+
+                downloadTrack(
+                    track,
+                    file_template=track_template,
+                    skip_existing=skip_existing,
+                )
 
                 continue
 
