@@ -2,6 +2,7 @@ import logging
 import requests
 import json
 import os
+import ffmpeg
 
 from queue import Queue
 from threading import Thread
@@ -168,6 +169,21 @@ def threadDownload(urls: list[str]) -> bytes:
     return data
 
 
+def toFlac(track_data: bytes):
+    process = (
+        ffmpeg.input("pipe:0")
+        .output("pipe:1", format="flac", codec="copy")
+        .run_async(pipe_stdin=True, pipe_stdout=True, pipe_stderr=True)
+    )
+
+    flac_data, stderr = process.communicate(input=track_data)
+
+    if process.returncode != 0:
+        raise RuntimeError(f"FFmpeg failed: {stderr.decode()}")
+
+    return flac_data
+
+
 def downloadTrackStream(
     file_dir: str,
     file_name: str,
@@ -192,7 +208,7 @@ def downloadTrackStream(
         track_data = download(track_urls[0])
     else:
         track_data = threadDownload(track_urls)
-        codecs = "mp4a"  # for tracks that have mulitple `mp4` fragments
+        track_data = toFlac(track_data)
 
     """
     known codecs
@@ -204,12 +220,11 @@ def downloadTrackStream(
     if codecs is None:
         raise Exception("Missing codecs")
 
-    if codecs == "flac":
-        extension = "flac"
-    elif codecs.startswith("mp4a"):
+    extension = "flac"
+
+    if codecs.startswith("mp4a"):
         extension = "m4a"
-    else:
-        extension = "flac"
+    elif codecs != "flac":
         logger.warning(
             f'unknown file codecs: "{codecs}", please submit this as issue on GitHub'
         )

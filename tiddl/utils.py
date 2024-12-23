@@ -165,7 +165,7 @@ def setMetadata(file_path: str, track: Track, cover_data=b""):
     metadata.save()
 
 
-def convertToFlac(source_path: str, file_extension: str, remove_source=True):
+def convertFileExtension(source_path: str, file_extension: str, remove_source=True):
     source_dir, source_extension = os.path.splitext(source_path)
     dest_path = f"{source_dir}.{file_extension}"
 

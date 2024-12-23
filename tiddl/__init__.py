@@ -16,7 +16,7 @@ from .utils import (
     formatFilename,
     loadingSymbol,
     setMetadata,
-    convertToFlac,
+    convertFileExtension,
     initLogging,
     parseFileInput,
 )
@@ -162,6 +162,8 @@ def main():
                 exit()
 
         stream = api.getTrackStream(track["id"], track_quality)
+        logger.debug({"stream": stream})
+
         quality = TRACK_QUALITY[stream["audioQuality"]]
 
         MASTER_QUALITIES: list[TrackQuality] = ["HI_RES_LOSSLESS", "LOSSLESS"]
@@ -185,7 +187,7 @@ def main():
         )
 
         if file_extension:
-            track_path = convertToFlac(
+            track_path = convertFileExtension(
                 source_path=track_path, file_extension=file_extension
             )
 
