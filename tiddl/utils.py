@@ -4,6 +4,7 @@ import json
 import logging
 import subprocess
 
+from io import BytesIO
 from datetime import datetime
 from typing import TypedDict, Literal, List, get_args
 from mutagen.flac import FLAC as MutagenFLAC, Picture
@@ -91,7 +92,7 @@ def formatFilename(template: str, track: Track, playlist=""):
         "playlist": playlist.strip(),
         "released": release_date.strftime("%m-%d-%Y"),
         "year": release_date.strftime("%Y"),
-        "playlist_number": str(track.get("playlistNumber", ""))
+        "playlist_number": str(track.get("playlistNumber", "")),
     }
 
     dirs = template.split("/")
@@ -127,18 +128,21 @@ def loadingSymbol(i: int, text: str):
     print(f"\r{text} {symbol}", end="\r")
 
 
-def setMetadata(file_path: str, track: Track, cover_data=b""):
-    _, extension = os.path.splitext(file_path)
+def setMetadata(
+    track_data: bytes, extension: str, track: Track, cover_data=b""
+) -> bytes:
+    data = BytesIO(track_data)
+    data.seek(0)
 
-    if extension == ".flac":
-        metadata = MutagenFLAC(file_path)
+    if extension == "flac":
+        metadata = MutagenFLAC(data)
         if cover_data:
             picture = Picture()
             picture.data = cover_data
             picture.mime = "image/jpeg"
             metadata.add_picture(picture)
-    elif extension == ".m4a":
-        metadata = MutagenMP4(file_path)
+    elif extension == "m4a":
+        metadata = MutagenMP4(data)
         # i dont know if there is a way to add cover for m4a file
     else:
         raise ValueError(f"Unknown file extension: {extension}")
@@ -156,13 +160,10 @@ def setMetadata(file_path: str, track: Track, cover_data=b""):
         # "url": track["url"],
     }
 
-    try:
-        metadata.update(new_metadata)
-    except Exception as e:
-        logger.error(e)
-        return
+    metadata.update(new_metadata)
+    metadata.save(data)
 
-    metadata.save()
+    return data.getvalue()
 
 
 def convertFileExtension(source_path: str, file_extension: str, remove_source=True):

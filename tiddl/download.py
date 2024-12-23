@@ -185,11 +185,9 @@ def toFlac(track_data: bytes):
 
 
 def downloadTrackStream(
-    file_dir: str,
-    file_name: str,
     encoded_manifest: str,
     mime_type: ManifestMimeType,
-):
+) -> tuple[bytes, str]:
     logger.debug(f"mime_type: {mime_type}")
     manifest = decodeManifest(encoded_manifest)
 
@@ -229,16 +227,7 @@ def downloadTrackStream(
             f'unknown file codecs: "{codecs}", please submit this as issue on GitHub'
         )
 
-    logger.debug((file_dir, file_name))
-
-    os.makedirs(file_dir, exist_ok=True)
-
-    file_path = f"{file_dir}/{file_name}.{extension}"
-
-    with open(file_path, "wb+") as f:
-        f.write(track_data)
-
-    return file_path
+    return track_data, extension
 
 
 def downloadCover(uid: str, path: str, size=1280):

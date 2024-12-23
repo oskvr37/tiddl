@@ -179,28 +179,33 @@ def main():
 
         logger.info(f"{file_name} :: {quality['name']} Quality - {details}")
 
-        track_path = downloadTrackStream(
-            f"{download_path}/{file_dir}",
-            file_name,
+        track_data, extension = downloadTrackStream(
             stream["manifest"],
             stream["manifestMimeType"],
         )
-
-        if file_extension:
-            track_path = convertFileExtension(
-                source_path=track_path, file_extension=file_extension
-            )
 
         if not cover_data:
             cover = Cover(track["album"]["cover"])
             cover_data = cover.content
 
         try:
-            setMetadata(track_path, track, cover_data)
-        except ValueError as e:
+            track_data = setMetadata(track_data, extension, track, cover_data)
+        except Exception as e:
             logger.error(f"could not set metadata. {e}")
 
-        logger.info(f"track saved as {track_path}")
+        os.makedirs(file_dir, exist_ok=True)
+
+        file_path = f"{download_path}/{file_dir}/{file_name}.{extension}"
+
+        with open(file_path, "wb+") as f:
+            f.write(track_data)
+
+        if file_extension:
+            file_path = convertFileExtension(
+                source_path=file_path, file_extension=file_extension
+            )
+
+        logger.info(f"track saved as {file_path}")
 
         return file_dir, file_name
 
