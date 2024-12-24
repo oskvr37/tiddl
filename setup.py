@@ -10,6 +10,6 @@ setup(
     author="oskvr37",
     packages=find_packages(),
     entry_points={
-        "console_scripts": ["tiddl=tiddl:main"],
+        "console_scripts": ["tiddl=tiddl:main", "tiddl2=tiddl.cli:cli"],
     },
 )
