@@ -3,7 +3,7 @@ import time
 import logging
 from random import randint
 
-from .api import TidalApi
+from .api import TidalApi, ApiError
 from .auth import getDeviceAuth, getToken, refreshToken
 from .config import Config
 from .download import downloadTrackStream, Cover
@@ -16,7 +16,7 @@ from .utils import (
     formatFilename,
     loadingSymbol,
     setMetadata,
-    convertToFlac,
+    convertFileExtension,
     initLogging,
     parseFileInput,
 )
@@ -162,6 +162,8 @@ def main():
                 exit()
 
         stream = api.getTrackStream(track["id"], track_quality)
+        logger.debug({"stream": stream})
+
         quality = TRACK_QUALITY[stream["audioQuality"]]
 
         MASTER_QUALITIES: list[TrackQuality] = ["HI_RES_LOSSLESS", "LOSSLESS"]
@@ -177,28 +179,30 @@ def main():
 
         logger.info(f"{file_name} :: {quality['name']} Quality - {details}")
 
-        track_path = downloadTrackStream(
-            f"{download_path}/{file_dir}",
-            file_name,
+        track_data, extension = downloadTrackStream(
             stream["manifest"],
             stream["manifestMimeType"],
         )
 
-        if file_extension:
-            track_path = convertToFlac(
-                source_path=track_path, file_extension=file_extension
-            )
+        os.makedirs(file_dir, exist_ok=True)
+
+        file_path = f"{download_path}/{file_dir}/{file_name}.{extension}"
+
+        with open(file_path, "wb+") as f:
+            f.write(track_data)
 
         if not cover_data:
             cover = Cover(track["album"]["cover"])
             cover_data = cover.content
 
-        try:
-            setMetadata(track_path, track, cover_data)
-        except ValueError as e:
-            logger.error(f"could not set metadata. {e}")
+        setMetadata(file_path, extension, track, cover_data)
 
-        logger.info(f"track saved as {track_path}")
+        if file_extension:
+            file_path = convertFileExtension(
+                source_path=file_path, file_extension=file_extension
+            )
+
+        logger.info(f"track saved as {file_path}")
 
         return file_dir, file_name
 
@@ -249,16 +253,17 @@ def main():
 
         match input_type:
             case "track":
-                track = api.getTrack(input_id)
-
                 try:
-                    downloadTrack(
-                        track,
-                        file_template=track_template,
-                        skip_existing=skip_existing,
-                    )
-                except ValueError as e:
-                    logger.warning(f"track unavailable")
+                    track = api.getTrack(input_id)
+                except ApiError as e:
+                    logger.warning(f"{e.error['userMessage']} ({e.error['status']})")
+                    continue
+
+                downloadTrack(
+                    track,
+                    file_template=track_template,
+                    skip_existing=skip_existing,
+                )
 
                 continue
 

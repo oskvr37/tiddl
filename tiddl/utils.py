@@ -7,7 +7,8 @@ import subprocess
 from datetime import datetime
 from typing import TypedDict, Literal, List, get_args
 from mutagen.flac import FLAC as MutagenFLAC, Picture
-from mutagen.easymp4 import EasyMP4 as MutagenMP4
+from mutagen.easymp4 import EasyMP4 as MutagenEasyMP4
+from mutagen.mp4 import MP4Cover, MP4 as MutagenMP4
 
 from .types.track import Track
 from .config import HOME_DIRECTORY
@@ -91,7 +92,7 @@ def formatFilename(template: str, track: Track, playlist=""):
         "playlist": playlist.strip(),
         "released": release_date.strftime("%m-%d-%Y"),
         "year": release_date.strftime("%Y"),
-        "playlist_number": str(track.get("playlistNumber", ""))
+        "playlist_number": str(track.get("playlistNumber", "")),
     }
 
     dirs = template.split("/")
@@ -127,19 +128,20 @@ def loadingSymbol(i: int, text: str):
     print(f"\r{text} {symbol}", end="\r")
 
 
-def setMetadata(file_path: str, track: Track, cover_data=b""):
-    _, extension = os.path.splitext(file_path)
-
-    if extension == ".flac":
-        metadata = MutagenFLAC(file_path)
+def setMetadata(file: str, extension: str, track: Track, cover_data=b""):
+    if extension == "flac":
+        metadata = MutagenFLAC(file)
         if cover_data:
             picture = Picture()
             picture.data = cover_data
             picture.mime = "image/jpeg"
             metadata.add_picture(picture)
-    elif extension == ".m4a":
-        metadata = MutagenMP4(file_path)
-        # i dont know if there is a way to add cover for m4a file
+    elif extension == "m4a":
+        if cover_data:
+            metadata = MutagenMP4(file)
+            metadata["covr"] = [MP4Cover(cover_data, imageformat=MP4Cover.FORMAT_JPEG)]
+            metadata.save(file)
+        metadata = MutagenEasyMP4(file)
     else:
         raise ValueError(f"Unknown file extension: {extension}")
 
@@ -148,24 +150,21 @@ def setMetadata(file_path: str, track: Track, cover_data=b""):
         "trackNumber": str(track["trackNumber"]),
         "discnumber": str(track["volumeNumber"]),
         "copyright": track["copyright"],
-        "artist": track["artist"]["name"],
+        "albumartist": track["artist"]["name"],
+        "artist": ";".join([artist["name"].strip() for artist in track["artists"]]),
         "album": track["album"]["title"],
         "date": track["streamStartDate"][:10],
-        # "tags": track["audioQuality"],
-        # "id": str(track["id"]),
-        # "url": track["url"],
     }
 
+    metadata.update(new_metadata)
+
     try:
-        metadata.update(new_metadata)
+        metadata.save(file)
     except Exception as e:
-        logger.error(e)
-        return
-
-    metadata.save()
+        logger.error(f"Failed to set metadata for {extension}: {e}")
 
 
-def convertToFlac(source_path: str, file_extension: str, remove_source=True):
+def convertFileExtension(source_path: str, file_extension: str, remove_source=True):
     source_dir, source_extension = os.path.splitext(source_path)
     dest_path = f"{source_dir}.{file_extension}"
 
