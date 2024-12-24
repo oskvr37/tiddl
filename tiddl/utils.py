@@ -152,12 +152,10 @@ def setMetadata(
         "trackNumber": str(track["trackNumber"]),
         "discnumber": str(track["volumeNumber"]),
         "copyright": track["copyright"],
-        "artist": track["artist"]["name"],
+        "albumartist": track["artist"]["name"],
+        "artist": ";".join([artist["name"].strip() for artist in track["artists"]]),
         "album": track["album"]["title"],
         "date": track["streamStartDate"][:10],
-        # "tags": track["audioQuality"],
-        # "id": str(track["id"]),
-        # "url": track["url"],
     }
 
     metadata.update(new_metadata)
