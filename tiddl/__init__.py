@@ -184,21 +184,18 @@ def main():
             stream["manifestMimeType"],
         )
 
-        if not cover_data:
-            cover = Cover(track["album"]["cover"])
-            cover_data = cover.content
-
-        try:
-            track_data = setMetadata(track_data, extension, track, cover_data)
-        except Exception as e:
-            logger.error(f"could not set metadata. {e}")
-
         os.makedirs(file_dir, exist_ok=True)
 
         file_path = f"{download_path}/{file_dir}/{file_name}.{extension}"
 
         with open(file_path, "wb+") as f:
             f.write(track_data)
+
+        if not cover_data:
+            cover = Cover(track["album"]["cover"])
+            cover_data = cover.content
+
+        setMetadata(file_path, extension, track, cover_data)
 
         if file_extension:
             file_path = convertFileExtension(
