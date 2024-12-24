@@ -169,7 +169,7 @@ def threadDownload(urls: list[str]) -> bytes:
     return data
 
 
-def toFlac(track_data: bytes):
+def toFlac(track_data: bytes) -> bytes:
     process = (
         ffmpeg.input("pipe:0")
         .output("pipe:1", format="flac", codec="copy")
