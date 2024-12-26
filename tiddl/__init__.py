@@ -184,7 +184,7 @@ def main():
             stream["manifestMimeType"],
         )
 
-        os.makedirs(file_dir, exist_ok=True)
+        os.makedirs(f"{download_path}/{file_dir}", exist_ok=True)
 
         file_path = f"{download_path}/{file_dir}/{file_name}.{extension}"
 
