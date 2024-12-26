@@ -14,8 +14,15 @@ DEFAULT_QUALITY: TrackArg = "normal"
 
 def downloadTrack(track: Track, quality: TrackArg):
     # TODO: create download function
+
     # it should download track to user specified directory with specified filename
     # then add the track id to the database with file path and quality
+
+    # we can cache api responses to avoid requesting the same track multiple times
+    # then we can use the cached data to download the track
+
+    # we should be able to download multiple tracks at once
+
     pass
 
 
