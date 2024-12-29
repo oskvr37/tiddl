@@ -2,7 +2,7 @@ import functools
 import click
 
 from typing import Callable, TypeVar, cast
-from tiddl import Config
+from .config import Config
 from tiddl.types import Track
 
 

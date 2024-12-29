@@ -9,8 +9,6 @@ from ..ctx import Context, passContext
 
 from tiddl.types import TrackArg, Track
 
-DEFAULT_QUALITY: TrackArg = "normal"
-
 
 def downloadTrack(track: Track, quality: TrackArg):
     # TODO: create download function
@@ -27,12 +25,12 @@ def downloadTrack(track: Track, quality: TrackArg):
 
 
 @click.command("download")
-@click.option(
-    "--quality", default=DEFAULT_QUALITY, type=click.Choice(TrackArg.__args__)
-)
+@click.option("--quality", "-q", type=click.Choice(TrackArg.__args__))
 @passContext
 def DownloadCommand(ctx: Context, quality: TrackArg):
     """Download the tracks"""
+
+    quality = quality or ctx.obj.config.config["download"]["quality"]
 
     tracks = ctx.obj.tracks
 

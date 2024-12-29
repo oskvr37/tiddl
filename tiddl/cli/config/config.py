@@ -23,7 +23,12 @@ class AuthConfig(TypedDict, total=False):
     expires: int
 
 
-class ConfigFile(TypedDict, total=False):
+class ConfigFile(TypedDict):
+    download: DownloadConfig
+    auth: AuthConfig
+
+
+class ConfigUpdate(TypedDict, total=False):
     download: DownloadConfig
     auth: AuthConfig
 
@@ -52,7 +57,7 @@ class Config:
         except (FileNotFoundError, json.JSONDecodeError):
             pass
 
-    def update(self, new_config: ConfigFile):
+    def update(self, new_config: ConfigUpdate):
         """Update the configuration with the new values and save it to the file."""
 
         self.config = merge(new_config, self.config)

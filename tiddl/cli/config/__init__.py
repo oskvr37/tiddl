@@ -1,6 +1,6 @@
 import click
 
-from .config import CONFIG_PATH
+from .config import CONFIG_PATH, Config
 
 
 @click.command("config")

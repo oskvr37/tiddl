@@ -1,7 +1,7 @@
 import click
 
 from click import style
-from time import sleep
+from time import sleep, time
 
 from tiddl.auth import getDeviceAuth, getToken, refreshToken
 from .ctx import passContext, Context
@@ -17,7 +17,7 @@ def AuthGroup():
 def login(ctx: Context):
     """Add token to the config"""
 
-    if ctx.obj.config._config.get("token"):
+    if ctx.obj.config.config["auth"].get("token"):
         click.echo(style("Already logged in", fg="green"))
         return
 
@@ -44,8 +44,15 @@ def login(ctx: Context):
 
         assert error == None, token
 
-        # TODO: save token to the config
-        click.echo(token)
+        ctx.obj.config.update(
+            {
+                "auth": {
+                    "token": token["access_token"],
+                    "refresh_token": token["refresh_token"],
+                    "expires": token["expires_in"] + int(time()),
+                }
+            }
+        )
 
         click.echo(style("Authenticated!", fg="green"))
 
