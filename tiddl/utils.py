@@ -78,7 +78,8 @@ def formatFilename(template: str, track: Track, playlist=""):
     artists = [artist["name"].strip() for artist in track["artists"]]
 
     release_date = datetime.strptime(
-        track["streamStartDate"], "%Y-%m-%dT%H:%M:%S.000+0000"
+        track["streamStartDate"] or "1970-01-01T00:00:00.000+0000",
+        "%Y-%m-%dT%H:%M:%S.000+0000",
     )
 
     formatted_track: FormattedTrack = {
