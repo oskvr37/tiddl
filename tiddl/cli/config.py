@@ -1,6 +1,6 @@
 import click
 
-from .config import CONFIG_PATH, Config
+from tiddl.config import CONFIG_PATH
 
 
 @click.command("config")
