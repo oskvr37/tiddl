@@ -21,6 +21,8 @@ class AuthConfig(TypedDict, total=False):
     token: str
     refresh_token: str
     expires: int
+    user_id: str
+    country_code: str
 
 
 class ConfigFile(TypedDict):
@@ -35,7 +37,7 @@ class ConfigUpdate(TypedDict, total=False):
 
 DEFAULT_CONFIG: ConfigFile = {
     "download": {"quality": DEFAULT_QUALITY, "path": str(DOWNLOAD_PATH)},
-    "auth": {"token": "", "refresh_token": "", "expires": 0},
+    "auth": {"token": "", "refresh_token": "", "expires": 0, "country_code": "", "user_id": ""},
 }
 
 

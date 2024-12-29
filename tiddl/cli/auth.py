@@ -50,6 +50,8 @@ def login(ctx: Context):
                     "token": token["access_token"],
                     "refresh_token": token["refresh_token"],
                     "expires": token["expires_in"] + int(time()),
+                    "user_id": str(token["user"]["userId"]),
+                    "country_code": token["user"]["countryCode"],
                 }
             }
         )
