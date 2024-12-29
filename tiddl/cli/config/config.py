@@ -75,13 +75,3 @@ def merge(source, destination):
             destination[key] = value
 
     return destination
-
-
-# TODO: implement config commands
-
-# open the config file with the default editor
-# click.launch(str(CONFIG_PATH))
-
-# this will be useful to easily edit the config file with
-# vim/nano/code $(tiddl config)
-# click.echo(str(CONFIG_PATH))

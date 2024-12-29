@@ -3,7 +3,7 @@ import click
 from .ctx import ContextObj, passContext, Context
 from .auth import AuthGroup
 from .download import UrlGroup, FavGroup, SearchGroup, FileGroup
-
+from .config import ConfigCommand
 
 @click.group()
 @passContext
@@ -12,7 +12,7 @@ def cli(ctx: Context, verbose: bool):
     """TIDDL - Download Tidal tracks ✨"""
     ctx.obj = ContextObj(verbose)
 
-
+cli.add_command(ConfigCommand)
 cli.add_command(AuthGroup)
 cli.add_command(UrlGroup)
 cli.add_command(FavGroup)
