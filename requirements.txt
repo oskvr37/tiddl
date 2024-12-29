@@ -2,3 +2,4 @@ requests>=2.20.0
 mutagen>=1.47.0
 ffmpeg-python>=0.2.0
 click>=8.1.7
+pydantic>=2.9.2
