@@ -72,6 +72,7 @@ class FormattedTrack(TypedDict):
     released: str
     year: str
     playlist_number: str
+    version: str
 
 
 def formatFilename(template: str, track: Track, playlist=""):
@@ -81,6 +82,8 @@ def formatFilename(template: str, track: Track, playlist=""):
         track["streamStartDate"] or "1970-01-01T00:00:00.000+0000",
         "%Y-%m-%dT%H:%M:%S.000+0000",
     )
+
+    version = track.get("version", "")
 
     formatted_track: FormattedTrack = {
         "album": re.sub(r'[<>:"|?*/\\]', "_", track["album"]["title"].strip()),
@@ -94,6 +97,7 @@ def formatFilename(template: str, track: Track, playlist=""):
         "released": release_date.strftime("%m-%d-%Y"),
         "year": release_date.strftime("%Y"),
         "playlist_number": str(track.get("playlistNumber", "")),
+        "version": f"({version})" if version else "",
     }
 
     dirs = template.split("/")
