@@ -217,6 +217,11 @@ def main():
 
         for item in album_items["items"]:
             track = item["item"]
+
+            if item["type"] != "track":
+                logger.warning(f"item is not a track: {track["title"]} ({track["id"]})")
+                continue
+
             try:
                 file_dir, file_name = downloadTrack(
                     track,
