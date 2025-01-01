@@ -1,36 +1,42 @@
 import click
 
 from ..ctx import Context, passContext
+
 from tiddl.types import Track
-from urllib import parse as urlparse
+from tiddl.utils import TidalResource
 
 
-class URL(click.ParamType):
-    # TODO: create correct Tidal URL parsing, maybe with regex
-    name = "url"
-
-    def convert(self, value, param, ctx):
-        if not isinstance(value, tuple):
-            value = urlparse.urlparse(value)
-            if value.scheme not in ("http", "https"):
-                self.fail(
-                    f"invalid URL scheme ({value.scheme}). Only HTTP URLs are allowed",
-                    param,
-                    ctx,
-                )
-        return value
+class TidalURL(click.ParamType):
+    def convert(self, value: str, param, ctx) -> TidalResource:
+        try:
+            return TidalResource(value)
+        except ValueError as e:
+            self.fail(message=str(e), param=param, ctx=ctx)
 
 
 @click.group("url")
-@click.argument("url", type=URL())
+@click.argument("url", type=TidalURL())
 @passContext
-def UrlGroup(ctx: Context, url: URL, filename):
-    """Get Tidal URLs"""
+def UrlGroup(ctx: Context, url: TidalResource):
+    """
+    Get Tidal URL.
 
-    print(url, filename)
+    It can be Tidal link or `resource_type/resource_id` format.
+    The resource can be a track, album, playlist or artist.
+    """
 
     tracks: list[Track] = []
 
-    # TODO: parse the URL list
+    # TODO: fetch api
+
+    match url.resource_type:
+        case "track":
+            pass
+        case "album":
+            pass
+        case "playlist":
+            pass
+        case "artist":
+            pass
 
     ctx.obj.tracks.extend(tracks)
