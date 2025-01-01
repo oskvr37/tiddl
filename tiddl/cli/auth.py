@@ -3,7 +3,7 @@ import click
 from click import style
 from time import sleep, time
 
-from tiddl.auth import getDeviceAuth, getToken, refreshToken
+from tiddl.auth import getDeviceAuth, getToken, refreshToken, ApiError
 from .ctx import passContext, Context
 
 
@@ -23,35 +23,33 @@ def login(ctx: Context):
 
     auth = getDeviceAuth()
 
-    uri = f'https://{auth["verificationUriComplete"]}'
+    uri = f"https://{auth.verificationUriComplete}"
     click.launch(uri)
     click.echo(f"Go to {style(uri, fg='cyan')} and complete authentication!")
 
     # TODO: show time left for auth with `expiresIn`
 
     while True:
-        sleep(auth["interval"])
+        sleep(auth.interval)
 
-        token = getToken(auth["deviceCode"])
-        error: str | None = token.get("error")
+        try:
+            token = getToken(auth.deviceCode)
+        except ApiError as e:
+            if e.error == "authorization_pending":
+                continue
 
-        if error == "authorization_pending":
-            continue
-
-        if error == "expired_token":
-            click.echo(f"Time for authentication {style('has expired', fg='red')}.")
-            break
-
-        assert error == None, token
+            if e.error == "expired_token":
+                click.echo(f"Time for authentication {style('has expired', fg='red')}.")
+                break
 
         ctx.obj.config.update(
             {
                 "auth": {
-                    "token": token["access_token"],
-                    "refresh_token": token["refresh_token"],
-                    "expires": token["expires_in"] + int(time()),
-                    "user_id": str(token["user"]["userId"]),
-                    "country_code": token["user"]["countryCode"],
+                    "token": token.access_token,
+                    "refresh_token": token.refresh_token,
+                    "expires": token.expires_in + int(time()),
+                    "user_id": str(token.user.userId),
+                    "country_code": token.user.countryCode,
                 }
             }
         )

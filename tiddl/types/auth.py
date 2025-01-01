@@ -1,7 +1,8 @@
-from typing import TypedDict, Optional
+from typing import Optional
+from pydantic import BaseModel
 
 
-class _User(TypedDict):
+class _User(BaseModel):
     userId: int
     email: str
     countryCode: str
@@ -29,7 +30,7 @@ class _User(TypedDict):
     newUser: bool
 
 
-class AuthResponse(TypedDict):
+class AuthResponse(BaseModel):
     user: _User
     scope: str
     clientName: str
@@ -43,7 +44,7 @@ class AuthResponseWithRefresh(AuthResponse):
     refresh_token: str
 
 
-class AuthDeviceResponse(TypedDict):
+class AuthDeviceResponse(BaseModel):
     deviceCode: str
     userCode: str
     verificationUri: str
