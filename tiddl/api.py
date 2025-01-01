@@ -1,9 +1,8 @@
 import logging
 from requests import Session
-from typing import TypedDict
 
+from .exceptions import ApiError
 from .types import (
-    ErrorResponse,
     SessionResponse,
     TrackQuality,
     Track,
@@ -22,12 +21,6 @@ API_URL = "https://api.tidal.com/v1"
 ARTIST_ALBUMS_LIMIT = 50
 ALBUM_ITEMS_LIMIT = 10
 PLAYLIST_LIMIT = 50
-
-
-class ApiError(Exception):
-    def __init__(self, message: str, error: ErrorResponse):
-        super().__init__(message)
-        self.error = error
 
 
 class TidalApi:
@@ -49,7 +42,7 @@ class TidalApi:
         data = req.json()
 
         if req.status_code != 200:
-            raise ApiError(req.text, data)
+            raise ApiError(**data)
 
         return data
 
