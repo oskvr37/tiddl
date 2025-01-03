@@ -1,3 +1,5 @@
+import logging
+
 from requests import request
 
 from .exceptions import ApiError
@@ -6,6 +8,9 @@ from .types import auth
 AUTH_URL = "https://auth.tidal.com/v1/oauth2"
 CLIENT_ID = "zU4XHVVkc2tDPo4t"
 CLIENT_SECRET = "VJKhDFqJPqvsPVNBV6ukXTJmwlvbttP7wlMlrc72se4="
+
+
+logger = logging.getLogger(__name__)
 
 
 def getDeviceAuth():
@@ -63,3 +68,13 @@ def refreshToken(refresh_token: str):
         return auth.AuthResponse(**data)
 
     raise ApiError(**data)
+
+
+def removeToken(access_token: str):
+    req = request(
+        "POST",
+        f"https://api.tidal.com/v1/logout",
+        headers={"authorization": f"Bearer {access_token}"},
+    )
+
+    logger.debug((req.status_code, req.text))

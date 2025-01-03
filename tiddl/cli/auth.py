@@ -1,10 +1,14 @@
 import click
+import logging
 
 from click import style
 from time import sleep, time
 
-from tiddl.auth import getDeviceAuth, getToken, refreshToken, ApiError
+from tiddl.auth import getDeviceAuth, getToken, refreshToken, removeToken, ApiError
 from .ctx import passContext, Context
+
+
+logger = logging.getLogger(__name__)
 
 
 @click.group("auth")
@@ -17,8 +21,27 @@ def AuthGroup():
 def login(ctx: Context):
     """Add token to the config"""
 
-    if ctx.obj.config.config["auth"].get("token"):
-        click.echo(style("Already logged in", fg="green"))
+    access_token, refresh_token, expires = (
+        ctx.obj.config.config["auth"].get("token"),
+        ctx.obj.config.config["auth"].get("refresh_token"),
+        ctx.obj.config.config["auth"].get("expires", 0),
+    )
+
+    if access_token:
+        if refresh_token and time() > expires:
+            click.echo(style("Refreshing token...", fg="yellow"))
+            token = refreshToken(refresh_token)
+
+            ctx.obj.config.update(
+                {
+                    "auth": {
+                        "expires": token.expires_in + int(time()),
+                        "token": token.access_token,
+                    }
+                }
+            )
+
+        click.echo(style("Authenticated!", fg="green"))
         return
 
     auth = getDeviceAuth()
@@ -27,7 +50,7 @@ def login(ctx: Context):
     click.launch(uri)
     click.echo(f"Go to {style(uri, fg='cyan')} and complete authentication!")
 
-    # TODO: show time left for auth with `expiresIn`
+    time_left = time() + auth.expiresIn
 
     while True:
         sleep(auth.interval)
@@ -36,10 +59,15 @@ def login(ctx: Context):
             token = getToken(auth.deviceCode)
         except ApiError as e:
             if e.error == "authorization_pending":
+                # FIX: `Time left: 0 secondsss` 🐍
+
+                click.echo(f"\rTime left: {time_left - time():.0f} seconds", nl=False)
                 continue
 
             if e.error == "expired_token":
-                click.echo(f"Time for authentication {style('has expired', fg='red')}.")
+                click.echo(
+                    f"\nTime for authentication {style('has expired', fg='red')}."
+                )
                 break
 
         ctx.obj.config.update(
@@ -54,7 +82,7 @@ def login(ctx: Context):
             }
         )
 
-        click.echo(style("Authenticated!", fg="green"))
+        click.echo(style("\nAuthenticated!", fg="green"))
 
         break
 
@@ -62,5 +90,26 @@ def login(ctx: Context):
 @AuthGroup.command("logout")
 @passContext
 def logout(ctx: Context):
-    """* Not implemented *"""
-    # https://github.com/Fokka-Engineering/TIDAL/wiki/log-out
+    """Remove token from config"""
+
+    access_token = ctx.obj.config.config["auth"].get("token")
+
+    if not access_token:
+        click.echo(style("Not logged in", fg="yellow"))
+        return
+
+    removeToken(access_token)
+
+    ctx.obj.config.update(
+        {
+            "auth": {
+                "country_code": "",
+                "expires": 0,
+                "refresh_token": "",
+                "token": "",
+                "user_id": "",
+            }
+        }
+    )
+
+    click.echo(style("Logged out!", fg="green"))
