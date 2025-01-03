@@ -29,6 +29,12 @@ class ContextObj:
         if token and user_id and country_code:
             self.api = TidalApi(token, user_id, country_code)
 
+    def getApi(self) -> TidalApi:
+        if self.api is None:
+            raise click.UsageError("You must login first")
+
+        return self.api
+
 
 class Context(click.Context):
     obj: ContextObj
