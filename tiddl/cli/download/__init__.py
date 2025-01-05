@@ -7,21 +7,8 @@ from .url import UrlGroup
 
 from ..ctx import Context, passContext
 
-from tiddl.types import TrackArg, Track
-
-
-def downloadTrack(track: Track, quality: TrackArg):
-    # TODO: create download function
-
-    # it should download track to user specified directory with specified filename
-    # then add the track id to the database with file path and quality
-
-    # we can cache api responses to avoid requesting the same track multiple times
-    # then we can use the cached data to download the track
-
-    # we should be able to download multiple tracks at once
-
-    pass
+from tiddl.download import downloadTrackStream
+from tiddl.types import TrackArg, ARG_TO_QUALITY
 
 
 @click.command("download")
@@ -30,7 +17,9 @@ def downloadTrack(track: Track, quality: TrackArg):
 def DownloadCommand(ctx: Context, quality: TrackArg):
     """Download the tracks"""
 
-    quality = quality or ctx.obj.config.config["download"]["quality"]
+    download_quality = ARG_TO_QUALITY[
+        quality or ctx.obj.config.config["download"]["quality"]
+    ]
 
     tracks = ctx.obj.tracks
 
@@ -38,9 +27,15 @@ def DownloadCommand(ctx: Context, quality: TrackArg):
         click.echo("No tracks found.")
         return
 
+    api = ctx.obj.getApi()
+
     for track in tracks:
-        click.echo(f"Downloading {track['title']}")
-        downloadTrack(track, quality)
+        click.echo(f"Downloading {track.title}")
+        track_stream = api.getTrackStream(track.id, download_quality)
+        stream_data, file_extension = downloadTrackStream(track_stream)
+
+        with open(f"{track.id}.{file_extension}", "wb") as f:
+            f.write(stream_data)
 
 
 UrlGroup.add_command(DownloadCommand)

@@ -27,15 +27,19 @@ def UrlGroup(ctx: Context, url: TidalResource):
 
     tracks: list[Track] = []
 
-    # TODO: fetch api
+    api = ctx.obj.getApi()
 
     match url.resource_type:
         case "track":
-            pass
+            track = api.getTrack(url.resource_id)
+            tracks.append(track)
+
         case "album":
             pass
+
         case "playlist":
             pass
+
         case "artist":
             pass
 
