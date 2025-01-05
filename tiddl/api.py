@@ -46,64 +46,78 @@ class TidalApi:
 
         return data
 
-    def getSession(self) -> SessionResponse:
-        return self._request(
-            f"sessions",
+    def getSession(self):
+        return SessionResponse(
+            **self._request(
+                f"sessions",
+            )
         )
 
-    def getTrackStream(self, id: str | int, quality: TrackQuality) -> TrackStream:
-        return self._request(
-            f"tracks/{id}/playbackinfo",
-            {
-                "audioquality": quality,
-                "playbackmode": "STREAM",
-                "assetpresentation": "FULL",
-            },
+    def getTrackStream(self, id: str | int, quality: TrackQuality):
+        return TrackStream(
+            **self._request(
+                f"tracks/{id}/playbackinfo",
+                {
+                    "audioquality": quality,
+                    "playbackmode": "STREAM",
+                    "assetpresentation": "FULL",
+                },
+            )
         )
 
-    def getTrack(self, id: str | int) -> Track:
-        return self._request(f"tracks/{id}", {"countryCode": self.country_code})
+    def getTrack(self, id: str | int):
+        return Track(
+            **self._request(f"tracks/{id}", {"countryCode": self.country_code})
+        )
 
     def getArtistAlbums(
         self, id: str | int, limit=ARTIST_ALBUMS_LIMIT, offset=0, onlyNonAlbum=False
-    ) -> AristAlbumsItems:
+    ):
         params = {"countryCode": self.country_code, "limit": limit, "offset": offset}
 
         if onlyNonAlbum:
             params.update({"filter": "EPSANDSINGLES"})
 
-        return self._request(
-            f"artists/{id}/albums",
-            params,
+        return AristAlbumsItems(
+            **self._request(
+                f"artists/{id}/albums",
+                params,
+            )
         )
 
-    def getAlbum(self, id: str | int) -> Album:
-        return self._request(f"albums/{id}", {"countryCode": self.country_code})
-
-    def getAlbumItems(
-        self, id: str | int, limit=ALBUM_ITEMS_LIMIT, offset=0
-    ) -> AlbumItems:
-        return self._request(
-            f"albums/{id}/items",
-            {"countryCode": self.country_code, "limit": limit, "offset": offset},
+    def getAlbum(self, id: str | int):
+        return Album(
+            **self._request(f"albums/{id}", {"countryCode": self.country_code})
         )
 
-    def getPlaylist(self, uuid: str) -> Playlist:
-        return self._request(
-            f"playlists/{uuid}",
-            {"countryCode": self.country_code},
+    def getAlbumItems(self, id: str | int, limit=ALBUM_ITEMS_LIMIT, offset=0):
+        return AlbumItems(
+            **self._request(
+                f"albums/{id}/items",
+                {"countryCode": self.country_code, "limit": limit, "offset": offset},
+            )
         )
 
-    def getPlaylistItems(
-        self, uuid: str, limit=PLAYLIST_LIMIT, offset=0
-    ) -> PlaylistItems:
-        return self._request(
-            f"playlists/{uuid}/items",
-            {"countryCode": self.country_code, "limit": limit, "offset": offset},
+    def getPlaylist(self, uuid: str):
+        return Playlist(
+            **self._request(
+                f"playlists/{uuid}",
+                {"countryCode": self.country_code},
+            )
         )
 
-    def getFavorites(self) -> Favorites:
-        return self._request(
-            f"users/{self.user_id}/favorites/ids",
-            {"countryCode": self.country_code},
+    def getPlaylistItems(self, uuid: str, limit=PLAYLIST_LIMIT, offset=0):
+        return PlaylistItems(
+            **self._request(
+                f"playlists/{uuid}/items",
+                {"countryCode": self.country_code, "limit": limit, "offset": offset},
+            )
+        )
+
+    def getFavorites(self):
+        return Favorites(
+            **self._request(
+                f"users/{self.user_id}/favorites/ids",
+                {"countryCode": self.country_code},
+            )
         )
