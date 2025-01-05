@@ -5,17 +5,17 @@ from typing import Callable, TypeVar, cast
 
 from tiddl.api import TidalApi
 from tiddl.config import Config
-from tiddl.types import Track
-
+from tiddl.utils import TidalResource
 
 class ContextObj:
     api: TidalApi | None
     config: Config
-    tracks: list[Track]
+    resources: list[TidalResource]
+
 
     def __init__(self) -> None:
         self.config = Config()
-        self.tracks = []
+        self.resources = []
         self.api = None
 
         config_auth = self.config.config["auth"]

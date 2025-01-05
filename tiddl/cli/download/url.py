@@ -2,7 +2,6 @@ import click
 
 from ..ctx import Context, passContext
 
-from tiddl.types import Track
 from tiddl.utils import TidalResource
 
 
@@ -25,22 +24,4 @@ def UrlGroup(ctx: Context, url: TidalResource):
     The resource can be a track, album, playlist or artist.
     """
 
-    tracks: list[Track] = []
-
-    api = ctx.obj.getApi()
-
-    match url.resource_type:
-        case "track":
-            track = api.getTrack(url.resource_id)
-            tracks.append(track)
-
-        case "album":
-            pass
-
-        case "playlist":
-            pass
-
-        case "artist":
-            pass
-
-    ctx.obj.tracks.extend(tracks)
+    ctx.obj.resources.append(url)

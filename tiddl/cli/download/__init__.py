@@ -21,7 +21,10 @@ def DownloadCommand(ctx: Context, quality: TrackArg):
         quality or ctx.obj.config.config["download"]["quality"]
     ]
 
-    tracks = ctx.obj.tracks
+    # TODO: fetch tracks from database
+    # or from api
+
+    tracks = []
 
     if not tracks:
         click.echo("No tracks found.")

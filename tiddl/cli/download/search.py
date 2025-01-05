@@ -1,7 +1,6 @@
 import click
 
 from ..ctx import Context, passContext
-from tiddl.types import Track
 
 
 @click.group("search")
@@ -10,8 +9,4 @@ from tiddl.types import Track
 def SearchGroup(ctx: Context, query: str):
     """Search on Tidal"""
 
-    tracks: list[Track] = []
-
     # TODO: search on Tidal
-
-    ctx.obj.tracks.extend(tracks)

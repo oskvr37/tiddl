@@ -1,18 +1,37 @@
 import click
+import json
+
+from io import TextIOWrapper
+from os.path import splitext
 
 from ..ctx import Context, passContext
-from io import TextIOWrapper
-from tiddl.types import Track
+from tiddl.utils import TidalResource
 
 
 @click.group("file")
 @click.argument("filename", type=click.File(mode="r"))
 @passContext
 def FileGroup(ctx: Context, filename: TextIOWrapper):
-    """Parse text or JSON file with urls"""
+    """Parse txt or JSON file with urls"""
 
-    tracks: list[Track] = []
+    _, extension = splitext(filename.name)
 
-    # TODO: parse the file
+    resource_strings: list[str]
 
-    ctx.obj.tracks.extend(tracks)
+    match extension:
+        case ".json":
+            try:
+                resource_strings = json.load(filename)
+            except json.JSONDecodeError as e:
+                raise click.UsageError(f"Cant decode JSON file - {e.msg}")
+
+        case ".txt":
+            resource_strings = [line.strip() for line in filename.readlines()]
+
+        case _:
+            raise click.UsageError(f"Unsupported file extension - {extension}")
+
+    resources = [TidalResource(string) for string in resource_strings]
+    ctx.obj.resources.extend(resources)
+
+    click.echo(click.style(f"Loaded {len(resources)} resources", "green"))
