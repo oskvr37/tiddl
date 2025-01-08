@@ -32,8 +32,8 @@ class _Artist(BaseModel):
 class _Album(BaseModel):
     id: int
     title: str
-    cover: str
-    vibrantColor: str
+    cover: Optional[str] = None
+    vibrantColor: Optional[str] = None
     videoCover: Optional[str] = None
 
 
@@ -48,7 +48,7 @@ class Track(BaseModel):
     adSupportedStreamReady: bool
     djReady: bool
     stemReady: bool
-    streamStartDate: str
+    streamStartDate: Optional[str] = None
     premiumStreamingOnly: bool
     trackNumber: int
     volumeNumber: int

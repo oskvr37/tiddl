@@ -1,16 +1,17 @@
-from typing import TypedDict, Optional, List, Literal
+from pydantic import BaseModel
+from typing import Optional, List, Literal
 
 from .track import Track
 
 
-class Client(TypedDict):
+class Client(BaseModel):
     id: int
     name: str
     authorizedForOffline: bool
     authorizedForOfflineDate: Optional[str]
 
 
-class SessionResponse(TypedDict):
+class SessionResponse(BaseModel):
     sessionId: str
     userId: int
     countryCode: str
@@ -19,24 +20,24 @@ class SessionResponse(TypedDict):
     client: Client
 
 
-class Items(TypedDict):
+class Items(BaseModel):
     limit: int
     offset: int
     totalNumberOfItems: int
 
 
-class ArtistAlbum(TypedDict):
+class ArtistAlbum(BaseModel):
     id: int
     name: str
-    type: Literal["MAIN"]
+    type: Literal["MAIN", "FEATURED"]
 
 
-class Album(TypedDict):
+class Album(BaseModel):
     id: int
     title: str
     duration: int
     streamReady: bool
-    streamStartDate: str
+    streamStartDate: Optional[str] = None
     allowStreaming: bool
     premiumStreamingOnly: bool
     numberOfTracks: int
@@ -47,8 +48,8 @@ class Album(TypedDict):
     type: str
     version: Optional[str]
     url: str
-    cover: str
-    videoCover: Optional[str]
+    cover: Optional[str] = None
+    videoCover: Optional[str] = None
     explicit: bool
     upc: str
     popularity: int
@@ -62,7 +63,7 @@ class AristAlbumsItems(Items):
     items: List[Album]
 
 
-class _AlbumTrack(TypedDict):
+class _AlbumTrack(BaseModel):
     item: Track
     type: Literal["track"]
 
@@ -71,11 +72,11 @@ class AlbumItems(Items):
     items: List[_AlbumTrack]
 
 
-class _Creator(TypedDict):
+class _Creator(BaseModel):
     id: int
 
 
-class Playlist(TypedDict):
+class Playlist(BaseModel):
     uuid: str
     title: str
     numberOfTracks: int
@@ -95,7 +96,7 @@ class Playlist(TypedDict):
     lastItemAddedAt: str
 
 
-class _PlaylistItem(TypedDict):
+class _PlaylistItem(BaseModel):
     item: Track
     type: Literal["track"]
     cut: Literal[None]
@@ -105,7 +106,7 @@ class PlaylistItems(Items):
     items: List[_PlaylistItem]
 
 
-class Favorites(TypedDict):
+class Favorites(BaseModel):
     PLAYLIST: List[str]
     ALBUM: List[str]
     VIDEO: List[str]
