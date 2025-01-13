@@ -2,7 +2,7 @@ import logging
 from requests import Session
 
 from .exceptions import ApiError, AuthError
-from .types import (
+from .models import (
     SessionResponse,
     TrackQuality,
     Track,

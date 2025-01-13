@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 from typing import Optional, List, Literal, Dict, Union
 
-from tiddl.types.track import Track
-from tiddl.types.api import Items, Playlist
+from tiddl.models.track import Track
+from tiddl.models.api import Items, Playlist
 
 
 class _ArtistRole(BaseModel):

@@ -8,7 +8,7 @@ from .url import UrlGroup
 from ..ctx import Context, passContext
 
 from tiddl.download import downloadTrackStream
-from tiddl.types import TrackArg, ARG_TO_QUALITY, Track
+from tiddl.models import TrackArg, ARG_TO_QUALITY, Track
 
 
 @click.command("download")

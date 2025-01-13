@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from base64 import b64decode
 from xml.etree.ElementTree import fromstring
 
-from tiddl.types import TrackStream
+from tiddl.models import TrackStream
 
 
 logger = logging.getLogger(__name__)

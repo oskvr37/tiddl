@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import TypedDict
 from pathlib import Path
 
-from tiddl.types import TrackArg
+from tiddl.models import TrackArg
 
 
 CONFIG_PATH = Path.home() / "tiddl.json"

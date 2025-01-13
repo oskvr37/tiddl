@@ -3,7 +3,7 @@ import logging
 from requests import request
 
 from .exceptions import ApiError
-from .types import auth
+from .models import auth
 
 AUTH_URL = "https://auth.tidal.com/v1/oauth2"
 CLIENT_ID = "zU4XHVVkc2tDPo4t"
