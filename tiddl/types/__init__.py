@@ -2,6 +2,7 @@ from typing import TypedDict, Literal
 
 from .api import *
 from .track import *
+from .search import *
 
 TrackArg = Literal["low", "normal", "high", "master"]
 

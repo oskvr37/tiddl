@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, List, Literal
+from typing import Optional, List, Literal, Dict
 
 from .track import Track
 
@@ -46,7 +46,7 @@ class Album(BaseModel):
     releaseDate: str
     copyright: str
     type: str
-    version: Optional[str]
+    version: Optional[str] = None
     url: str
     cover: Optional[str] = None
     videoCover: Optional[str] = None
@@ -81,19 +81,19 @@ class Playlist(BaseModel):
     title: str
     numberOfTracks: int
     numberOfVideos: int
-    creator: _Creator
-    description: str
+    creator: _Creator | Dict
+    description: Optional[str] = None
     duration: int
     lastUpdated: str
     created: str
     type: str
     publicPlaylist: bool
     url: str
-    image: str
+    image: Optional[str] = None
     popularity: int
     squareImage: str
     promotedArtists: List[ArtistAlbum]
-    lastItemAddedAt: str
+    lastItemAddedAt: Optional[str] = None
 
 
 class _PlaylistItem(BaseModel):

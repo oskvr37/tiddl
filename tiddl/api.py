@@ -13,6 +13,7 @@ from .types import (
     Playlist,
     PlaylistItems,
     Favorites,
+    Search,
 )
 
 API_URL = "https://api.tidal.com/v1"
@@ -52,7 +53,7 @@ class TidalApi:
     def getSession(self):
         return SessionResponse(
             **self._request(
-                f"sessions",
+                "sessions",
             )
         )
 
@@ -122,5 +123,12 @@ class TidalApi:
             **self._request(
                 f"users/{self.user_id}/favorites/ids",
                 {"countryCode": self.country_code},
+            )
+        )
+
+    def search(self, query: str):
+        return Search(
+            **self._request(
+                "search", {"countryCode": self.country_code, "query": query}
             )
         )

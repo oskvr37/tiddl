@@ -63,7 +63,7 @@ class Track(BaseModel):
     audioQuality: str
     audioModes: List[str]
     mediaMetadata: Dict[str, List[str]]
-    artist: _Artist
+    artist: Optional[_Artist] = None
     artists: List[_Artist]
     album: _Album
     mixes: Dict[str, str]
