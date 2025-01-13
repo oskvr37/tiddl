@@ -8,7 +8,7 @@ from .url import UrlGroup
 from ..ctx import Context, passContext
 
 from tiddl.download import downloadTrackStream
-from tiddl.types import TrackArg, ARG_TO_QUALITY
+from tiddl.types import TrackArg, ARG_TO_QUALITY, Track
 
 
 @click.command("download")
@@ -21,23 +21,41 @@ def DownloadCommand(ctx: Context, quality: TrackArg):
         quality or ctx.obj.config.config["download"]["quality"]
     ]
 
-    # TODO: fetch tracks from database
-    # or from api
+    api = ctx.obj.getApi()
+    tracks: list[Track] = []
 
-    tracks = []
+    def addTrack(track: Track):
+        if track.allowStreaming:
+            tracks.append(track)
+
+    for resource in ctx.obj.resources:
+        match resource.resource_type:
+            case "track":
+                try:
+                    track = api.getTrack(resource.resource_id)
+                    addTrack(track)
+                except Exception as e:
+                    print(e)
+
+            case "album":
+                album_tracks = api.getAlbumItems(resource.resource_id)
+                for album_item in album_tracks.items:
+                    if album_item.type == "track":
+                        addTrack(album_item.item)
 
     if not tracks:
         click.echo("No tracks found.")
         return
-
-    api = ctx.obj.getApi()
 
     for track in tracks:
         click.echo(f"Downloading {track.title}")
         track_stream = api.getTrackStream(track.id, download_quality)
         stream_data, file_extension = downloadTrackStream(track_stream)
 
-        with open(f"{track.id}.{file_extension}", "wb") as f:
+        with open(
+            f"{track.id}.{track_stream.audioQuality.lower()}.{file_extension}",
+            "wb",
+        ) as f:
             f.write(stream_data)
 
 
