@@ -1,7 +1,7 @@
 import logging
 from requests import Session
 
-from .exceptions import ApiError
+from .exceptions import ApiError, AuthError
 from .types import (
     SessionResponse,
     TrackQuality,
@@ -40,6 +40,9 @@ class TidalApi:
         )
 
         data = req.json()
+
+        if req.status_code == 401:
+            raise AuthError(**data)
 
         if req.status_code != 200:
             raise ApiError(**data)
