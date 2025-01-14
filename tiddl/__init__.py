@@ -143,6 +143,11 @@ def main():
         if track.get("status") == 404:
             raise ValueError(track)
 
+        if not track["allowStreaming"]:
+            logger.warning(
+                f"The track is not streamable: {track["title"]} ({track["id"]})"
+            )
+
         file_dir, file_name = formatFilename(file_template, track, playlist)
 
         file_path = f"{download_path}/{file_dir}/{file_name}"
@@ -191,7 +196,7 @@ def main():
         with open(file_path, "wb+") as f:
             f.write(track_data)
 
-        if not cover_data:
+        if not cover_data and track["album"]["cover"]:
             cover = Cover(track["album"]["cover"])
             cover_data = cover.content
 
