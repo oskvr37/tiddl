@@ -140,8 +140,10 @@ def main():
         playlist="",
         cover_data=b"",
     ) -> tuple[str, str]:
-        if track.get("status") == 404:
-            raise ValueError(track)
+        if track.get("status", 200) != 200 or not track["allowStreaming"]:
+            raise ValueError(
+                f"The track is not streamable: {track["title"]} ({track["id"]})"
+            )
 
         file_dir, file_name = formatFilename(file_template, track, playlist)
 
@@ -191,7 +193,7 @@ def main():
         with open(file_path, "wb+") as f:
             f.write(track_data)
 
-        if not cover_data:
+        if not cover_data and track["album"]["cover"]:
             cover = Cover(track["album"]["cover"])
             cover_data = cover.content
 
@@ -235,8 +237,8 @@ def main():
                 if SAVE_COVER:
                     album_cover.save(f"{download_path}/{file_dir}")
 
-            except ValueError:
-                logger.warning(f"track unavailable")
+            except ValueError as e:
+                logger.error(e)
 
     skip_existing = not args.no_skip
     failed_input = []
@@ -264,11 +266,14 @@ def main():
                     logger.warning(f"{e.error['userMessage']} ({e.error['status']})")
                     continue
 
-                downloadTrack(
-                    track,
-                    file_template=track_template,
-                    skip_existing=skip_existing,
-                )
+                try:
+                    downloadTrack(
+                        track,
+                        file_template=track_template,
+                        skip_existing=skip_existing,
+                    )
+                except ValueError as e:
+                    logger.error(e)
 
                 continue
 
