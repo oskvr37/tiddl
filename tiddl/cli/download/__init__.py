@@ -40,7 +40,7 @@ class TrackCollector:
                         self._addItems(album_tracks.items)
 
         except Exception as e:
-            print(f"Error in adding resource: {resource}, {e}")
+            click.echo(click.style(f"Error in adding resource: {resource}, {e}", "red"))
 
     def _addTrack(self, track: Track):
         if track.allowStreaming:
