@@ -31,7 +31,10 @@ def FileGroup(ctx: Context, filename: TextIOWrapper):
         case _:
             raise click.UsageError(f"Unsupported file extension - {extension}")
 
-    resources = [TidalResource(string) for string in resource_strings]
-    ctx.obj.resources.extend(resources)
+    for string in resource_strings:
+        try:
+            ctx.obj.resources.append(TidalResource(string))
+        except ValueError as e:
+            click.echo(click.style(e, "red"))
 
-    click.echo(click.style(f"Loaded {len(resources)} resources", "green"))
+    click.echo(click.style(f"Loaded {len(ctx.obj.resources)} resources", "green"))
