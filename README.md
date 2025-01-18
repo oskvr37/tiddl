@@ -18,52 +18,41 @@ Install package using `pip`
 pip install tiddl
 ```
 
-# Usage
+Run the package cli with `tiddl`
 
-** In progress **
+```bash
+$ tiddl
 
-### File formatting
+Usage: tiddl [OPTIONS] COMMAND [ARGS]...
 
-| Key             | Example                   | Comment                                                       |
-| --------------- | ------------------------- | ------------------------------------------------------------- |
-| title           | Money Trees               |                                                               |
-| artist          | Kendrick Lamar            |                                                               |
-| artists         | Kendrick Lamar, Jay Rock  |                                                               |
-| album           | good kid, m.A.A.d city    |                                                               |
-| number          | 5                         | number on album                                               |
-| disc_number     | 1                         | number of album volume                                        |
-| released        | 10/22/2012                | release date                                                  |
-| year            | 2012                      | year of release date                                          |
-| playlist        | Kendrick Lamar Essentials | title of playlist will only appear when you download playlist |
-| playlist_number | 15                        | index of track on the playlist                                |
-| id              | 20556797                  | id on Tidal                                                   |
+  TIDDL - Download Tidal tracks ✨
 
-# Modules
+Options:
+  -v, --verbose  Show debug logs
+  --help         Show this message and exit.
 
-You can also use TIDDL as module, it's fully typed so you will get type hints
-
-```python
-from tiddl import TidalApi, Config
-
-config = Config()
-
-api = TidalApi(
-	config["token"],
-	config["user"]["user_id"],
-	config["user"]["country_code"]
-)
-
-album_id = 284165608
-
-album = api.getAlbum(album_id)
-
-print(f"{album["title"]} has {album["numberOfTracks"]} tracks!")
+Commands:
+	...
 ```
 
-# Testing
+# Development
 
+Clone the repository
+
+```bash
+git clone https://github.com/oskvr37/tiddl
 ```
-python -m unittest tiddl/tests.py
+
+Install package with `--editable` flag
+
+```bash
+pip install -e .
+```
+
+Run tests
+
+```bash
+python -m unittest
 ```
 
 # Resources
