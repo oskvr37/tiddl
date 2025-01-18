@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, List, Literal, Dict
+from typing import Optional, List, Literal, Dict, Union
 
 from .track import Track
 
@@ -96,9 +96,46 @@ class Playlist(BaseModel):
     lastItemAddedAt: Optional[str] = None
 
 
+class VideoArtist(BaseModel):
+    id: int
+    name: str
+    type: str
+    picture: str
+
+
+class Video(BaseModel):
+    id: int
+    title: str
+    volumeNumber: int
+    trackNumber: int
+    releaseDate: str
+    imagePath: Optional[str] = None
+    imageId: str
+    vibrantColor: str
+    duration: int
+    quality: str
+    streamReady: bool
+    adSupportedStreamReady: bool
+    djReady: bool
+    stemReady: bool
+    streamStartDate: str
+    allowStreaming: bool
+    explicit: bool
+    popularity: int
+    type: str
+    adsUrl: Optional[str] = None
+    adsPrePaywallOnly: bool
+    artist: VideoArtist
+    artists: List[VideoArtist]
+    album: Optional[str] = None
+    dateAdded: str
+    index: int
+    itemUuid: str
+
+
 class _PlaylistItem(BaseModel):
-    item: Track
-    type: Literal["track"]
+    item: Union[Track, Video]
+    type: Literal["track", "video"]
     cut: Literal[None]
 
 
