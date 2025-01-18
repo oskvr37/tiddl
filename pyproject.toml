@@ -7,7 +7,7 @@ name = "tiddl"
 version = "2.0.0"
 description = "TIDDL (Tidal Downloader) is CLI application that allows downloading Tidal tracks."
 readme = "README.md"
-requires-python = "3.10"
+requires-python = ">=3.10"
 authors = [{ name = "oskvr37" }]
 classifiers = [
   "Environment :: Console",
