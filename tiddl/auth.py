@@ -2,7 +2,7 @@ import logging
 
 from requests import request
 
-from .exceptions import ApiError
+from .exceptions import AuthError
 from .models import auth
 
 AUTH_URL = "https://auth.tidal.com/v1/oauth2"
@@ -25,7 +25,7 @@ def getDeviceAuth():
     if req.status_code == 200:
         return auth.AuthDeviceResponse(**data)
 
-    raise ApiError(**data)
+    raise AuthError(**data)
 
 
 def getToken(device_code: str):
@@ -46,7 +46,7 @@ def getToken(device_code: str):
     if req.status_code == 200:
         return auth.AuthResponseWithRefresh(**data)
 
-    raise ApiError(**data)
+    raise AuthError(**data)
 
 
 def refreshToken(refresh_token: str):
@@ -67,7 +67,7 @@ def refreshToken(refresh_token: str):
     if req.status_code == 200:
         return auth.AuthResponse(**data)
 
-    raise ApiError(**data)
+    raise AuthError(**data)
 
 
 def removeToken(access_token: str):

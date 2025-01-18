@@ -4,7 +4,7 @@ import logging
 from click import style
 from time import sleep, time
 
-from tiddl.auth import getDeviceAuth, getToken, refreshToken, removeToken, ApiError
+from tiddl.auth import getDeviceAuth, getToken, refreshToken, removeToken, AuthError
 from .ctx import passContext, Context
 
 
@@ -57,7 +57,7 @@ def login(ctx: Context):
 
         try:
             token = getToken(auth.deviceCode)
-        except ApiError as e:
+        except AuthError as e:
             if e.error == "authorization_pending":
                 # FIX: `Time left: 0 secondsss` 🐍
 
