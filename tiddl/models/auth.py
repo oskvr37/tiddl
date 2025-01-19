@@ -2,7 +2,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 
-class _User(BaseModel):
+class AuthUser(BaseModel):
     userId: int
     email: str
     countryCode: str
@@ -31,7 +31,7 @@ class _User(BaseModel):
 
 
 class AuthResponse(BaseModel):
-    user: _User
+    user: AuthUser
     scope: str
     clientName: str
     token_type: str

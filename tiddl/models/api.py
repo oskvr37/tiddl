@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 from typing import Optional, List, Literal, Dict, Union
 
 from .track import Track
@@ -26,7 +27,7 @@ class Items(BaseModel):
     totalNumberOfItems: int
 
 
-class ArtistAlbum(BaseModel):
+class AlbumArtist(BaseModel):
     id: int
     name: str
     type: Literal["MAIN", "FEATURED"]
@@ -37,7 +38,7 @@ class Album(BaseModel):
     title: str
     duration: int
     streamReady: bool
-    streamStartDate: Optional[str] = None
+    streamStartDate: Optional[datetime] = None
     allowStreaming: bool
     premiumStreamingOnly: bool
     numberOfTracks: int
@@ -55,8 +56,8 @@ class Album(BaseModel):
     popularity: int
     audioQuality: str
     audioModes: List[str]
-    artist: ArtistAlbum
-    artists: List[ArtistAlbum]
+    artist: AlbumArtist
+    artists: List[AlbumArtist]
 
 
 class AristAlbumsItems(Items):
@@ -92,7 +93,7 @@ class Playlist(BaseModel):
     image: Optional[str] = None
     popularity: int
     squareImage: str
-    promotedArtists: List[ArtistAlbum]
+    promotedArtists: List[AlbumArtist]
     lastItemAddedAt: Optional[str] = None
 
 

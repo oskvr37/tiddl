@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 from typing import Optional, List, Dict, Literal, Optional
 
 
@@ -22,14 +23,14 @@ class TrackStream(BaseModel):
     sampleRate: Optional[int] = None
 
 
-class _Artist(BaseModel):
+class TrackArtist(BaseModel):
     id: int
     name: str
     type: str
     picture: Optional[str] = None
 
 
-class _Album(BaseModel):
+class TrackAlbum(BaseModel):
     id: int
     title: str
     cover: Optional[str] = None
@@ -48,7 +49,7 @@ class Track(BaseModel):
     adSupportedStreamReady: bool
     djReady: bool
     stemReady: bool
-    streamStartDate: Optional[str] = None
+    streamStartDate: Optional[datetime] = None
     premiumStreamingOnly: bool
     trackNumber: int
     volumeNumber: int
@@ -60,13 +61,11 @@ class Track(BaseModel):
     isrc: str
     editable: bool
     explicit: bool
-    audioQuality: str
+    audioQuality: TrackQuality
     audioModes: List[str]
     mediaMetadata: Dict[str, List[str]]
-    artist: Optional[_Artist] = None
-    artists: List[_Artist]
-    album: _Album
+    artist: Optional[TrackArtist] = None
+    artists: List[TrackArtist]
+    album: TrackAlbum
     mixes: Dict[str, str]
-
-    # this is used only when downloading playlist
     playlistNumber: Optional[int] = None
