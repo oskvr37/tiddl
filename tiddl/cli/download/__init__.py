@@ -75,12 +75,14 @@ def DownloadCommand(ctx: Context, quality: TrackArg, output: str):
         quality or ctx.obj.config.config["download"]["quality"]
     ]
 
+    template = output or ctx.obj.config.config["download"].get("template", "")
+
     for track in track_collector.tracks:
         click.echo(f"Downloading {track.title}")
         track_stream = api.getTrackStream(track.id, download_quality)
         stream_data, file_extension = downloadTrackStream(track_stream)
 
-        file_name = formatTrack(output or "{artist} - {title}", track)
+        file_name = formatTrack(template, track)
         path = Path(f"{file_name}.{file_extension}")
         path.parent.mkdir(parents=True, exist_ok=True)
 

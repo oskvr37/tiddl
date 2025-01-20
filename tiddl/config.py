@@ -15,6 +15,7 @@ DEFAULT_QUALITY: TrackArg = "high"
 class DownloadConfig(TypedDict, total=False):
     quality: TrackArg
     path: str
+    template: str
 
 
 class AuthConfig(TypedDict, total=False):
@@ -36,7 +37,7 @@ class ConfigUpdate(TypedDict, total=False):
 
 
 DEFAULT_CONFIG: ConfigFile = {
-    "download": {"quality": DEFAULT_QUALITY, "path": str(DOWNLOAD_PATH)},
+    "download": {"quality": DEFAULT_QUALITY, "path": str(DOWNLOAD_PATH), "template": "{artist} - {track}"},
     "auth": {"token": "", "refresh_token": "", "expires": 0, "country_code": "", "user_id": ""},
 }
 
