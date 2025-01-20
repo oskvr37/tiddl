@@ -1,5 +1,7 @@
 import click
 
+from pathlib import Path
+
 from .fav import FavGroup
 from .file import FileGroup
 from .search import SearchGroup
@@ -9,7 +11,7 @@ from ..ctx import Context, passContext
 
 from tiddl.download import downloadTrackStream
 from tiddl.models import TrackArg, ARG_TO_QUALITY, Track
-from tiddl.utils import TidalResource
+from tiddl.utils import TidalResource, formatTrack
 from tiddl.api import TidalApi
 
 
@@ -54,8 +56,9 @@ class TrackCollector:
 
 @click.command("download")
 @click.option("--quality", "-q", type=click.Choice(TrackArg.__args__))
+@click.option("--output", "-o", type=str)
 @passContext
-def DownloadCommand(ctx: Context, quality: TrackArg):
+def DownloadCommand(ctx: Context, quality: TrackArg, output: str):
     """Download the tracks"""
 
     api = ctx.obj.getApi()
@@ -77,10 +80,11 @@ def DownloadCommand(ctx: Context, quality: TrackArg):
         track_stream = api.getTrackStream(track.id, download_quality)
         stream_data, file_extension = downloadTrackStream(track_stream)
 
-        with open(
-            f"{track.id}.{track_stream.audioQuality.lower()}.{file_extension}",
-            "wb",
-        ) as f:
+        file_name = formatTrack(output or "{artist} - {title}", track)
+        path = Path(f"{file_name}.{file_extension}")
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        with path.open("wb") as f:
             f.write(stream_data)
 
 
