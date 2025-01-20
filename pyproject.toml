@@ -5,9 +5,9 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "tiddl"
 version = "2.0.0"
-description = "TIDDL (Tidal Downloader) is CLI application that allows downloading Tidal tracks."
+description = "Download Tidal tracks with CLI downloader."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 authors = [{ name = "oskvr37" }]
 classifiers = [
   "Environment :: Console",
