@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 from pathlib import Path
-from typing import Self
 
 from tiddl.models import TrackArg
 
@@ -32,7 +31,7 @@ class Config(BaseModel):
             f.write(self.model_dump_json(indent=CONFIG_INDENT))
 
     @classmethod
-    def fromFile(cls) -> Self:
+    def fromFile(cls):
         try:
             with CONFIG_PATH.open() as f:
                 return Config.model_validate_json(f.read())
