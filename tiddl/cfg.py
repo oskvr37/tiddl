@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from pathlib import Path
+from typing import Self
 
 from tiddl.models import TrackArg
 
@@ -22,15 +23,18 @@ class AuthConfig(BaseModel):
     country_code: str = ""
 
 
-class ConfigFile(BaseModel):
+class Config(BaseModel):
     download: DownloadConfig = DownloadConfig()
     auth: AuthConfig = AuthConfig()
 
+    def save(self):
+        with open(CONFIG_PATH, "w") as f:
+            f.write(self.model_dump_json(indent=CONFIG_INDENT))
 
-TEMP = Path("tiddl.json")
-
-with TEMP.open("w") as f:
-    f.write(ConfigFile().model_dump_json(indent=CONFIG_INDENT))
-
-with TEMP.open() as f:
-    config = ConfigFile.model_validate_json(f.read())
+    @classmethod
+    def fromFile(cls) -> Self:
+        try:
+            with CONFIG_PATH.open() as f:
+                return Config.model_validate_json(f.read())
+        except FileNotFoundError:
+            return Config()
