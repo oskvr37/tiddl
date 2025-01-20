@@ -71,11 +71,8 @@ def DownloadCommand(ctx: Context, quality: TrackArg, output: str):
         click.echo("No tracks found.")
         return
 
-    download_quality = ARG_TO_QUALITY[
-        quality or ctx.obj.config.config["download"]["quality"]
-    ]
-
-    template = output or ctx.obj.config.config["download"].get("template", "")
+    download_quality = ARG_TO_QUALITY[quality or ctx.obj.config.download.quality]
+    template = output or ctx.obj.config.download.template
 
     for track in track_collector.tracks:
         click.echo(f"Downloading {track.title}")

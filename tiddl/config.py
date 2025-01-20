@@ -1,85 +1,39 @@
-import json
-
-from dataclasses import dataclass, field
-from typing import TypedDict
+from pydantic import BaseModel
 from pathlib import Path
 
 from tiddl.models import TrackArg
 
 
 CONFIG_PATH = Path.home() / "tiddl.json"
-DOWNLOAD_PATH = Path.home() / "Music" / "Tiddl"
-DEFAULT_QUALITY: TrackArg = "high"
+CONFIG_INDENT = 2
 
 
-class DownloadConfig(TypedDict, total=False):
-    quality: TrackArg
-    path: str
-    template: str
+class DownloadConfig(BaseModel):
+    quality: TrackArg = "high"
+    path: Path = Path.home() / "Music" / "Tiddl"
+    template: str = "{artist} - {title}"
 
 
-class AuthConfig(TypedDict, total=False):
-    token: str
-    refresh_token: str
-    expires: int
-    user_id: str
-    country_code: str
+class AuthConfig(BaseModel):
+    token: str = ""
+    refresh_token: str = ""
+    expires: int = 0
+    user_id: str = ""
+    country_code: str = ""
 
 
-class ConfigFile(TypedDict):
-    download: DownloadConfig
-    auth: AuthConfig
+class Config(BaseModel):
+    download: DownloadConfig = DownloadConfig()
+    auth: AuthConfig = AuthConfig()
 
-
-class ConfigUpdate(TypedDict, total=False):
-    download: DownloadConfig
-    auth: AuthConfig
-
-
-DEFAULT_CONFIG: ConfigFile = {
-    "download": {"quality": DEFAULT_QUALITY, "path": str(DOWNLOAD_PATH), "template": "{artist} - {track}"},
-    "auth": {"token": "", "refresh_token": "", "expires": 0, "country_code": "", "user_id": ""},
-}
-
-
-@dataclass
-class Config:
-    """Configuration class for loading and updating CLI configuration file."""
-
-    config: ConfigFile = field(default_factory=lambda: DEFAULT_CONFIG)
-
-    def __post_init__(self):
-        """Merge loaded configuration with defaults after initialization."""
-
-        try:
-            with open(CONFIG_PATH, "r") as f:
-                loaded_config: ConfigFile = json.load(f)
-
-            self.config = merge(loaded_config, self.config)
-
-        except (FileNotFoundError, json.JSONDecodeError):
-            pass
-
-    def update(self, new_config: ConfigUpdate):
-        """Update the configuration with the new values and save it to the file."""
-
-        self.config = merge(new_config, self.config)
-
+    def save(self):
         with open(CONFIG_PATH, "w") as f:
-            json.dump(self.config, f, indent=2)
+            f.write(self.model_dump_json(indent=CONFIG_INDENT))
 
-
-def merge(source, destination):
-    """
-    Recursively merge two dictionaries.
-    https://stackoverflow.com/a/20666342
-    """
-
-    for key, value in source.items():
-        if isinstance(value, dict):
-            node = destination.setdefault(key, {})
-            merge(value, node)
-        else:
-            destination[key] = value
-
-    return destination
+    @classmethod
+    def fromFile(cls):
+        try:
+            with CONFIG_PATH.open() as f:
+                return Config.model_validate_json(f.read())
+        except FileNotFoundError:
+            return Config()

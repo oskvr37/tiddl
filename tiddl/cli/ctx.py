@@ -7,27 +7,21 @@ from tiddl.api import TidalApi
 from tiddl.config import Config
 from tiddl.utils import TidalResource
 
+
 class ContextObj:
     api: TidalApi | None
     config: Config
     resources: list[TidalResource]
 
-
     def __init__(self) -> None:
-        self.config = Config()
+        self.config = Config.fromFile()
         self.resources = []
         self.api = None
 
-        config_auth = self.config.config["auth"]
+        auth = self.config.auth
 
-        token, user_id, country_code = (
-            config_auth.get("token"),
-            config_auth.get("user_id"),
-            config_auth.get("country_code"),
-        )
-
-        if token and user_id and country_code:
-            self.api = TidalApi(token, user_id, country_code)
+        if auth.token and auth.user_id and auth.country_code:
+            self.api = TidalApi(auth.token, auth.user_id, auth.country_code)
 
     def getApi(self) -> TidalApi:
         if self.api is None:

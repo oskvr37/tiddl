@@ -5,6 +5,7 @@ from click import style
 from time import sleep, time
 
 from tiddl.auth import getDeviceAuth, getToken, refreshToken, removeToken, AuthError
+from tiddl.config import AuthConfig
 from .ctx import passContext, Context
 
 
@@ -21,25 +22,17 @@ def AuthGroup():
 def login(ctx: Context):
     """Add token to the config"""
 
-    access_token, refresh_token, expires = (
-        ctx.obj.config.config["auth"].get("token"),
-        ctx.obj.config.config["auth"].get("refresh_token"),
-        ctx.obj.config.config["auth"].get("expires", 0),
-    )
+    auth = ctx.obj.config.auth
 
-    if access_token:
-        if refresh_token and time() > expires:
+    if auth.token:
+        if auth.refresh_token and time() > auth.expires:
             click.echo(style("Refreshing token...", fg="yellow"))
-            token = refreshToken(refresh_token)
+            token = refreshToken(auth.refresh_token)
 
-            ctx.obj.config.update(
-                {
-                    "auth": {
-                        "expires": token.expires_in + int(time()),
-                        "token": token.access_token,
-                    }
-                }
-            )
+            ctx.obj.config.auth.expires = token.expires_in + int(time())
+            ctx.obj.config.auth.token = token.access_token
+
+            ctx.obj.config.save()
 
         click.echo(style("Authenticated!", fg="green"))
         return
@@ -70,17 +63,16 @@ def login(ctx: Context):
                 )
                 break
 
-        ctx.obj.config.update(
-            {
-                "auth": {
-                    "token": token.access_token,
-                    "refresh_token": token.refresh_token,
-                    "expires": token.expires_in + int(time()),
-                    "user_id": str(token.user.userId),
-                    "country_code": token.user.countryCode,
-                }
-            }
+        new_auth = AuthConfig(
+            token=token.access_token,
+            refresh_token=token.refresh_token,
+            expires=token.expires_in + int(time()),
+            user_id=str(token.user.userId),
+            country_code=token.user.countryCode,
         )
+
+        ctx.obj.config.auth = new_auth
+        ctx.obj.config.save()
 
         click.echo(style("\nAuthenticated!", fg="green"))
 
@@ -92,7 +84,7 @@ def login(ctx: Context):
 def logout(ctx: Context):
     """Remove token from config"""
 
-    access_token = ctx.obj.config.config["auth"].get("token")
+    access_token = ctx.obj.config.auth.token
 
     if not access_token:
         click.echo(style("Not logged in", fg="yellow"))
@@ -100,16 +92,7 @@ def logout(ctx: Context):
 
     removeToken(access_token)
 
-    ctx.obj.config.update(
-        {
-            "auth": {
-                "country_code": "",
-                "expires": 0,
-                "refresh_token": "",
-                "token": "",
-                "user_id": "",
-            }
-        }
-    )
+    ctx.obj.config.auth = AuthConfig()
+    ctx.obj.config.save()
 
     click.echo(style("Logged out!", fg="green"))

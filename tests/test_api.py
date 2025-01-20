@@ -8,13 +8,13 @@ class TestApi(unittest.TestCase):
     api: TidalApi
 
     def setUp(self):
-        config = Config()
-        auth = config.config["auth"]
+        config = Config.fromFile()
+        auth = config.auth
 
         token, user_id, country_code = (
-            auth.get("token"),
-            auth.get("user_id"),
-            auth.get("country_code"),
+            auth.token,
+            auth.user_id,
+            auth.country_code
         )
 
         assert token, "No token found in config file"
