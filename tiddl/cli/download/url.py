@@ -8,7 +8,7 @@ from tiddl.utils import TidalResource
 class TidalURL(click.ParamType):
     def convert(self, value: str, param, ctx) -> TidalResource:
         try:
-            return TidalResource(value)
+            return TidalResource.fromString(value)
         except ValueError as e:
             self.fail(message=str(e), param=param, ctx=ctx)
 

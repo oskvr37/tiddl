@@ -33,7 +33,7 @@ def FileGroup(ctx: Context, filename: TextIOWrapper):
 
     for string in resource_strings:
         try:
-            ctx.obj.resources.append(TidalResource(string))
+            ctx.obj.resources.append(TidalResource.fromString(string))
         except ValueError as e:
             click.echo(click.style(e, "red"))
 

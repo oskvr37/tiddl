@@ -22,21 +22,21 @@ class TrackCollector:
 
     def addResource(self, resource: TidalResource):
         try:
-            match resource.resource_type:
+            match resource.type:
                 case "track":
-                    track = self.api.getTrack(resource.resource_id)
+                    track = self.api.getTrack(resource.id)
                     self._addTrack(track)
 
                 case "album":
-                    album_tracks = self.api.getAlbumItems(resource.resource_id)
+                    album_tracks = self.api.getAlbumItems(resource.id)
                     self._addItems(album_tracks.items)
 
                 case "playlist":
-                    playlist_tracks = self.api.getPlaylistItems(resource.resource_id)
+                    playlist_tracks = self.api.getPlaylistItems(resource.id)
                     self._addItems(playlist_tracks.items)
 
                 case "artist":
-                    artist_albums = self.api.getArtistAlbums(resource.resource_id)
+                    artist_albums = self.api.getArtistAlbums(resource.id)
                     for artist_album in artist_albums.items:
                         album_tracks = self.api.getAlbumItems(artist_album.id)
                         self._addItems(album_tracks.items)

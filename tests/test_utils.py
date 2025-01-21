@@ -1,12 +1,10 @@
 import unittest
-import json
 
 from tiddl.models import Track
 from tiddl.utils import TidalResource, formatTrack
 
 
 class TestTidalResource(unittest.TestCase):
-
     def test_resource_parsing(self):
         positive_cases = [
             ("https://tidal.com/browse/track/12345678", "track", "12345678"),
@@ -21,9 +19,9 @@ class TestTidalResource(unittest.TestCase):
 
         for resource, expected_type, expected_id in positive_cases:
             with self.subTest(resource=resource):
-                tidal_url = TidalResource(resource)
-                self.assertEqual(tidal_url.resource_type, expected_type)
-                self.assertEqual(tidal_url.resource_id, expected_id)
+                tidal_resource = TidalResource.fromString(resource)
+                self.assertEqual(tidal_resource.type, expected_type)
+                self.assertEqual(tidal_resource.id, expected_id)
 
     def test_failing_cases(self):
         failing_cases = [
@@ -41,7 +39,7 @@ class TestTidalResource(unittest.TestCase):
         for resource in failing_cases:
             with self.subTest(resource=resource):
                 with self.assertRaises(ValueError):
-                    TidalResource(resource)
+                    TidalResource.fromString(resource)
 
 
 class TestFormatTrack(unittest.TestCase):
