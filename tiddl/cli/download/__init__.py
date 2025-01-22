@@ -28,7 +28,7 @@ class TrackCollector:
                     self._addTrack(track)
 
                 case "album":
-                    album_tracks = self.api.getAlbumItems(resource.id)
+                    album_tracks = self.api.getAlbumItems(resource.id, limit=100)
                     self._addItems(album_tracks.items)
 
                 case "playlist":
@@ -76,11 +76,12 @@ def DownloadCommand(ctx: Context, quality: TrackArg, output: str):
 
     for track in track_collector.tracks:
         click.echo(f"Downloading {track.title}")
-        track_stream = api.getTrackStream(track.id, download_quality)
-        stream_data, file_extension = downloadTrackStream(track_stream)
+        # track_stream = api.getTrackStream(track.id, download_quality)
+        # stream_data, file_extension = downloadTrackStream(track_stream)
+        stream_data, file_extension = b"", "m4a"
 
         file_name = formatTrack(template, track)
-        path = Path(f"{file_name}.{file_extension}")
+        path = ctx.obj.config.download.path / f"{file_name}.{file_extension}"
         path.parent.mkdir(parents=True, exist_ok=True)
 
         with path.open("wb") as f:

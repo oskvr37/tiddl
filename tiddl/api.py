@@ -83,6 +83,12 @@ class TidalApi:
         )
 
     def getAlbumItems(self, id: str | int, limit=ALBUM_ITEMS_LIMIT, offset=0):
+        MAX_LIMIT = 100
+
+        if limit > MAX_LIMIT:
+            logging.warning(f"Too big page, max page size is {MAX_LIMIT}")
+            limit = MAX_LIMIT
+
         return models.AlbumItems(
             **self._request(
                 f"albums/{id}/items",
