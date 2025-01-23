@@ -27,6 +27,48 @@ class Items(BaseModel):
     totalNumberOfItems: int
 
 
+class BaseVideoArtist(BaseModel):
+    id: int
+    name: str
+    type: str
+    picture: Optional[str] = None
+
+
+class BaseVideoAlbum(BaseModel):
+    id: int
+    title: str
+    cover: str
+    vibrantColor: str
+    videoCover: Optional[str] = None
+
+
+class BaseVideo(BaseModel):
+    id: int
+    title: str
+    volumeNumber: int
+    trackNumber: int
+    releaseDate: str
+    imagePath: Optional[str] = None
+    imageId: str
+    vibrantColor: str
+    duration: int
+    quality: str
+    streamReady: bool
+    adSupportedStreamReady: bool
+    djReady: bool
+    stemReady: bool
+    streamStartDate: str
+    allowStreaming: bool
+    explicit: bool
+    popularity: int
+    type: str
+    adsUrl: Optional[str] = None
+    adsPrePaywallOnly: bool
+    artist: BaseVideoArtist
+    artists: List[BaseVideoArtist]
+    album: Optional[BaseVideoAlbum] = None
+
+
 class AlbumArtist(BaseModel):
     id: int
     name: str
@@ -64,13 +106,21 @@ class AristAlbumsItems(Items):
     items: List[Album]
 
 
-class _AlbumTrack(BaseModel):
+ItemType = Literal["track", "video"]
+
+
+class VideoItem(BaseModel):
+    item: BaseVideo
+    type: ItemType = "video"
+
+
+class TrackItem(BaseModel):
     item: Track
-    type: Literal["track"]
+    type: ItemType = "track"
 
 
 class AlbumItems(Items):
-    items: List[_AlbumTrack]
+    items: List[Union[TrackItem, VideoItem]]
 
 
 class _Creator(BaseModel):
@@ -97,51 +147,26 @@ class Playlist(BaseModel):
     lastItemAddedAt: Optional[str] = None
 
 
-class VideoArtist(BaseModel):
-    id: int
-    name: str
-    type: str
-    picture: str
-
-
-class Video(BaseModel):
-    id: int
-    title: str
-    volumeNumber: int
-    trackNumber: int
-    releaseDate: str
-    imagePath: Optional[str] = None
-    imageId: str
-    vibrantColor: str
-    duration: int
-    quality: str
-    streamReady: bool
-    adSupportedStreamReady: bool
-    djReady: bool
-    stemReady: bool
-    streamStartDate: str
-    allowStreaming: bool
-    explicit: bool
-    popularity: int
-    type: str
-    adsUrl: Optional[str] = None
-    adsPrePaywallOnly: bool
-    artist: VideoArtist
-    artists: List[VideoArtist]
-    album: Optional[str] = None
+class PlaylistVideo(BaseVideo):
     dateAdded: str
     index: int
     itemUuid: str
 
 
-class _PlaylistItem(BaseModel):
-    item: Union[Track, Video]
-    type: Literal["track", "video"]
-    cut: Literal[None]
+class PlaylistVideoItem(BaseModel):
+    item: PlaylistVideo
+    type: ItemType = "video"
+    cut: None
+
+
+class PlaylistTrackItem(BaseModel):
+    item: Track
+    type: ItemType = "track"
+    cut: None
 
 
 class PlaylistItems(Items):
-    items: List[_PlaylistItem]
+    items: List[Union[PlaylistTrackItem, PlaylistVideoItem]]
 
 
 class Favorites(BaseModel):
