@@ -8,7 +8,7 @@ from .url import UrlGroup
 from ..ctx import Context, passContext
 
 from tiddl.download import downloadTrackStream
-from tiddl.models import TrackArg, ARG_TO_QUALITY, Track
+from tiddl.models import TrackArg, ARG_TO_QUALITY, Track, PlaylistTrack
 from tiddl.utils import formatTrack
 
 
@@ -22,9 +22,6 @@ def DownloadCommand(ctx: Context, quality: TrackArg | None, template: str | None
     download_quality = ARG_TO_QUALITY[quality or ctx.obj.config.download.quality]
     download_path = ctx.obj.config.download.path
 
-    # TODO: add track/album/playlist templates to config
-    format_template = template or ctx.obj.config.download.template
-
     api = ctx.obj.getApi()
 
     def downloadTrack(track: Track, file_name: str) -> None:
@@ -37,6 +34,9 @@ def DownloadCommand(ctx: Context, quality: TrackArg | None, template: str | None
         click.echo(
             f"{click.style('✔', 'green')} Downloading track {click.style(file_name, 'green')}"
         )
+
+        # TODO: check if file already exists.
+        # will need to predict file extension
 
         track_stream = api.getTrackStream(track.id, download_quality)
         stream_data, file_extension = downloadTrackStream(track_stream)
@@ -54,7 +54,9 @@ def DownloadCommand(ctx: Context, quality: TrackArg | None, template: str | None
         match resource.type:
             case "track":
                 track = api.getTrack(resource.id)
-                file_name = formatTrack(template=format_template, track=track)
+                file_name = formatTrack(
+                    template=template or ctx.obj.config.template.track, track=track
+                )
 
                 downloadTrack(
                     track=track,
@@ -73,7 +75,7 @@ def DownloadCommand(ctx: Context, quality: TrackArg | None, template: str | None
                         track = item.item
 
                         file_name = formatTrack(
-                            template=format_template,
+                            template=template or ctx.obj.config.template.album,
                             track=track,
                             album_artist=album.artist.name,
                         )
@@ -88,11 +90,14 @@ def DownloadCommand(ctx: Context, quality: TrackArg | None, template: str | None
                 playlist_items = api.getPlaylistItems(resource.id)
 
                 for item in playlist_items.items:
-                    if isinstance(item.item, Track):
+                    if isinstance(item.item, PlaylistTrack):
+                        track = item.item
+
                         file_name = formatTrack(
-                            template=format_template,
-                            track=item.item,
+                            template=template or ctx.obj.config.template.playlist,
+                            track=track,
                             playlist_title=playlist.title,
+                            playlist_index=track.index // 100000,
                         )
 
                         downloadTrack(track=item.item, file_name=file_name)

@@ -69,4 +69,3 @@ class Track(BaseModel):
     artists: List[TrackArtist]
     album: TrackAlbum
     mixes: Dict[str, str]
-    playlistNumber: Optional[int] = None

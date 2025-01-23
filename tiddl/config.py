@@ -8,10 +8,15 @@ CONFIG_PATH = Path.home() / "tiddl.json"
 CONFIG_INDENT = 2
 
 
+class TemplateConfig(BaseModel):
+    track: str = "{artist} - {title}"
+    album: str = "{album_artist}/{album}/{number:02d}. {title}"
+    playlist: str = "{playlist}/{playlist_number:02d}. {artist} - {title}"
+
+
 class DownloadConfig(BaseModel):
     quality: TrackArg = "high"
     path: Path = Path.home() / "Music" / "Tiddl"
-    template: str = "{artist} - {title}"
 
 
 class AuthConfig(BaseModel):
@@ -23,6 +28,7 @@ class AuthConfig(BaseModel):
 
 
 class Config(BaseModel):
+    template: TemplateConfig = TemplateConfig()
     download: DownloadConfig = DownloadConfig()
     auth: AuthConfig = AuthConfig()
 
@@ -34,6 +40,9 @@ class Config(BaseModel):
     def fromFile(cls):
         try:
             with CONFIG_PATH.open() as f:
-                return Config.model_validate_json(f.read())
+                config = cls.model_validate_json(f.read())
         except FileNotFoundError:
-            return Config()
+            config = cls()
+
+        config.save()
+        return config

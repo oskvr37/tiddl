@@ -159,8 +159,14 @@ class PlaylistVideoItem(BaseModel):
     cut: None
 
 
+class PlaylistTrack(Track):
+    dateAdded: str
+    index: int
+    itemUuid: str
+
+
 class PlaylistTrackItem(BaseModel):
-    item: Track
+    item: PlaylistTrack
     type: ItemType = "track"
     cut: None
 

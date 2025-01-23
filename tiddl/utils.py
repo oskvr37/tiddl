@@ -47,7 +47,7 @@ def sanitizeString(string: str) -> str:
     return re.sub(pattern, "", string)
 
 
-def formatTrack(template: str, track: Track, album_artist="", playlist_title="") -> str:
+def formatTrack(template: str, track: Track, album_artist="", playlist_title="", playlist_index=0) -> str:
     artist = sanitizeString(track.artist.name) if track.artist else ""
     features = [
         sanitizeString(track_artist.name)
@@ -72,7 +72,7 @@ def formatTrack(template: str, track: Track, album_artist="", playlist_title="")
         "bpm": track.bpm or "",
         "quality": QUALITY_TO_ARG[track.audioQuality],
         "album_artist": sanitizeString(album_artist),
-        "playlist_number": track.playlistNumber or "",
+        "playlist_number": playlist_index or 0,
     }
 
     formatted_track = template.format(**track_dict)
