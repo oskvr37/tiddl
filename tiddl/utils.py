@@ -47,44 +47,42 @@ def sanitizeString(string: str) -> str:
     return re.sub(pattern, "", string)
 
 
-def formatTrack(template: str, track: Track, date_format="%x") -> str:
-    disallowed_chars = r'[\\:"*?<>|]+'
-    invalid_chars = re.findall(disallowed_chars, template)
-
-    if invalid_chars:
-        raise ValueError(
-            f"Template '{template}' contains disallowed characters: {' '.join(sorted(set(invalid_chars)))}"
-        )
-
-    artist = track.artist.name if track.artist else ""
+def formatTrack(template: str, track: Track, album_artist="", playlist_title="") -> str:
+    artist = sanitizeString(track.artist.name) if track.artist else ""
     features = [
-        track_artist.name
+        sanitizeString(track_artist.name)
         for track_artist in track.artists
         if track_artist.name != artist
     ]
 
-    track_dict: dict[str, str] = {
+    track_dict = {
         "id": str(track.id),
-        "title": track.title,
-        "version": track.version or "",
+        "title": sanitizeString(track.title),
+        "version": sanitizeString(track.version or ""),
         "artist": artist,
         "artists": ", ".join(features + [artist]),
         "features": ", ".join(features),
-        "album": track.album.title,
-        "number": str(track.trackNumber),
-        "disc": str(track.volumeNumber),
-        "date": (
-            track.streamStartDate.strftime(date_format).replace("/", "-")
-            if track.streamStartDate
-            else ""
-        ),
+        "album": sanitizeString(track.album.title),
+        "number": track.trackNumber,
+        "disc": track.volumeNumber,
+        "date": (track.streamStartDate if track.streamStartDate else ""),
+        # i think we can remove year as we are able to format date
         "year": track.streamStartDate.strftime("%Y") if track.streamStartDate else "",
-        "playlist_number": str(track.playlistNumber or ""),
-        "bpm": str(track.bpm or ""),
+        "playlist": sanitizeString(playlist_title),
+        "bpm": track.bpm or "",
         "quality": QUALITY_TO_ARG[track.audioQuality],
+        "album_artist": sanitizeString(album_artist),
+        "playlist_number": track.playlistNumber or "",
     }
 
-    for key, value in track_dict.items():
-        track_dict[key] = sanitizeString(value)
+    formatted_track = template.format(**track_dict)
 
-    return template.format(**track_dict)
+    disallowed_chars = r'[\\:"*?<>|]+'
+    invalid_chars = re.findall(disallowed_chars, formatted_track)
+
+    if invalid_chars:
+        raise ValueError(
+            f"Template '{template}' and formatted track '{formatted_track}' contains disallowed characters: {' '.join(sorted(set(invalid_chars)))}"
+        )
+
+    return formatted_track
