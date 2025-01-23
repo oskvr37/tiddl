@@ -10,6 +10,9 @@ TIDDL is Python CLI application that allows downloading Tidal tracks.
 It's inspired by [Tidal-Media-Downloader](https://github.com/yaronzz/Tidal-Media-Downloader) - currently not mantained project.
 This repository will contain features requests from that project and will be the enhanced version.
 
+> [!WARNING]
+> This app is for personal use only and is not affiliated with Tidal. Users must ensure their use complies with Tidal's terms of service and local copyright laws. Downloaded tracks are for personal use and may not be shared or redistributed. The developer assumes no responsibility for misuse of this app.
+
 # Installation
 
 Install package using `pip`
@@ -54,9 +57,6 @@ Run tests
 ```bash
 python -m unittest
 ```
-
-> [!WARNING]
-> This app is for personal use only and is not affiliated with Tidal. Users must ensure their use complies with Tidal's terms of service and local copyright laws. Downloaded tracks are for personal use and may not be shared or redistributed. The developer assumes no responsibility for misuse of this app.
 
 # Resources
 
