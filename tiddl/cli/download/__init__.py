@@ -1,7 +1,5 @@
 import click
 
-from pathlib import Path
-
 from .fav import FavGroup
 from .file import FileGroup
 from .search import SearchGroup
@@ -11,81 +9,93 @@ from ..ctx import Context, passContext
 
 from tiddl.download import downloadTrackStream
 from tiddl.models import TrackArg, ARG_TO_QUALITY, Track
-from tiddl.utils import TidalResource, formatTrack
-from tiddl.api import TidalApi
-
-
-class TrackCollector:
-    def __init__(self, api: TidalApi):
-        self.api = api
-        self.tracks: list[Track] = []
-
-    def addResource(self, resource: TidalResource):
-        try:
-            match resource.type:
-                case "track":
-                    track = self.api.getTrack(resource.id)
-                    self._addTrack(track)
-
-                case "album":
-                    album_tracks = self.api.getAlbumItems(resource.id, limit=100)
-                    self._addItems(album_tracks.items)
-
-                case "playlist":
-                    playlist_tracks = self.api.getPlaylistItems(resource.id)
-                    self._addItems(playlist_tracks.items)
-
-                case "artist":
-                    artist_albums = self.api.getArtistAlbums(resource.id)
-                    for artist_album in artist_albums.items:
-                        album_tracks = self.api.getAlbumItems(artist_album.id)
-                        self._addItems(album_tracks.items)
-
-        except Exception as e:
-            click.echo(click.style(f"Error in adding resource: {resource}, {e}", "red"))
-
-    def _addTrack(self, track: Track):
-        if track.allowStreaming:
-            self.tracks.append(track)
-
-    def _addItems(self, items):
-        for item in items:
-            if item.type == "track":
-                self._addTrack(item.item)
+from tiddl.utils import formatTrack
 
 
 @click.command("download")
 @click.option("--quality", "-q", type=click.Choice(TrackArg.__args__))
-@click.option("--output", "-o", type=str)
+@click.option("--output", "-o", "template", type=str)
 @passContext
-def DownloadCommand(ctx: Context, quality: TrackArg, output: str):
+def DownloadCommand(ctx: Context, quality: TrackArg | None, template: str | None):
     """Download the tracks"""
 
-    api = ctx.obj.getApi()
-    track_collector = TrackCollector(api)
-
-    for resource in ctx.obj.resources:
-        track_collector.addResource(resource)
-
-    if not track_collector.tracks:
-        click.echo("No tracks found.")
-        return
-
     download_quality = ARG_TO_QUALITY[quality or ctx.obj.config.download.quality]
-    template = output or ctx.obj.config.download.template
+    download_path = ctx.obj.config.download.path
 
-    for track in track_collector.tracks:
-        click.echo(f"Downloading {track.title}")
-        # track_stream = api.getTrackStream(track.id, download_quality)
-        # stream_data, file_extension = downloadTrackStream(track_stream)
-        stream_data, file_extension = b"", "m4a"
+    # TODO: add track/album/playlist templates to config
+    format_template = template or ctx.obj.config.download.template
 
-        file_name = formatTrack(template, track)
-        path = ctx.obj.config.download.path / f"{file_name}.{file_extension}"
+    api = ctx.obj.getApi()
+
+    def downloadTrack(track: Track, file_name: str) -> None:
+        if not track.allowStreaming:
+            click.echo(
+                f"{click.style('✖', 'yellow')} Track {click.style(file_name, 'yellow')} does not allow streaming"
+            )
+            return
+
+        click.echo(
+            f"{click.style('✔', 'green')} Downloading track {click.style(file_name, 'green')}"
+        )
+
+        track_stream = api.getTrackStream(track.id, download_quality)
+        stream_data, file_extension = downloadTrackStream(track_stream)
+
+        path = download_path / f"{file_name}.{file_extension}"
         path.parent.mkdir(parents=True, exist_ok=True)
 
         with path.open("wb") as f:
             f.write(stream_data)
+
+    # TODO: check for artists in resources
+    # then add their resources to the list
+
+    for resource in ctx.obj.resources:
+        match resource.type:
+            case "track":
+                track = api.getTrack(resource.id)
+                file_name = formatTrack(template=format_template, track=track)
+
+                downloadTrack(
+                    track=track,
+                    file_name=file_name,
+                )
+
+            case "album":
+                album = api.getAlbum(resource.id)
+                click.echo(f"★ Album {album.title}")
+
+                # TODO: fetch all items
+                album_items = api.getAlbumItems(resource.id, limit=100)
+
+                for item in album_items.items:
+                    if isinstance(item.item, Track):
+                        track = item.item
+
+                        file_name = formatTrack(
+                            template=format_template,
+                            track=track,
+                            album_artist=album.artist.name,
+                        )
+
+                        downloadTrack(track=track, file_name=file_name)
+
+            case "playlist":
+                playlist = api.getPlaylist(resource.id)
+                click.echo(f"★ Playlist {playlist.title}")
+
+                # TODO: fetch all items
+                playlist_items = api.getPlaylistItems(resource.id)
+
+                for item in playlist_items.items:
+                    if isinstance(item.item, Track):
+                        file_name = formatTrack(
+                            template=format_template,
+                            track=item.item,
+                            playlist_title=playlist.title,
+                        )
+
+                        downloadTrack(track=item.item, file_name=file_name)
 
 
 UrlGroup.add_command(DownloadCommand)
