@@ -111,7 +111,8 @@ class TestFormatTrack(unittest.TestCase):
             ("{date:%m-%d-%y}", "11-15-16"),
             ("{date:%Y}", "2016"),
             ("{year}", "2016"),
-            ("{playlist_number}", ""),
+            ("{playlist_number}", "0"),
+            ("{playlist_number:02d}", "00"),
             ("{bpm}", "69"),
             ("{quality}", "high"),
             ("{artist}/{album}/{title}", "Skepta/Konnichiwa/Shutdown"),
@@ -124,7 +125,7 @@ class TestFormatTrack(unittest.TestCase):
                 self.assertEqual(result, expected_result)
 
     def test_invalid_characters(self):
-        test_cases = ["\\", ":", '"', "?", "<", ">", "|", "{number}:{title}"]
+        test_cases = ["\\", ":", '"', "?", "<", ">", "|", "{number}:{title}", "{date}"]
 
         for template in test_cases:
             with self.subTest(template=template):
