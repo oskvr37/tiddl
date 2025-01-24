@@ -13,12 +13,22 @@ from tiddl.utils import formatTrack, trackExists
 
 
 @click.command("download")
-@click.option("--quality", "-q", type=click.Choice(TrackArg.__args__))
+@click.option("--quality", "-q", "quality", type=click.Choice(TrackArg.__args__))
 @click.option(
     "--output", "-o", "template", type=str, help="Format track file template."
 )
+@click.option(
+    "--noskip",
+    "-ns",
+    "noskip",
+    is_flag=True,
+    default=False,
+    help="Dont skip downloaded tracks.",
+)
 @passContext
-def DownloadCommand(ctx: Context, quality: TrackArg | None, template: str | None):
+def DownloadCommand(
+    ctx: Context, quality: TrackArg | None, template: str | None, noskip: bool
+):
     """Download the tracks"""
 
     api = ctx.obj.getApi()
@@ -36,7 +46,7 @@ def DownloadCommand(ctx: Context, quality: TrackArg | None, template: str | None
         # for example: 'album/01. title' becomes 'album/01.m4a'
         path = ctx.obj.config.download.path / f"{file_name}.suffix"
 
-        if trackExists(track.audioQuality, download_quality, path):
+        if not noskip and trackExists(track.audioQuality, download_quality, path):
             click.echo(
                 f"{click.style('✔', 'cyan')} Skipping track {click.style(file_name, 'cyan')}"
             )
