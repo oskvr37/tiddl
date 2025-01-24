@@ -75,9 +75,9 @@ def downloadTrackStream(stream: TrackStream) -> tuple[bytes, str]:
     logger.debug((stream.trackId, stream.audioQuality, codecs, len(urls)))
 
     if codecs == "flac":
-        file_extension = "flac"
+        file_extension = ".flac"
     elif codecs.startswith("mp4"):
-        file_extension = "m4a"
+        file_extension = ".m4a"
     else:
         raise ValueError(f"Unknown codecs: {codecs}")
 
