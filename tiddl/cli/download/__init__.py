@@ -9,8 +9,9 @@ from ..ctx import Context, passContext
 
 from tiddl.download import downloadTrackStream
 from tiddl.models import TrackArg, ARG_TO_QUALITY, Track, PlaylistTrack, Album
-from tiddl.utils import formatTrack, trackExists
+from tiddl.utils import formatTrack, trackExists, TidalResource
 from tiddl.metadata import addMetadata, Cover
+from tiddl.exceptions import ApiError, AuthError
 
 
 @click.command("download")
@@ -34,7 +35,7 @@ def DownloadCommand(
 
     api = ctx.obj.getApi()
 
-    def downloadTrack(track: Track, file_name: str, cover_data=b"") -> None:
+    def downloadTrack(track: Track, file_name: str, cover_data=b""):
         if not track.allowStreaming:
             click.echo(
                 f"{click.style('✖', 'yellow')} Track {click.style(file_name, 'yellow')} does not allow streaming"
@@ -94,7 +95,7 @@ def DownloadCommand(
 
                 downloadTrack(track=track, file_name=file_name, cover_data=cover_data)
 
-    for resource in ctx.obj.resources:
+    def handleResource(resource: TidalResource):
         match resource.type:
             case "track":
                 track = api.getTrack(resource.id)
@@ -139,6 +140,16 @@ def DownloadCommand(
                         )
 
                         downloadTrack(track=item.item, file_name=file_name)
+
+    for resource in ctx.obj.resources:
+        try:
+            handleResource(resource)
+
+        except ApiError as e:
+            click.echo(click.style(f"✖ {e}", "red"))
+
+        except AuthError as e:
+            click.echo(click.style(f"✖ {e}", "red"))
 
 
 UrlGroup.add_command(DownloadCommand)
