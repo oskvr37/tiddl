@@ -9,7 +9,7 @@ from ..ctx import Context, passContext
 
 from tiddl.download import downloadTrackStream
 from tiddl.models import TrackArg, ARG_TO_QUALITY, Track, PlaylistTrack, Album
-from tiddl.utils import formatTrack
+from tiddl.utils import formatTrack, trackExists
 
 
 @click.command("download")
@@ -21,9 +21,6 @@ from tiddl.utils import formatTrack
 def DownloadCommand(ctx: Context, quality: TrackArg | None, template: str | None):
     """Download the tracks"""
 
-    download_quality = ARG_TO_QUALITY[quality or ctx.obj.config.download.quality]
-    download_path = ctx.obj.config.download.path
-
     api = ctx.obj.getApi()
 
     def downloadTrack(track: Track, file_name: str) -> None:
@@ -33,20 +30,30 @@ def DownloadCommand(ctx: Context, quality: TrackArg | None, template: str | None
             )
             return
 
+        download_quality = ARG_TO_QUALITY[quality or ctx.obj.config.download.quality]
+
+        # .suffix is needed because the Path.with_suffix method will replace any content after dot
+        # for example: 'album/01. title' becomes 'album/01.m4a'
+        path = ctx.obj.config.download.path / f"{file_name}.suffix"
+
+        if trackExists(track.audioQuality, download_quality, path):
+            click.echo(
+                f"{click.style('✔', 'cyan')} Skipping track {click.style(file_name, 'cyan')}"
+            )
+            return
+
         click.echo(
             f"{click.style('✔', 'green')} Downloading track {click.style(file_name, 'green')}"
         )
 
-        # TODO: check if file already exists.
-        # will need to predict file extension
-
         track_stream = api.getTrackStream(track.id, download_quality)
+
         stream_data, file_extension = downloadTrackStream(track_stream)
 
-        path = download_path / f"{file_name}.{file_extension}"
-        path.parent.mkdir(parents=True, exist_ok=True)
+        full_path = path.with_suffix(file_extension)
+        full_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with path.open("wb") as f:
+        with full_path.open("wb") as f:
             f.write(stream_data)
 
     def downloadAlbum(album: Album):

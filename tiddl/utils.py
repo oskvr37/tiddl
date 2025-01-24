@@ -2,9 +2,11 @@ import re
 
 from pydantic import BaseModel
 from urllib.parse import urlparse
+from pathlib import Path
+
 from typing import Literal, get_args
 
-from tiddl.models import Track, QUALITY_TO_ARG
+from tiddl.models import Track, TrackQuality, QUALITY_TO_ARG
 
 ResourceTypeLiteral = Literal["track", "album", "playlist", "artist"]
 
@@ -86,3 +88,22 @@ def formatTrack(template: str, track: Track, album_artist="", playlist_title="",
         )
 
     return formatted_track
+
+
+def trackExists(
+    track_quality: TrackQuality, download_quality: TrackQuality, file_name: Path
+):
+    """
+    Predict track extension and check if track file exists.
+    """
+
+    FLAC_QUALITIES: list[TrackQuality] = ["LOSSLESS", "HI_RES_LOSSLESS"]
+
+    if download_quality in FLAC_QUALITIES and track_quality in FLAC_QUALITIES:
+        extension = ".flac"
+    else:
+        extension = ".m4a"
+
+    full_file_name = file_name.with_suffix(extension)
+
+    return full_file_name.exists()
