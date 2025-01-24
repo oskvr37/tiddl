@@ -14,7 +14,9 @@ from tiddl.utils import formatTrack
 
 @click.command("download")
 @click.option("--quality", "-q", type=click.Choice(TrackArg.__args__))
-@click.option("--output", "-o", "template", type=str)
+@click.option(
+    "--output", "-o", "template", type=str, help="Format track file template."
+)
 @passContext
 def DownloadCommand(ctx: Context, quality: TrackArg | None, template: str | None):
     """Download the tracks"""
