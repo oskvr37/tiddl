@@ -10,6 +10,7 @@ from ..ctx import Context, passContext
 from tiddl.download import downloadTrackStream
 from tiddl.models import TrackArg, ARG_TO_QUALITY, Track, PlaylistTrack, Album
 from tiddl.utils import formatTrack, trackExists
+from tiddl.metadata import addMetadata, Cover
 
 
 @click.command("download")
@@ -33,7 +34,7 @@ def DownloadCommand(
 
     api = ctx.obj.getApi()
 
-    def downloadTrack(track: Track, file_name: str) -> None:
+    def downloadTrack(track: Track, file_name: str, cover_data=b"") -> None:
         if not track.allowStreaming:
             click.echo(
                 f"{click.style('✖', 'yellow')} Track {click.style(file_name, 'yellow')} does not allow streaming"
@@ -66,11 +67,20 @@ def DownloadCommand(
         with full_path.open("wb") as f:
             f.write(stream_data)
 
+        # TODO: add track credits fetching to fill more metadata
+
+        if not cover_data and track.album.cover:
+            cover_data = Cover(track.album.cover).content
+
+        addMetadata(full_path, track, cover_data)
+
     def downloadAlbum(album: Album):
         click.echo(f"★ Album {album.title}")
 
         # TODO: fetch all items
         album_items = api.getAlbumItems(album.id, limit=100)
+
+        cover_data = Cover(album.cover).content if album.cover else b""
 
         for item in album_items.items:
             if isinstance(item.item, Track):
@@ -82,7 +92,7 @@ def DownloadCommand(
                     album_artist=album.artist.name,
                 )
 
-                downloadTrack(track=track, file_name=file_name)
+                downloadTrack(track=track, file_name=file_name, cover_data=cover_data)
 
     for resource in ctx.obj.resources:
         match resource.type:
