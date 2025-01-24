@@ -8,7 +8,7 @@ from .url import UrlGroup
 from ..ctx import Context, passContext
 
 from tiddl.download import downloadTrackStream
-from tiddl.models import TrackArg, ARG_TO_QUALITY, Track, PlaylistTrack
+from tiddl.models import TrackArg, ARG_TO_QUALITY, Track, PlaylistTrack, Album
 from tiddl.utils import formatTrack
 
 
@@ -49,8 +49,23 @@ def DownloadCommand(ctx: Context, quality: TrackArg | None, template: str | None
         with path.open("wb") as f:
             f.write(stream_data)
 
-    # TODO: check for artists in resources
-    # then add their resources to the list
+    def downloadAlbum(album: Album):
+        click.echo(f"★ Album {album.title}")
+
+        # TODO: fetch all items
+        album_items = api.getAlbumItems(album.id, limit=100)
+
+        for item in album_items.items:
+            if isinstance(item.item, Track):
+                track = item.item
+
+                file_name = formatTrack(
+                    template=template or ctx.obj.config.template.album,
+                    track=track,
+                    album_artist=album.artist.name,
+                )
+
+                downloadTrack(track=track, file_name=file_name)
 
     for resource in ctx.obj.resources:
         match resource.type:
@@ -67,22 +82,16 @@ def DownloadCommand(ctx: Context, quality: TrackArg | None, template: str | None
 
             case "album":
                 album = api.getAlbum(resource.id)
-                click.echo(f"★ Album {album.title}")
 
+                downloadAlbum(album)
+
+            case "artist":
+                # TODO: add `include_singles`
                 # TODO: fetch all items
-                album_items = api.getAlbumItems(resource.id, limit=100)
+                artist_albums = api.getArtistAlbums(resource.id)
 
-                for item in album_items.items:
-                    if isinstance(item.item, Track):
-                        track = item.item
-
-                        file_name = formatTrack(
-                            template=template or ctx.obj.config.template.album,
-                            track=track,
-                            album_artist=album.artist.name,
-                        )
-
-                        downloadTrack(track=track, file_name=file_name)
+                for album in artist_albums.items:
+                    downloadAlbum(album)
 
             case "playlist":
                 playlist = api.getPlaylist(resource.id)
