@@ -11,7 +11,7 @@ from .config import ConfigCommand
 @passContext
 @click.option("--verbose", "-v", is_flag=True, help="Show debug logs")
 def cli(ctx: Context, verbose: bool):
-    """TIDDL - Download Tidal tracks ✨"""
+    """TIDDL - Download Tidal tracks \u266b"""
     ctx.obj = ContextObj()
 
     logging.basicConfig(
@@ -19,6 +19,8 @@ def cli(ctx: Context, verbose: bool):
         handlers=[logging.StreamHandler()],
         format="%(levelname)s [%(name)s.%(funcName)s] %(message)s",
     )
+
+    logging.getLogger("urllib3").setLevel(logging.ERROR)
 
 
 cli.add_command(ConfigCommand)
