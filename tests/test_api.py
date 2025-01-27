@@ -33,6 +33,10 @@ class TestApi(unittest.TestCase):
         track = self.api.getTrack(103805726)
         self.assertEqual(track.title, "Stronger")
 
+    def test_artist(self):
+        artist = self.api.getArtist(25022)
+        self.assertEqual(artist.name, "Kanye West")
+
     def test_artist_albums(self):
         self.api.getArtistAlbums(25022)
 
