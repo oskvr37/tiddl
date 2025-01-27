@@ -1,9 +1,13 @@
 import logging
+import json
+
+from pathlib import Path
 from requests import Session
 
 from tiddl import models
 from .exceptions import AuthError, ApiError
 
+DEBUG = False
 API_URL = "https://api.tidal.com/v1"
 
 # Tidal default limits
@@ -35,6 +39,15 @@ class TidalApi:
 
         if req.status_code != 200:
             raise ApiError(**data)
+
+        if DEBUG:
+            debug_data = {"endpoint": endpoint, "params": params, "data": data}
+
+            path = Path(f"debug_data/{endpoint}.json")
+            path.parent.mkdir(parents=True, exist_ok=True)
+
+            with path.open("w", encoding="utf-8") as f:
+                json.dump(debug_data, f, indent=2)
 
         return data
 
