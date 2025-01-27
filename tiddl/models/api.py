@@ -4,25 +4,23 @@ from typing import Optional, List, Literal, Union
 from .resource import Album, Artist, Playlist, Track, TrackQuality, Video
 
 __all__ = [
-    "Client",
     "SessionResponse",
     "ArtistAlbumsItems",
     "AlbumItems",
     "PlaylistItems",
     "Favorites",
     "TrackStream",
-    "Search"
+    "Search",
 ]
 
 
-class Client(BaseModel):
-    id: int
-    name: str
-    authorizedForOffline: bool
-    authorizedForOfflineDate: Optional[str]
-
-
 class SessionResponse(BaseModel):
+    class Client(BaseModel):
+        id: int
+        name: str
+        authorizedForOffline: bool
+        authorizedForOfflineDate: Optional[str]
+
     sessionId: str
     userId: int
     countryCode: str
@@ -45,7 +43,6 @@ ItemType = Literal["track", "video"]
 
 
 class AlbumItems(Items):
-
     class VideoItem(BaseModel):
         item: Video
         type: ItemType = "video"
@@ -58,9 +55,7 @@ class AlbumItems(Items):
 
 
 class PlaylistItems(Items):
-
     class PlaylistVideoItem(BaseModel):
-
         class PlaylistVideo(Video):
             dateAdded: str
             index: int
@@ -71,7 +66,6 @@ class PlaylistItems(Items):
         cut: None
 
     class PlaylistTrackItem(BaseModel):
-
         class PlaylistTrack(Track):
             dateAdded: str
             index: int
@@ -97,7 +91,9 @@ class TrackStream(BaseModel):
     assetPresentation: Literal["FULL"]
     audioMode: Literal["STEREO"]
     audioQuality: TrackQuality
-    manifestMimeType: Literal["application/dash+xml", "application/vnd.tidal.bts"]
+    manifestMimeType: Literal[
+        "application/dash+xml", "application/vnd.tidal.bts"
+    ]
     manifestHash: str
     manifest: str
     albumReplayGain: float
@@ -109,7 +105,6 @@ class TrackStream(BaseModel):
 
 
 class Search(BaseModel):
-
     class Artists(Items):
         items: List[Artist]
 
