@@ -39,7 +39,7 @@ class Video(BaseModel):
     type: str
     adsUrl: Optional[str] = None
     adsPrePaywallOnly: bool
-    artist: Arist
+    artist: Optional[Arist] = None
     artists: List[Arist]
     album: Optional[Album] = None
 
@@ -50,11 +50,18 @@ class Album(BaseModel):
         id: int
         name: str
         type: Literal["MAIN", "FEATURED"]
+        picture: Optional[str] = None
+
+    class MediaMetadata(BaseModel):
+        tags: List[Literal['LOSSLESS', 'HIRES_LOSSLESS']]
 
     id: int
     title: str
     duration: int
     streamReady: bool
+    adSupportedStreamReady: bool
+    djReady: bool
+    stemReady: bool
     streamStartDate: Optional[datetime] = None
     allowStreaming: bool
     premiumStreamingOnly: bool
@@ -67,12 +74,14 @@ class Album(BaseModel):
     version: Optional[str] = None
     url: str
     cover: Optional[str] = None
+    vibrantColor: Optional[str] = None
     videoCover: Optional[str] = None
     explicit: bool
     upc: str
     popularity: int
     audioQuality: str
     audioModes: List[str]
+    mediaMetadata: MediaMetadata
     artist: Artist
     artists: List[Artist]
 
