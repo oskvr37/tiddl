@@ -38,6 +38,36 @@ Commands:
 	...
 ```
 
+# Basic usage
+
+Login with Tidal account
+
+```bash
+tiddl auth login
+```
+
+Download track / album / artist / playlist
+
+```bash
+tiddl url https://listen.tidal.com/track/103805726 download
+tiddl url https://listen.tidal.com/album/103805723 download
+tiddl url https://listen.tidal.com/artist/25022 download
+tiddl url https://listen.tidal.com/playlist/84974059-76af-406a-aede-ece2b78fa372 download
+```
+
+> [!TIP]
+> You don't have to paste full urls, track/103805726, album/103805723 etc. will also work
+
+Set download quality and output format
+
+```bash
+tiddl ... download -q master -o "{artist}/{title} ({album})"
+```
+
+This command will:
+- download with highest quality
+- save track with title and album name in artist folder
+
 # Development
 
 Clone the repository
