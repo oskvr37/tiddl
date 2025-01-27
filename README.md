@@ -1,7 +1,6 @@
 # Tidal Downloader
 
-TIDDL is the Python CLI application that allows downloading Tidal tracks.
-Fully typed, only 2 requirements.
+TIDDL is Python CLI application that allows downloading Tidal tracks.
 
 ![GitHub top language](https://img.shields.io/github/languages/top/oskvr37/tiddl?style=for-the-badge)
 ![PyPI - Version](https://img.shields.io/pypi/v/tiddl?style=for-the-badge)
@@ -11,6 +10,9 @@ Fully typed, only 2 requirements.
 It's inspired by [Tidal-Media-Downloader](https://github.com/yaronzz/Tidal-Media-Downloader) - currently not mantained project.
 This repository will contain features requests from that project and will be the enhanced version.
 
+> [!WARNING]
+> This app is for personal use only and is not affiliated with Tidal. Users must ensure their use complies with Tidal's terms of service and local copyright laws. Downloaded tracks are for personal use and may not be shared or redistributed. The developer assumes no responsibility for misuse of this app.
+
 # Installation
 
 Install package using `pip`
@@ -19,84 +21,74 @@ Install package using `pip`
 pip install tiddl
 ```
 
-After installation you can use `tiddl` to set up auth token
+Run the package cli with `tiddl`
 
 ```bash
 $ tiddl
-> go to https://link.tidal.com/xxxxx and add device!
-authenticated!
-token expires in 7 days
+
+Usage: tiddl [OPTIONS] COMMAND [ARGS]...
+
+  TIDDL - Download Tidal tracks ✨
+
+Options:
+  -v, --verbose  Show debug logs
+  --help         Show this message and exit.
+
+Commands:
+	...
 ```
 
-Use `tiddl -h` to show help message
+# Basic usage
 
-# CLI
+Login with Tidal account
 
-After authentication - when your token is ready - you can start downloading!
-
-You can download `tracks` `albums` `playlists` `artists albums`
-
-- `tiddl -s -q high` sets high quality as default quality
-- `tiddl <input>` downloads with high quality
-- `tiddl <input> -q master` downloads with best possible quality
-- `tiddl 284165609 -p my_folder -o "{artist} - {title}"` downloads track to `my_folder/{artist} - {title}.flac`
-- `tiddl track/284165609 -p my_folder -o "{artist} - {title}" -s` same as above, but saves `my_folder` as default download path and `{artist} - {title}` as default file format
-
-### Valid input
-
-- 284165609 (will treat this as track id)
-- https://tidal.com/browse/track/284165609
-- track/284165609
-- https://listen.tidal.com/album/284165608/track/284165609
-- https://listen.tidal.com/album/284165608
-- album/284165608
-- https://listen.tidal.com/artist/7695548
-- artist/7695548
-- https://listen.tidal.com/playlist/803be625-97e4-4cbb-88dd-43f0b1c61ed7
-- playlist/803be625-97e4-4cbb-88dd-43f0b1c61ed7
-
-### File formatting
-
-| Key             | Example                   | Comment                                                       |
-| --------------- | ------------------------- | ------------------------------------------------------------- |
-| title           | Money Trees               |                                                               |
-| artist          | Kendrick Lamar            |                                                               |
-| artists         | Kendrick Lamar, Jay Rock  |                                                               |
-| album           | good kid, m.A.A.d city    |                                                               |
-| number          | 5                         | number on album                                               |
-| disc_number     | 1                         | number of album volume                                        |
-| released        | 10/22/2012                | release date                                                  |
-| year            | 2012                      | year of release date                                          |
-| playlist        | Kendrick Lamar Essentials | title of playlist will only appear when you download playlist |
-| playlist_number | 15                        | index of track on the playlist                                |
-| id              | 20556797                  | id on Tidal                                                   |
-
-# Modules
-
-You can also use TIDDL as module, it's fully typed so you will get type hints
-
-```python
-from tiddl import TidalApi, Config
-
-config = Config()
-
-api = TidalApi(
-	config["token"],
-	config["user"]["user_id"],
-	config["user"]["country_code"]
-)
-
-album_id = 284165608
-
-album = api.getAlbum(album_id)
-
-print(f"{album["title"]} has {album["numberOfTracks"]} tracks!")
+```bash
+tiddl auth login
 ```
 
-# Testing
+Download track / album / artist / playlist
 
+```bash
+tiddl url https://listen.tidal.com/track/103805726 download
+tiddl url https://listen.tidal.com/album/103805723 download
+tiddl url https://listen.tidal.com/artist/25022 download
+tiddl url https://listen.tidal.com/playlist/84974059-76af-406a-aede-ece2b78fa372 download
 ```
-python -m unittest tiddl/tests.py
+
+> [!TIP]
+> You don't have to paste full urls, track/103805726, album/103805723 etc. will also work
+
+Set download quality and output format
+
+```bash
+tiddl ... download -q master -o "{artist}/{title} ({album})"
+```
+
+This command will:
+- download with highest quality
+- save track with title and album name in artist folder
+
+> [!NOTE]
+> More about file templating [on wiki](https://github.com/oskvr37/tiddl/wiki/Template-formatting).
+
+# Development
+
+Clone the repository
+
+```bash
+git clone https://github.com/oskvr37/tiddl
+```
+
+Install package with `--editable` flag
+
+```bash
+pip install -e .
+```
+
+Run tests
+
+```bash
+python -m unittest
 ```
 
 # Resources
