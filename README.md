@@ -68,6 +68,9 @@ This command will:
 - download with highest quality
 - save track with title and album name in artist folder
 
+> [!NOTE]
+> More about file templating [on wiki](https://github.com/oskvr37/tiddl/wiki/Template-formatting).
+
 # Development
 
 Clone the repository
