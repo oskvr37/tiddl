@@ -39,6 +39,7 @@ class TestApi(unittest.TestCase):
 
     def test_artist_albums(self):
         self.api.getArtistAlbums(25022)
+        self.api.getArtistAlbums(25022, onlyNonAlbum=True)
 
     def test_album(self):
         album = self.api.getAlbum(103805723)
