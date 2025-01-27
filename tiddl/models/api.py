@@ -104,15 +104,16 @@ class TrackStream(BaseModel):
     sampleRate: Optional[int] = None
 
 
+class SearchAlbum(Album):
+    # TODO: remove the artist field instead of making it None
+    artist: None = None
+
+
 class Search(BaseModel):
     class Artists(Items):
         items: List[Artist]
 
     class Albums(Items):
-        class SearchAlbum(Album):
-            # TODO: remove the artist field instead of making it None
-            artist: None = None
-
         items: List[SearchAlbum]
 
     class Playlists(Items):
@@ -125,7 +126,7 @@ class Search(BaseModel):
         items: List[Video]
 
     class TopHit(BaseModel):
-        value: Union[Artist, Track, Playlist, Album]
+        value: Union[Artist, Track, Playlist, SearchAlbum]
         type: Literal["ARTISTS", "TRACKS", "PLAYLISTS", "ALBUMS"]
 
     artists: Artists
