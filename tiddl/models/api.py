@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional, List, Literal, Union
 
-from .resource import Video, Album, Track, TrackQuality
+from .resource import Album, Artist, Playlist, Track, TrackQuality, Video
 
 __all__ = [
     "Client",
@@ -11,6 +11,7 @@ __all__ = [
     "PlaylistItems",
     "Favorites",
     "TrackStream",
+    "Search"
 ]
 
 
@@ -105,3 +106,36 @@ class TrackStream(BaseModel):
     trackPeakAmplitude: float
     bitDepth: Optional[int] = None
     sampleRate: Optional[int] = None
+
+
+class Search(BaseModel):
+
+    class Artists(Items):
+        items: List[Artist]
+
+    class Albums(Items):
+        class SearchAlbum(Album):
+            # TODO: remove the artist field instead of making it None
+            artist: None = None
+
+        items: List[SearchAlbum]
+
+    class Playlists(Items):
+        items: List[Playlist]
+
+    class Tracks(Items):
+        items: List[Track]
+
+    class Videos(Items):
+        items: List[Video]
+
+    class TopHit(BaseModel):
+        value: Union[Artist, Track, Playlist, Album]
+        type: Literal["ARTISTS", "TRACKS", "PLAYLISTS", "ALBUMS"]
+
+    artists: Artists
+    albums: Albums
+    playlists: Playlists
+    tracks: Tracks
+    videos: Videos
+    topHit: TopHit

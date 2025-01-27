@@ -11,11 +11,11 @@ from tiddl.models.api import (
     Favorites,
     PlaylistItems,
     SessionResponse,
+    Search,
     TrackStream,
 )
 from tiddl.models.constants import TrackQuality
-from tiddl.models.resource import Track, Album, Playlist
-from tiddl.models.search import Search
+from tiddl.models.resource import Track, Album, Playlist, Artist
 
 DEBUG = False
 API_URL = "https://api.tidal.com/v1"
@@ -83,6 +83,11 @@ class TidalApi:
     def getTrack(self, id: str | int):
         return Track(
             **self._request(f"tracks/{id}", {"countryCode": self.country_code})
+        )
+
+    def getArtist(self, id: str | int):
+        return Artist(
+            **self._request(f"artists/{id}", {"countryCode": self.country_code})
         )
 
     def getArtistAlbums(

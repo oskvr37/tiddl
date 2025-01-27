@@ -4,7 +4,7 @@ from typing import Optional, List, Literal, Dict
 from .constants import TrackQuality
 
 
-__all__ = ["Track", "Video", "Album", "Playlist"]
+__all__ = ["Track", "Video", "Album", "Playlist", "Artist"]
 
 
 class Track(BaseModel):
@@ -159,3 +159,33 @@ class Playlist(BaseModel):
     squareImage: str
     promotedArtists: List[Album.Artist]
     lastItemAddedAt: Optional[str] = None
+
+
+class Artist(BaseModel):
+
+    class Role(BaseModel):
+        categoryId: int
+        category: Literal[
+            "Artist",
+            "Songwriter",
+            "Performer",
+            "Producer",
+            "Engineer",
+            "Production team",
+            "Misc",
+        ]
+
+    class Mix(BaseModel):
+        ARTIST_MIX: str
+        MASTER_ARTIST_MIX: Optional[str] = None
+
+    id: int
+    name: str
+    artistTypes: Optional[List[Literal["ARTIST", "CONTRIBUTOR"]]] = None
+    url: Optional[str] = None
+    picture: Optional[str] = None
+    # only in search i guess
+    selectedAlbumCoverFallback: Optional[str] = None
+    popularity: Optional[int] = None
+    artistRoles: Optional[List[Role]] = None
+    mixes: Optional[Mix | Dict] = None
