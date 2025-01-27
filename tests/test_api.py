@@ -38,8 +38,8 @@ class TestApi(unittest.TestCase):
         self.assertEqual(artist.name, "Kanye West")
 
     def test_artist_albums(self):
-        self.api.getArtistAlbums(25022)
-        self.api.getArtistAlbums(25022, onlyNonAlbum=True)
+        self.api.getArtistAlbums(25022, filter="ALBUMS")
+        self.api.getArtistAlbums(25022, filter="EPSANDSINGLES")
 
     def test_album(self):
         album = self.api.getAlbum(103805723)
@@ -71,7 +71,7 @@ class TestApi(unittest.TestCase):
         self.assertGreaterEqual(len(favorites.ARTIST), 0)
 
     def test_search(self):
-        self.api.search("Kanye West")
+        self.api.getSearch("Kanye West")
 
 
 if __name__ == "__main__":
