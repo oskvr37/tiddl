@@ -1,6 +1,6 @@
 import unittest
 
-from tiddl.models import Track
+from tiddl.models.resource import Track
 from tiddl.utils import TidalResource, formatTrack
 
 

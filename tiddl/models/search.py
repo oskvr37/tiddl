@@ -1,14 +1,8 @@
 from pydantic import BaseModel
 from typing import Optional, List, Literal, Dict, Union
 
-from .track import Track
-from .resource import Playlist, Album, Video
+from .resource import Track, Playlist, Album, Video
 from .api import Items
-
-
-class SearchAlbum(Album):
-    # TODO: remove the artist field instead of making it None
-    artist: None = None
 
 
 class Artist(BaseModel):
@@ -40,10 +34,15 @@ class Artist(BaseModel):
 
 
 class Search(BaseModel):
+
     class Artists(Items):
         items: List[Artist]
 
     class Albums(Items):
+        class SearchAlbum(Album):
+            # TODO: remove the artist field instead of making it None
+            artist: None = None
+
         items: List[SearchAlbum]
 
     class Playlists(Items):

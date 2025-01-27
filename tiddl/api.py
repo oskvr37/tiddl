@@ -4,8 +4,18 @@ import json
 from pathlib import Path
 from requests import Session
 
-from tiddl import models
-from .exceptions import AuthError, ApiError
+from tiddl.exceptions import AuthError, ApiError
+from tiddl.models.api import (
+    AlbumItems,
+    ArtistAlbumsItems,
+    Favorites,
+    PlaylistItems,
+    SessionResponse,
+    TrackStream,
+)
+from tiddl.models.constants import TrackQuality
+from tiddl.models.resource import Track, Album, Playlist
+from tiddl.models.search import Search
 
 DEBUG = False
 API_URL = "https://api.tidal.com/v1"
@@ -52,14 +62,14 @@ class TidalApi:
         return data
 
     def getSession(self):
-        return models.SessionResponse(
+        return SessionResponse(
             **self._request(
                 "sessions",
             )
         )
 
-    def getTrackStream(self, id: str | int, quality: models.TrackQuality):
-        return models.TrackStream(
+    def getTrackStream(self, id: str | int, quality: TrackQuality):
+        return TrackStream(
             **self._request(
                 f"tracks/{id}/playbackinfo",
                 {
@@ -71,7 +81,7 @@ class TidalApi:
         )
 
     def getTrack(self, id: str | int):
-        return models.Track(
+        return Track(
             **self._request(f"tracks/{id}", {"countryCode": self.country_code})
         )
 
@@ -83,7 +93,7 @@ class TidalApi:
         if onlyNonAlbum:
             params.update({"filter": "EPSANDSINGLES"})
 
-        return models.AristAlbumsItems(
+        return ArtistAlbumsItems(
             **self._request(
                 f"artists/{id}/albums",
                 params,
@@ -91,7 +101,7 @@ class TidalApi:
         )
 
     def getAlbum(self, id: str | int):
-        return models.Album(
+        return Album(
             **self._request(f"albums/{id}", {"countryCode": self.country_code})
         )
 
@@ -102,7 +112,7 @@ class TidalApi:
             logging.warning(f"Too big page, max page size is {MAX_LIMIT}")
             limit = MAX_LIMIT
 
-        return models.AlbumItems(
+        return AlbumItems(
             **self._request(
                 f"albums/{id}/items",
                 {"countryCode": self.country_code, "limit": limit, "offset": offset},
@@ -110,7 +120,7 @@ class TidalApi:
         )
 
     def getPlaylist(self, uuid: str):
-        return models.Playlist(
+        return Playlist(
             **self._request(
                 f"playlists/{uuid}",
                 {"countryCode": self.country_code},
@@ -118,7 +128,7 @@ class TidalApi:
         )
 
     def getPlaylistItems(self, uuid: str, limit=PLAYLIST_LIMIT, offset=0):
-        return models.PlaylistItems(
+        return PlaylistItems(
             **self._request(
                 f"playlists/{uuid}/items",
                 {"countryCode": self.country_code, "limit": limit, "offset": offset},
@@ -126,7 +136,7 @@ class TidalApi:
         )
 
     def getFavorites(self):
-        return models.Favorites(
+        return Favorites(
             **self._request(
                 f"users/{self.user_id}/favorites/ids",
                 {"countryCode": self.country_code},
@@ -134,7 +144,7 @@ class TidalApi:
         )
 
     def search(self, query: str):
-        return models.Search(
+        return Search(
             **self._request(
                 "search", {"countryCode": self.country_code, "query": query}
             )

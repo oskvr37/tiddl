@@ -1,8 +1,17 @@
 from pydantic import BaseModel
 from typing import Optional, List, Literal, Union
 
-from .track import Track
-from .resource import Video, Album
+from .resource import Video, Album, Track, TrackQuality
+
+__all__ = [
+    "Client",
+    "SessionResponse",
+    "ArtistAlbumsItems",
+    "AlbumItems",
+    "PlaylistItems",
+    "Favorites",
+    "TrackStream",
+]
 
 
 class Client(BaseModel):
@@ -27,7 +36,7 @@ class Items(BaseModel):
     totalNumberOfItems: int
 
 
-class AristAlbumsItems(Items):
+class ArtistAlbumsItems(Items):
     items: List[Album]
 
 
@@ -80,3 +89,19 @@ class Favorites(BaseModel):
     VIDEO: List[str]
     TRACK: List[str]
     ARTIST: List[str]
+
+
+class TrackStream(BaseModel):
+    trackId: int
+    assetPresentation: Literal["FULL"]
+    audioMode: Literal["STEREO"]
+    audioQuality: TrackQuality
+    manifestMimeType: Literal["application/dash+xml", "application/vnd.tidal.bts"]
+    manifestHash: str
+    manifest: str
+    albumReplayGain: float
+    albumPeakAmplitude: float
+    trackReplayGain: float
+    trackPeakAmplitude: float
+    bitDepth: Optional[int] = None
+    sampleRate: Optional[int] = None

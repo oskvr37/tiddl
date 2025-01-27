@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from pathlib import Path
 
-from tiddl.models import TrackArg
+from tiddl.models.constants import TrackArg
 
 
 CONFIG_PATH = Path.home() / "tiddl.json"

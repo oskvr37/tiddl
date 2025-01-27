@@ -6,7 +6,8 @@ from pathlib import Path
 
 from typing import Literal, get_args
 
-from tiddl.models import Track, TrackQuality, QUALITY_TO_ARG
+from tiddl.models.constants import TrackQuality, QUALITY_TO_ARG
+from tiddl.models.resource import Track
 
 ResourceTypeLiteral = Literal["track", "album", "playlist", "artist"]
 
@@ -49,7 +50,9 @@ def sanitizeString(string: str) -> str:
     return re.sub(pattern, "", string)
 
 
-def formatTrack(template: str, track: Track, album_artist="", playlist_title="", playlist_index=0) -> str:
+def formatTrack(
+    template: str, track: Track, album_artist="", playlist_title="", playlist_index=0
+) -> str:
     artist = sanitizeString(track.artist.name) if track.artist else ""
     features = [
         sanitizeString(track_artist.name)

@@ -7,7 +7,7 @@ from mutagen.flac import FLAC as MutagenFLAC, Picture
 from mutagen.easymp4 import EasyMP4 as MutagenEasyMP4
 from mutagen.mp4 import MP4Cover, MP4 as MutagenMP4
 
-from tiddl.models import Track
+from tiddl.models.resource import Track
 
 
 logger = logging.getLogger(__name__)

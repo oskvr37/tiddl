@@ -8,10 +8,12 @@ from .url import UrlGroup
 from ..ctx import Context, passContext
 
 from tiddl.download import downloadTrackStream
-from tiddl.models import TrackArg, ARG_TO_QUALITY, Track, PlaylistItems, Album
 from tiddl.utils import formatTrack, trackExists, TidalResource
 from tiddl.metadata import addMetadata, Cover
 from tiddl.exceptions import ApiError, AuthError
+from tiddl.models.constants import TrackArg, ARG_TO_QUALITY
+from tiddl.models.resource import Track, Album
+from tiddl.models.api import PlaylistItems
 
 
 @click.command("download")
