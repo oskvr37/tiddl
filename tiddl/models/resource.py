@@ -104,7 +104,7 @@ class Album(BaseModel):
         picture: Optional[str] = None
 
     class MediaMetadata(BaseModel):
-        tags: List[Literal["LOSSLESS", "HIRES_LOSSLESS"]]
+        tags: List[Literal["LOSSLESS", "HIRES_LOSSLESS", "DOLBY_ATMOS"]]
 
     id: int
     title: str
