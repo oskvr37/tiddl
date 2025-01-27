@@ -1,8 +1,11 @@
 from pydantic import BaseModel
 from typing import Optional, List, Literal, Dict, Union
 
-from tiddl.models.track import Track
-from tiddl.models.api import Items, Playlist
+from .track import Track
+from .resource import Playlist
+from .api import Items
+
+# TODO: cleanup this mess
 
 
 class _ArtistRole(BaseModel):

@@ -1,8 +1,8 @@
 from pydantic import BaseModel
-from datetime import datetime
-from typing import Optional, List, Literal, Dict, Union
+from typing import Optional, List, Literal, Union
 
 from .track import Track
+from .resource import Video, Album
 
 
 class Client(BaseModel):
@@ -27,81 +27,6 @@ class Items(BaseModel):
     totalNumberOfItems: int
 
 
-class BaseVideoArtist(BaseModel):
-    id: int
-    name: str
-    type: str
-    picture: Optional[str] = None
-
-
-class BaseVideoAlbum(BaseModel):
-    id: int
-    title: str
-    cover: str
-    vibrantColor: str
-    videoCover: Optional[str] = None
-
-
-class BaseVideo(BaseModel):
-    id: int
-    title: str
-    volumeNumber: int
-    trackNumber: int
-    releaseDate: str
-    imagePath: Optional[str] = None
-    imageId: str
-    vibrantColor: str
-    duration: int
-    quality: str
-    streamReady: bool
-    adSupportedStreamReady: bool
-    djReady: bool
-    stemReady: bool
-    streamStartDate: str
-    allowStreaming: bool
-    explicit: bool
-    popularity: int
-    type: str
-    adsUrl: Optional[str] = None
-    adsPrePaywallOnly: bool
-    artist: BaseVideoArtist
-    artists: List[BaseVideoArtist]
-    album: Optional[BaseVideoAlbum] = None
-
-
-class AlbumArtist(BaseModel):
-    id: int
-    name: str
-    type: Literal["MAIN", "FEATURED"]
-
-
-class Album(BaseModel):
-    id: int
-    title: str
-    duration: int
-    streamReady: bool
-    streamStartDate: Optional[datetime] = None
-    allowStreaming: bool
-    premiumStreamingOnly: bool
-    numberOfTracks: int
-    numberOfVideos: int
-    numberOfVolumes: int
-    releaseDate: str
-    copyright: str
-    type: str
-    version: Optional[str] = None
-    url: str
-    cover: Optional[str] = None
-    videoCover: Optional[str] = None
-    explicit: bool
-    upc: str
-    popularity: int
-    audioQuality: str
-    audioModes: List[str]
-    artist: AlbumArtist
-    artists: List[AlbumArtist]
-
-
 class AristAlbumsItems(Items):
     items: List[Album]
 
@@ -109,69 +34,43 @@ class AristAlbumsItems(Items):
 ItemType = Literal["track", "video"]
 
 
-class VideoItem(BaseModel):
-    item: BaseVideo
-    type: ItemType = "video"
-
-
-class TrackItem(BaseModel):
-    item: Track
-    type: ItemType = "track"
-
-
 class AlbumItems(Items):
+
+    class VideoItem(BaseModel):
+        item: Video
+        type: ItemType = "video"
+
+    class TrackItem(BaseModel):
+        item: Track
+        type: ItemType = "track"
+
     items: List[Union[TrackItem, VideoItem]]
 
 
-class _Creator(BaseModel):
-    id: int
-
-
-class Playlist(BaseModel):
-    uuid: str
-    title: str
-    numberOfTracks: int
-    numberOfVideos: int
-    creator: _Creator | Dict
-    description: Optional[str] = None
-    duration: int
-    lastUpdated: str
-    created: str
-    type: str
-    publicPlaylist: bool
-    url: str
-    image: Optional[str] = None
-    popularity: int
-    squareImage: str
-    promotedArtists: List[AlbumArtist]
-    lastItemAddedAt: Optional[str] = None
-
-
-class PlaylistVideo(BaseVideo):
-    dateAdded: str
-    index: int
-    itemUuid: str
-
-
-class PlaylistVideoItem(BaseModel):
-    item: PlaylistVideo
-    type: ItemType = "video"
-    cut: None
-
-
-class PlaylistTrack(Track):
-    dateAdded: str
-    index: int
-    itemUuid: str
-
-
-class PlaylistTrackItem(BaseModel):
-    item: PlaylistTrack
-    type: ItemType = "track"
-    cut: None
-
-
 class PlaylistItems(Items):
+
+    class PlaylistVideoItem(BaseModel):
+
+        class PlaylistVideo(Video):
+            dateAdded: str
+            index: int
+            itemUuid: str
+
+        item: PlaylistVideo
+        type: ItemType = "video"
+        cut: None
+
+    class PlaylistTrackItem(BaseModel):
+
+        class PlaylistTrack(Track):
+            dateAdded: str
+            index: int
+            itemUuid: str
+
+        item: PlaylistTrack
+        type: ItemType = "track"
+        cut: None
+
     items: List[Union[PlaylistTrackItem, PlaylistVideoItem]]
 
 
