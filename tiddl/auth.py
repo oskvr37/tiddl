@@ -73,7 +73,7 @@ def refreshToken(refresh_token: str):
 def removeToken(access_token: str):
     req = request(
         "POST",
-        f"https://api.tidal.com/v1/logout",
+        "https://api.tidal.com/v1/logout",
         headers={"authorization": f"Bearer {access_token}"},
     )
 

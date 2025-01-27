@@ -8,7 +8,7 @@ from .url import UrlGroup
 from ..ctx import Context, passContext
 
 from tiddl.download import downloadTrackStream
-from tiddl.models import TrackArg, ARG_TO_QUALITY, Track, PlaylistTrack, Album
+from tiddl.models import TrackArg, ARG_TO_QUALITY, Track, PlaylistItems, Album
 from tiddl.utils import formatTrack, trackExists, TidalResource
 from tiddl.metadata import addMetadata, Cover
 from tiddl.exceptions import ApiError, AuthError
@@ -129,7 +129,9 @@ def DownloadCommand(
                 playlist_items = api.getPlaylistItems(resource.id)
 
                 for item in playlist_items.items:
-                    if isinstance(item.item, PlaylistTrack):
+                    if isinstance(
+                        item.item, PlaylistItems.PlaylistTrackItem.PlaylistTrack
+                    ):
                         track = item.item
 
                         file_name = formatTrack(
