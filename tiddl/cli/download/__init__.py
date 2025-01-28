@@ -7,13 +7,15 @@ from .url import UrlGroup
 
 from ..ctx import Context, passContext
 
+from typing import List, Union
+
 from tiddl.download import downloadTrackStream
 from tiddl.utils import formatTrack, trackExists, TidalResource
 from tiddl.metadata import addMetadata, Cover
 from tiddl.exceptions import ApiError, AuthError
 from tiddl.models.constants import TrackArg, ARG_TO_QUALITY
 from tiddl.models.resource import Track, Album
-from tiddl.models.api import PlaylistItems
+from tiddl.models.api import PlaylistItems, AlbumItems
 
 
 @click.command("download")
@@ -80,12 +82,24 @@ def DownloadCommand(
     def downloadAlbum(album: Album):
         click.echo(f"★ Album {album.title}")
 
-        # TODO: fetch all items
-        album_items = api.getAlbumItems(album.id, limit=100)
+        all_items: List[Union[AlbumItems.VideoItem, AlbumItems.TrackItem]] = []
+        offset = 0
+
+        while True:
+            album_items = api.getAlbumItems(album.id, offset=offset)
+            all_items.extend(album_items.items)
+
+            if (
+                album_items.limit + album_items.offset
+                > album_items.totalNumberOfItems
+            ):
+                break
+
+            offset += album_items.limit
 
         cover_data = Cover(album.cover).content if album.cover else b""
 
-        for item in album_items.items:
+        for item in all_items:
             if isinstance(item.item, Track):
                 track = item.item
 
@@ -117,20 +131,43 @@ def DownloadCommand(
 
             case "artist":
                 # TODO: add `include_singles`
-                # TODO: fetch all items
-                artist_albums = api.getArtistAlbums(resource.id)
+                all_albums: List[Album] = []
+                offset = 0
 
-                for album in artist_albums.items:
+                while True:
+                    items = api.getArtistAlbums(resource.id, offset=offset)
+                    all_albums.extend(items.items)
+
+                    if items.limit + items.offset > items.totalNumberOfItems:
+                        break
+
+                    offset += items.limit
+
+                for album in all_albums:
                     downloadAlbum(album)
 
             case "playlist":
                 playlist = api.getPlaylist(resource.id)
                 click.echo(f"★ Playlist {playlist.title}")
 
-                # TODO: fetch all items
-                playlist_items = api.getPlaylistItems(resource.id)
+                all_items: List[
+                    Union[
+                        PlaylistItems.PlaylistVideoItem,
+                        PlaylistItems.PlaylistTrackItem,
+                    ]
+                ] = []
+                offset = 0
 
-                for item in playlist_items.items:
+                while True:
+                    items = api.getPlaylistItems(playlist.uuid, offset=offset)
+                    all_items.extend(items.items)
+
+                    if items.limit + items.offset > items.totalNumberOfItems:
+                        break
+
+                    offset += items.limit
+
+                for item in all_items:
                     if isinstance(
                         item.item, PlaylistItems.PlaylistTrackItem.PlaylistTrack
                     ):
