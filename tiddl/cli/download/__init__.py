@@ -62,13 +62,17 @@ def DownloadCommand(
             )
             return
 
-        download_quality = ARG_TO_QUALITY[quality or ctx.obj.config.download.quality]
+        download_quality = ARG_TO_QUALITY[
+            quality or ctx.obj.config.download.quality
+        ]
 
         # .suffix is needed because the Path.with_suffix method will replace any content after dot
         # for example: 'album/01. title' becomes 'album/01.m4a'
         path = ctx.obj.config.download.path / f"{file_name}.suffix"
 
-        if not noskip and trackExists(track.audioQuality, download_quality, path):
+        if not noskip and trackExists(
+            track.audioQuality, download_quality, path
+        ):
             click.echo(
                 f"{click.style('✔', 'cyan')} Skipping track {click.style(file_name, 'cyan')}"
             )
@@ -125,14 +129,17 @@ def DownloadCommand(
                     album_artist=album.artist.name,
                 )
 
-                downloadTrack(track=track, file_name=file_name, cover_data=cover_data)
+                downloadTrack(
+                    track=track, file_name=file_name, cover_data=cover_data
+                )
 
     def handleResource(resource: TidalResource):
         match resource.type:
             case "track":
                 track = api.getTrack(resource.id)
                 file_name = formatTrack(
-                    template=template or ctx.obj.config.template.track, track=track
+                    template=template or ctx.obj.config.template.track,
+                    track=track,
                 )
 
                 downloadTrack(
@@ -205,7 +212,8 @@ def DownloadCommand(
                         track = item.item
 
                         file_name = formatTrack(
-                            template=template or ctx.obj.config.template.playlist,
+                            template=template
+                            or ctx.obj.config.template.playlist,
                             track=track,
                             playlist_title=playlist.title,
                             playlist_index=track.index // 100000,
