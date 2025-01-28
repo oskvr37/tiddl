@@ -7,7 +7,7 @@ from .url import UrlGroup
 
 from ..ctx import Context, passContext
 
-from typing import List, Union
+from typing import List, Union, Literal
 
 from tiddl.download import downloadTrackStream
 from tiddl.utils import formatTrack, trackExists, TidalResource
@@ -17,9 +17,13 @@ from tiddl.models.constants import TrackArg, ARG_TO_QUALITY
 from tiddl.models.resource import Track, Album
 from tiddl.models.api import PlaylistItems, AlbumItems
 
+SinglesFilter = Literal["none", "only", "include"]
+
 
 @click.command("download")
-@click.option("--quality", "-q", "quality", type=click.Choice(TrackArg.__args__))
+@click.option(
+    "--quality", "-q", "quality", type=click.Choice(TrackArg.__args__)
+)
 @click.option(
     "--output", "-o", "template", type=str, help="Format track file template."
 )
@@ -31,9 +35,21 @@ from tiddl.models.api import PlaylistItems, AlbumItems
     default=False,
     help="Dont skip downloaded tracks.",
 )
+@click.option(
+    "--singles",
+    "-s",
+    "singles_filter",
+    type=click.Choice(SinglesFilter.__args__),
+    default="none",
+    help="Defines how to treat artist EPs and singles.",
+)
 @passContext
 def DownloadCommand(
-    ctx: Context, quality: TrackArg | None, template: str | None, noskip: bool
+    ctx: Context,
+    quality: TrackArg | None,
+    template: str | None,
+    noskip: bool,
+    singles_filter: SinglesFilter = "none",
 ):
     """Download the tracks"""
 
@@ -46,13 +62,17 @@ def DownloadCommand(
             )
             return
 
-        download_quality = ARG_TO_QUALITY[quality or ctx.obj.config.download.quality]
+        download_quality = ARG_TO_QUALITY[
+            quality or ctx.obj.config.download.quality
+        ]
 
         # .suffix is needed because the Path.with_suffix method will replace any content after dot
         # for example: 'album/01. title' becomes 'album/01.m4a'
         path = ctx.obj.config.download.path / f"{file_name}.suffix"
 
-        if not noskip and trackExists(track.audioQuality, download_quality, path):
+        if not noskip and trackExists(
+            track.audioQuality, download_quality, path
+        ):
             click.echo(
                 f"{click.style('✔', 'cyan')} Skipping track {click.style(file_name, 'cyan')}"
             )
@@ -109,14 +129,17 @@ def DownloadCommand(
                     album_artist=album.artist.name,
                 )
 
-                downloadTrack(track=track, file_name=file_name, cover_data=cover_data)
+                downloadTrack(
+                    track=track, file_name=file_name, cover_data=cover_data
+                )
 
     def handleResource(resource: TidalResource):
         match resource.type:
             case "track":
                 track = api.getTrack(resource.id)
                 file_name = formatTrack(
-                    template=template or ctx.obj.config.template.track, track=track
+                    template=template or ctx.obj.config.template.track,
+                    track=track,
                 )
 
                 downloadTrack(
@@ -130,20 +153,35 @@ def DownloadCommand(
                 downloadAlbum(album)
 
             case "artist":
-                # TODO: add `include_singles`
-                all_albums: List[Album] = []
-                offset = 0
 
-                while True:
-                    items = api.getArtistAlbums(resource.id, offset=offset)
-                    all_albums.extend(items.items)
+                def getAllAlbums(singles: bool):
+                    all_albums: List[Album] = []
+                    offset = 0
 
-                    if items.limit + items.offset > items.totalNumberOfItems:
-                        break
+                    while True:
+                        items = api.getArtistAlbums(
+                            resource.id,
+                            offset=offset,
+                            filter="EPSANDSINGLES" if singles else "ALBUMS",
+                        )
+                        all_albums.extend(items.items)
 
-                    offset += items.limit
+                        if (
+                            items.limit + items.offset
+                            > items.totalNumberOfItems
+                        ):
+                            break
 
-                for album in all_albums:
+                        offset += items.limit
+
+                    return all_albums
+
+                if singles_filter == "include":
+                    albums = getAllAlbums(False) + getAllAlbums(True)
+                else:
+                    albums = getAllAlbums(singles_filter == "only")
+
+                for album in albums:
                     downloadAlbum(album)
 
             case "playlist":
@@ -174,7 +212,8 @@ def DownloadCommand(
                         track = item.item
 
                         file_name = formatTrack(
-                            template=template or ctx.obj.config.template.playlist,
+                            template=template
+                            or ctx.obj.config.template.playlist,
                             track=track,
                             playlist_title=playlist.title,
                             playlist_index=track.index // 100000,
