@@ -10,7 +10,12 @@ from ..ctx import Context, passContext
 from typing import List, Union, Literal
 
 from tiddl.download import downloadTrackStream
-from tiddl.utils import formatTrack, trackExists, TidalResource
+from tiddl.utils import (
+    formatTrack,
+    trackExists,
+    TidalResource,
+    convertFileExtension,
+)
 from tiddl.metadata import addMetadata, Cover
 from tiddl.exceptions import ApiError, AuthError
 from tiddl.models.constants import TrackArg, ARG_TO_QUALITY
@@ -91,6 +96,13 @@ def DownloadCommand(
 
         with full_path.open("wb") as f:
             f.write(stream_data)
+
+        # extract flac from m4a container
+
+        if track_stream.audioQuality == "HI_RES_LOSSLESS":
+            full_path = convertFileExtension(
+                full_path, ".flac", remove_source=True
+            )
 
         # TODO: add track credits fetching to fill more metadata
 
