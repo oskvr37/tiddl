@@ -76,6 +76,8 @@ def downloadTrackStream(stream: TrackStream) -> tuple[bytes, str]:
 
     if codecs == "flac":
         file_extension = ".flac"
+        if stream.audioQuality == "HI_RES_LOSSLESS":
+            file_extension = ".m4a"
     elif codecs.startswith("mp4"):
         file_extension = ".m4a"
     else:

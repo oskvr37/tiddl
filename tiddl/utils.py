@@ -1,4 +1,7 @@
 import re
+import os
+import ffmpeg
+import logging
 
 from pydantic import BaseModel
 from urllib.parse import urlparse
@@ -51,7 +54,11 @@ def sanitizeString(string: str) -> str:
 
 
 def formatTrack(
-    template: str, track: Track, album_artist="", playlist_title="", playlist_index=0
+    template: str,
+    track: Track,
+    album_artist="",
+    playlist_title="",
+    playlist_index=0,
 ) -> str:
     artist = sanitizeString(track.artist.name) if track.artist else ""
     features = [
@@ -110,3 +117,33 @@ def trackExists(
     full_file_name = file_name.with_suffix(extension)
 
     return full_file_name.exists()
+
+
+def convertFileExtension(
+    source_file: Path, extension: str, remove_source=False
+) -> Path:
+    """
+    Converts `source_file` extension and returns `Path` of file with new `extension`.
+
+    Removes `source_file` when `remove_source` is truthy.
+    """
+
+    try:
+        output_file = source_file.with_suffix(extension)
+    except ValueError as e:
+        logging.error(e)
+        return source_file
+
+    logging.debug((source_file, output_file, extension))
+
+    if extension == source_file.suffix:
+        return source_file
+
+    ffmpeg.input(str(source_file)).output(
+        str(output_file), **{"c:a": "copy", "loglevel": "error"}
+    ).run(overwrite_output=1)
+
+    if remove_source:
+        os.remove(source_file)
+
+    return output_file
