@@ -9,6 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 from rich.console import Console
 from rich.logging import RichHandler
 from rich.progress import (
+    TaskID,
     BarColumn,
     Progress,
     TextColumn,
@@ -39,30 +40,38 @@ if __name__ == "__main__":
     )
 
     with Progress(
-        TextColumn("{task.fields[track].title}"),
+        TextColumn("{task.description}"),
         BarColumn(bar_width=None),
         console=console,
         transient=True,
-        auto_refresh=True,
     ) as progress:
 
-        def handleTrackDownload(track: Track):
+        def handleTrackDownload(task_id: TaskID, track: Track):
             total = randint(10, 30)
-
-            task = progress.add_task(
-                description=track.title, total=total, track=track, start=True
-            )
+            progress.update(task_id, total=total, visible=True)
 
             # simulate track download
 
             for _ in range(total):
                 sleep(0.1)
-                progress.advance(task, 1)
+                progress.advance(task_id, 1)
 
             console.log(track.title)
-            progress.update(task, visible=False)
+
+            progress.remove_task(task_id)
 
         with ThreadPoolExecutor(max_workers=WORKERS_COUNT) as pool:
+
+            def submitTrack(track: Track):
+                task_id = progress.add_task(
+                    description=track.title,
+                    track=track,
+                    start=False,
+                    visible=False,
+                )
+
+                pool.submit(handleTrackDownload, task_id=task_id, track=track)
+
             playlist_items = api.getPlaylistItems(
                 playlist_uuid=PLAYLIST_UUID, limit=25
             )
@@ -73,7 +82,7 @@ if __name__ == "__main__":
                 if isinstance(
                     track, PlaylistItems.PlaylistTrackItem.PlaylistTrack
                 ):
-                    pool.submit(handleTrackDownload, track=track)
+                    submitTrack(track)
 
             album_items = api.getAlbumItems(album_id=ALBUM_ID, limit=14)
 
@@ -81,7 +90,7 @@ if __name__ == "__main__":
                 track = item.item
 
                 if isinstance(track, Track):
-                    pool.submit(handleTrackDownload, track=track)
+                    submitTrack(track)
 
             # NOTE: these api requests will run one by one,
             # we will need to add some sleep between requests
