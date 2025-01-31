@@ -41,20 +41,22 @@ if __name__ == "__main__":
 
     with Progress(
         TextColumn("{task.description}"),
-        BarColumn(bar_width=None),
+        BarColumn(bar_width=40),
         console=console,
         transient=True,
+        auto_refresh=True
     ) as progress:
 
         def handleTrackDownload(task_id: TaskID, track: Track):
             total = randint(10, 30)
             progress.update(task_id, total=total, visible=True)
+            progress.start_task(task_id)
 
             # simulate track download
 
             for _ in range(total):
                 sleep(0.1)
-                progress.advance(task_id, 1)
+                progress.update(task_id, advance=1)
 
             console.log(track.title)
 
