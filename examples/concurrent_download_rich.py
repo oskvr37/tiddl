@@ -1,10 +1,13 @@
 """Example of concurrent playlist downloading with ThreadPoolExecutor and rich."""
 
+import logging
+
 from time import sleep
 from random import randint
 from concurrent.futures import ThreadPoolExecutor
 
 from rich.console import Console
+from rich.logging import RichHandler
 from rich.progress import (
     BarColumn,
     Progress,
@@ -18,18 +21,22 @@ from tiddl.models.resource import Track
 
 
 if __name__ == "__main__":
+    WORKERS_COUNT = 4
     PLAYLIST_UUID = "84974059-76af-406a-aede-ece2b78fa372"
-    WORKERS_COUNT = 3
+    ALBUM_ID = 103805723
+
+    console = Console()
+    logging.basicConfig(
+        level=logging.DEBUG, handlers=[RichHandler(console=console)]
+    )
+
+    logging.getLogger("urllib3").setLevel(logging.ERROR)
 
     config = Config.fromFile()  # load config from default directory
 
     api = TidalApi(
         config.auth.token, config.auth.user_id, config.auth.country_code
     )
-
-    playlist_items = api.getPlaylistItems(playlist_uuid=PLAYLIST_UUID, limit=25)
-
-    console = Console()
 
     with Progress(
         TextColumn("{task.fields[track].title}"),
@@ -56,6 +63,10 @@ if __name__ == "__main__":
             progress.update(task, visible=False)
 
         with ThreadPoolExecutor(max_workers=WORKERS_COUNT) as pool:
+            playlist_items = api.getPlaylistItems(
+                playlist_uuid=PLAYLIST_UUID, limit=25
+            )
+
             for item in playlist_items.items:
                 track = item.item
 
@@ -63,3 +74,14 @@ if __name__ == "__main__":
                     track, PlaylistItems.PlaylistTrackItem.PlaylistTrack
                 ):
                     pool.submit(handleTrackDownload, track=track)
+
+            album_items = api.getAlbumItems(album_id=ALBUM_ID, limit=14)
+
+            for item in album_items.items:
+                track = item.item
+
+                if isinstance(track, Track):
+                    pool.submit(handleTrackDownload, track=track)
+
+            # NOTE: these api requests will run one by one,
+            # we will need to add some sleep between requests
