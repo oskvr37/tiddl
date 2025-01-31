@@ -59,12 +59,12 @@ class TrackManifest(BaseModel):
     urls: list[str]
 
 
-def downloadTrackStream(stream: TrackStream) -> tuple[bytes, str]:
-    """Download data from track stream and return it with file extension."""
+def parseTrackStream(track_stream: TrackStream) -> tuple[list[str], str]:
+    """Parse URLs and file extension from `track_stream`"""
 
-    decoded_manifest = b64decode(stream.manifest).decode()
+    decoded_manifest = b64decode(track_stream.manifest).decode()
 
-    match stream.manifestMimeType:
+    match track_stream.manifestMimeType:
         case "application/vnd.tidal.bts":
             track_manifest = TrackManifest.model_validate_json(decoded_manifest)
             urls, codecs = track_manifest.urls, track_manifest.codecs
@@ -72,16 +72,24 @@ def downloadTrackStream(stream: TrackStream) -> tuple[bytes, str]:
         case "application/dash+xml":
             urls, codecs = parseManifestXML(decoded_manifest)
 
-    logger.debug((stream.trackId, stream.audioQuality, codecs, len(urls)))
-
     if codecs == "flac":
         file_extension = ".flac"
-        if stream.audioQuality == "HI_RES_LOSSLESS":
+        if track_stream.audioQuality == "HI_RES_LOSSLESS":
             file_extension = ".m4a"
     elif codecs.startswith("mp4"):
         file_extension = ".m4a"
     else:
-        raise ValueError(f"Unknown codecs: {codecs}")
+        raise ValueError(
+            f"Unknown codecs `{codecs}` (trackId {track_stream.trackId}"
+        )
+
+    return urls, file_extension
+
+
+def downloadTrackStream(track_stream: TrackStream) -> tuple[bytes, str]:
+    """Download data from track stream and return it with file extension."""
+
+    urls, file_extension = parseTrackStream(track_stream)
 
     with Session() as s:
         stream_data = b""
