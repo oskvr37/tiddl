@@ -10,13 +10,29 @@ from mutagen.mp4 import MP4 as MutagenMP4
 from mutagen.mp4 import MP4Cover
 
 from tiddl.models.resource import Track
+from tiddl.models.api import AlbumItemsCredits
+
+from typing import List
 
 logger = logging.getLogger(__name__)
 
 
-def addMetadata(track_path: Path, track: Track, cover_data=b"", composer=""):
+def addMetadata(
+    track_path: Path,
+    track: Track,
+    cover_data=b"",
+    credits: List[AlbumItemsCredits.ItemWithCredits.CreditsEntry] = [],
+):
     new_metadata: dict[str, str] = {}
     extension = track_path.suffix
+
+    composer = ""
+
+    for entry in credits:
+        if entry.type == "Composer":
+            composer = "; ".join(
+                [contributor.name for contributor in entry.contributors]
+            )
 
     if extension == ".flac":
         metadata = MutagenFLAC(track_path)
@@ -38,8 +54,10 @@ def addMetadata(track_path: Path, track: Track, cover_data=b"", composer=""):
             metadata.save(track_path)
         metadata = MutagenEasyMP4(track_path)
 
-        if composer:
-            new_metadata.update({"©wrt": composer})
+        # easymp4 does not register the \251wrt composer tag...
+        
+        # if composer:
+        #     new_metadata.update({"composer": composer})
 
     else:
         raise ValueError(f"Unknown file extension: {extension}")
