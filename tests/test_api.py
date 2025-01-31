@@ -52,6 +52,10 @@ class TestApi(unittest.TestCase):
         album_items = self.api.getAlbumItems(103805723, limit=10, offset=10)
         self.assertEqual(len(album_items.items), 4)
 
+    def test_album_items_credits(self):
+        album_items = self.api.getAlbumItemsCredits(103805723, limit=10)
+        self.assertEqual(len(album_items.items), 10)
+
     def test_playlist(self):
         playlist = self.api.getPlaylist("84974059-76af-406a-aede-ece2b78fa372")
         self.assertEqual(playlist.title, "Kanye West Essentials")

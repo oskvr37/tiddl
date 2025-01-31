@@ -54,6 +54,29 @@ class AlbumItems(Items):
     items: List[Union[TrackItem, VideoItem]]
 
 
+class AlbumItemsCredits(Items):
+    class ItemWithCredits(BaseModel):
+        class CreditsEntry(BaseModel):
+            class Contributor(BaseModel):
+                name: str
+                id: Optional[int] = None
+
+            type: str
+            contributors: List[Contributor]
+
+        credits: List[CreditsEntry]
+
+    class VideoItem(ItemWithCredits):
+        item: Video
+        type: ItemType = "video"
+
+    class TrackItem(ItemWithCredits):
+        item: Track
+        type: ItemType = "track"
+
+    items: List[Union[TrackItem, VideoItem]]
+
+
 class PlaylistItems(Items):
     class PlaylistVideoItem(BaseModel):
         class PlaylistVideo(Video):

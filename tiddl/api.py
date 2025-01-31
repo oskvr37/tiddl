@@ -9,6 +9,7 @@ from requests import Session
 from tiddl.models.api import (
     Album,
     AlbumItems,
+    AlbumItemsCredits,
     Artist,
     ArtistAlbumsItems,
     Favorites,
@@ -100,6 +101,19 @@ class TidalApi:
         return self.fetch(
             AlbumItems,
             f"albums/{album_id}/items",
+            {
+                "countryCode": self.country_code,
+                "limit": ensureLimit(limit, self.LIMITS.ALBUM_ITEMS_MAX),
+                "offset": offset,
+            },
+        )
+
+    def getAlbumItemsCredits(
+        self, album_id: str | int, limit=LIMITS.ALBUM_ITEMS, offset=0
+    ):
+        return self.fetch(
+            AlbumItemsCredits,
+            f"albums/{album_id}/items/credits",
             {
                 "countryCode": self.country_code,
                 "limit": ensureLimit(limit, self.LIMITS.ALBUM_ITEMS_MAX),
