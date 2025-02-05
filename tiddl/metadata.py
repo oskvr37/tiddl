@@ -23,7 +23,6 @@ def addMetadata(
     cover_data=b"",
     credits: List[AlbumItemsCredits.ItemWithCredits.CreditsEntry] = [],
 ):
-    new_metadata: dict[str, str] = {}
     extension = track_path.suffix
 
     composer = ""
@@ -43,7 +42,37 @@ def addMetadata(
             metadata.add_picture(picture)
 
         if composer:
-            new_metadata.update({"COMPOSER": composer})
+            metadata["COMPOSER"] = composer
+
+        metadata["TITLE"] = track.title
+        metadata["WORK"] = track.title
+        metadata["TRACKNUMBER"] = str(track.trackNumber)
+        metadata["DISCNUMBER"] = str(track.volumeNumber)
+
+        if track.artist:
+            metadata["ARTIST"] = track.artist.name
+
+        metadata["ARTISTS"] = [artist.name for artist in track.artists]
+        metadata["ALBUM"] = track.album.title
+        metadata["ALBUMARTIST"] = ", ".join(
+            [artist.name.strip() for artist in track.artists]
+        )
+
+        if track.streamStartDate:
+            metadata["DATE"] = track.streamStartDate.strftime("%Y-%m-%d")
+            metadata["ORIGINALDATE"] = track.streamStartDate.strftime(
+                "%Y-%m-%d"
+            )
+            metadata["ORIGINALYEAR"] = str(track.streamStartDate.strftime("%Y"))
+
+        metadata["COPYRIGHT"] = track.copyright
+        metadata["ISRC"] = track.isrc
+
+        if track.bpm:
+            metadata["BPM"] = str(track.bpm)
+
+        for entry in credits:
+            metadata[entry.type.upper()] = ["XD"]
 
     elif extension == ".m4a":
         if cover_data:
@@ -52,33 +81,32 @@ def addMetadata(
                 MP4Cover(cover_data, imageformat=MP4Cover.FORMAT_JPEG)
             ]
             metadata.save(track_path)
+
         metadata = MutagenEasyMP4(track_path)
+        metadata.update(
+            {
+                "title": track.title,
+                "tracknumber": str(track.trackNumber),
+                "discnumber": str(track.volumeNumber),
+                "copyright": track.copyright,
+                "albumartist": track.artist.name if track.artist else "",
+                "artist": ";".join(
+                    [artist.name.strip() for artist in track.artists]
+                ),
+                "album": track.album.title,
+                "date": str(track.streamStartDate)
+                if track.streamStartDate
+                else "",
+                "bpm": str(track.bpm or ""),
+            }
+        )
 
         # easymp4 does not register the \251wrt composer tag...
-        
         # if composer:
         #     new_metadata.update({"composer": composer})
 
     else:
         raise ValueError(f"Unknown file extension: {extension}")
-
-    new_metadata.update(
-        {
-            "title": track.title,
-            "tracknumber": str(track.trackNumber),
-            "discnumber": str(track.volumeNumber),
-            "copyright": track.copyright,
-            "albumartist": track.artist.name if track.artist else "",
-            "artist": ";".join(
-                [artist.name.strip() for artist in track.artists]
-            ),
-            "album": track.album.title,
-            "date": str(track.streamStartDate) if track.streamStartDate else "",
-            "bpm": str(track.bpm or ""),
-        }
-    )
-
-    metadata.update(new_metadata)
 
     try:
         metadata.save(track_path)
