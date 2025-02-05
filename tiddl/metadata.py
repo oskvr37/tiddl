@@ -25,14 +25,6 @@ def addMetadata(
 ):
     extension = track_path.suffix
 
-    composer = ""
-
-    for entry in credits:
-        if entry.type == "Composer":
-            composer = "; ".join(
-                [contributor.name for contributor in entry.contributors]
-            )
-
     if extension == ".flac":
         metadata = MutagenFLAC(track_path)
         if cover_data:
@@ -40,9 +32,6 @@ def addMetadata(
             picture.data = cover_data
             picture.mime = "image/jpeg"
             metadata.add_picture(picture)
-
-        if composer:
-            metadata["COMPOSER"] = composer
 
         metadata["TITLE"] = track.title
         metadata["WORK"] = track.title
@@ -72,7 +61,9 @@ def addMetadata(
             metadata["BPM"] = str(track.bpm)
 
         for entry in credits:
-            metadata[entry.type.upper()] = ["XD"]
+            metadata[entry.type.upper()] = [
+                contributor.name for contributor in entry.contributors
+            ]
 
     elif extension == ".m4a":
         if cover_data:
@@ -101,10 +92,6 @@ def addMetadata(
             }
         )
 
-        # easymp4 does not register the \251wrt composer tag...
-        # if composer:
-        #     new_metadata.update({"composer": composer})
-
     else:
         raise ValueError(f"Unknown file extension: {extension}")
 
@@ -125,9 +112,7 @@ class Cover:
         self.uid = uid
 
         formatted_uid = uid.replace("-", "/")
-        self.url = (
-            f"https://resources.tidal.com/images/{formatted_uid}/{size}x{size}.jpg"
-        )
+        self.url = f"https://resources.tidal.com/images/{formatted_uid}/{size}x{size}.jpg"
 
         logger.debug((self.uid, self.url))
 
@@ -137,7 +122,9 @@ class Cover:
         req = requests.get(self.url)
 
         if req.status_code != 200:
-            logger.error(f"could not download cover. ({req.status_code}) {self.url}")
+            logger.error(
+                f"could not download cover. ({req.status_code}) {self.url}"
+            )
             return b""
 
         logger.debug(f"got cover: {self.uid}")
