@@ -20,7 +20,7 @@ from tiddl.metadata import addMetadata, Cover
 from tiddl.exceptions import ApiError, AuthError
 from tiddl.models.constants import TrackArg, ARG_TO_QUALITY
 from tiddl.models.resource import Track, Album
-from tiddl.models.api import PlaylistItems, AlbumItems
+from tiddl.models.api import PlaylistItems, AlbumItemsCredits
 
 SinglesFilter = Literal["none", "only", "include"]
 
@@ -60,7 +60,12 @@ def DownloadCommand(
 
     api = ctx.obj.getApi()
 
-    def downloadTrack(track: Track, file_name: str, cover_data=b""):
+    def downloadTrack(
+        track: Track,
+        file_name: str,
+        cover_data=b"",
+        credits: List[AlbumItemsCredits.ItemWithCredits.CreditsEntry] = [],
+    ):
         if not track.allowStreaming:
             click.echo(
                 f"{click.style('✖', 'yellow')} Track {click.style(file_name, 'yellow')} does not allow streaming"
@@ -109,16 +114,18 @@ def DownloadCommand(
         if not cover_data and track.album.cover:
             cover_data = Cover(track.album.cover).content
 
-        addMetadata(full_path, track, cover_data)
+        addMetadata(full_path, track, cover_data=cover_data, credits=credits)
 
     def downloadAlbum(album: Album):
         click.echo(f"★ Album {album.title}")
 
-        all_items: List[Union[AlbumItems.VideoItem, AlbumItems.TrackItem]] = []
+        all_items: List[
+            Union[AlbumItemsCredits.VideoItem, AlbumItemsCredits.TrackItem]
+        ] = []
         offset = 0
 
         while True:
-            album_items = api.getAlbumItems(album.id, offset=offset)
+            album_items = api.getAlbumItemsCredits(album.id, offset=offset)
             all_items.extend(album_items.items)
 
             if (
@@ -142,7 +149,10 @@ def DownloadCommand(
                 )
 
                 downloadTrack(
-                    track=track, file_name=file_name, cover_data=cover_data
+                    track=track,
+                    file_name=file_name,
+                    cover_data=cover_data,
+                    credits=item.credits,
                 )
 
     def handleResource(resource: TidalResource):

@@ -3,17 +3,26 @@ import requests
 
 from pathlib import Path
 
-from mutagen.flac import FLAC as MutagenFLAC, Picture
 from mutagen.easymp4 import EasyMP4 as MutagenEasyMP4
-from mutagen.mp4 import MP4Cover, MP4 as MutagenMP4
+from mutagen.flac import FLAC as MutagenFLAC
+from mutagen.flac import Picture
+from mutagen.mp4 import MP4 as MutagenMP4
+from mutagen.mp4 import MP4Cover
 
 from tiddl.models.resource import Track
+from tiddl.models.api import AlbumItemsCredits
 
+from typing import List
 
 logger = logging.getLogger(__name__)
 
 
-def addMetadata(track_path: Path, track: Track, cover_data=b""):
+def addMetadata(
+    track_path: Path,
+    track: Track,
+    cover_data=b"",
+    credits: List[AlbumItemsCredits.ItemWithCredits.CreditsEntry] = [],
+):
     extension = track_path.suffix
 
     if extension == ".flac":
@@ -23,32 +32,73 @@ def addMetadata(track_path: Path, track: Track, cover_data=b""):
             picture.data = cover_data
             picture.mime = "image/jpeg"
             metadata.add_picture(picture)
+
+        metadata["TITLE"] = track.title
+        metadata["WORK"] = track.title
+        metadata["TRACKNUMBER"] = str(track.trackNumber)
+        metadata["DISCNUMBER"] = str(track.volumeNumber)
+
+        if track.artist:
+            metadata["ARTIST"] = track.artist.name
+
+        metadata["ARTISTS"] = [artist.name for artist in track.artists]
+        metadata["ALBUM"] = track.album.title
+        metadata["ALBUMARTIST"] = ", ".join(
+            [artist.name.strip() for artist in track.artists]
+        )
+
+        if track.streamStartDate:
+            metadata["DATE"] = track.streamStartDate.strftime("%Y-%m-%d")
+            metadata["ORIGINALDATE"] = track.streamStartDate.strftime(
+                "%Y-%m-%d"
+            )
+            metadata["ORIGINALYEAR"] = str(track.streamStartDate.strftime("%Y"))
+
+        metadata["COPYRIGHT"] = track.copyright
+        metadata["ISRC"] = track.isrc
+
+        if track.bpm:
+            metadata["BPM"] = str(track.bpm)
+
+        for entry in credits:
+            metadata[entry.type.upper()] = [
+                contributor.name for contributor in entry.contributors
+            ]
+
     elif extension == ".m4a":
         if cover_data:
             metadata = MutagenMP4(track_path)
-            metadata["covr"] = [MP4Cover(cover_data, imageformat=MP4Cover.FORMAT_JPEG)]
+            metadata["covr"] = [
+                MP4Cover(cover_data, imageformat=MP4Cover.FORMAT_JPEG)
+            ]
             metadata.save(track_path)
+
         metadata = MutagenEasyMP4(track_path)
+        metadata.update(
+            {
+                "title": track.title,
+                "tracknumber": str(track.trackNumber),
+                "discnumber": str(track.volumeNumber),
+                "copyright": track.copyright,
+                "albumartist": track.artist.name if track.artist else "",
+                "artist": ";".join(
+                    [artist.name.strip() for artist in track.artists]
+                ),
+                "album": track.album.title,
+                "date": str(track.streamStartDate)
+                if track.streamStartDate
+                else "",
+                "bpm": str(track.bpm or ""),
+            }
+        )
+
     else:
         raise ValueError(f"Unknown file extension: {extension}")
-
-    new_metadata: dict[str, str] = {
-        "title": track.title,
-        "trackNumber": str(track.trackNumber),
-        "discnumber": str(track.volumeNumber),
-        "copyright": track.copyright,
-        "albumartist": track.artist.name if track.artist else "",
-        "artist": ";".join([artist.name.strip() for artist in track.artists]),
-        "album": track.album.title,
-        "date": str(track.streamStartDate) if track.streamStartDate else "",
-    }
-
-    metadata.update(new_metadata)
 
     try:
         metadata.save(track_path)
     except Exception as e:
-        logger.error(f"Failed to set metadata for {extension}: {e}")
+        logger.error(f"Failed to add metadata to {track_path}: {e}")
 
 
 class Cover:
@@ -62,9 +112,7 @@ class Cover:
         self.uid = uid
 
         formatted_uid = uid.replace("-", "/")
-        self.url = (
-            f"https://resources.tidal.com/images/{formatted_uid}/{size}x{size}.jpg"
-        )
+        self.url = f"https://resources.tidal.com/images/{formatted_uid}/{size}x{size}.jpg"
 
         logger.debug((self.uid, self.url))
 
@@ -74,7 +122,9 @@ class Cover:
         req = requests.get(self.url)
 
         if req.status_code != 200:
-            logger.error(f"could not download cover. ({req.status_code}) {self.url}")
+            logger.error(
+                f"could not download cover. ({req.status_code}) {self.url}"
+            )
             return b""
 
         logger.debug(f"got cover: {self.uid}")
