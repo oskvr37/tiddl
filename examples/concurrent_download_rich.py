@@ -2,8 +2,8 @@
 
 import logging
 
-from time import sleep
-from random import randint
+from pathlib import Path
+from requests import Session
 from concurrent.futures import ThreadPoolExecutor
 
 from rich.console import Console
@@ -16,6 +16,7 @@ from rich.progress import (
 )
 
 from tiddl.api import TidalApi
+from tiddl.download import parseTrackStream
 from tiddl.config import Config
 from tiddl.models.api import PlaylistItems
 from tiddl.models.resource import Track
@@ -46,18 +47,27 @@ progress = Progress(
 
 
 def handleTrackDownload(task_id: TaskID, track: Track):
-    total = randint(10, 30)
-    progress.update(task_id, total=total, visible=True)
+    track_stream = api.getTrackStream(track.id, "HI_RES_LOSSLESS")
+    urls, extension = parseTrackStream(track_stream)
+
+    progress.update(task_id, total=len(urls), visible=True)
     progress.start_task(task_id)
 
-    # simulate track download
+    with Session() as s:
+        stream_data = b""
 
-    for _ in range(total):
-        sleep(0.1)
-        progress.update(task_id, advance=1)
+        for url in urls:
+            req = s.get(url)
+            progress.update(task_id, advance=1)
+            stream_data += req.content
+
+    path = Path("tracks") / f"{track.title}{extension}"
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    with path.open("wb") as f:
+        f.write(stream_data)
 
     console.log(track.title)
-
     progress.remove_task(task_id)
 
 
@@ -80,7 +90,7 @@ def submitTrack(track: Track):
 # NOTE: these api requests will run one by one,
 # we will need to add some sleep between requests
 
-playlist_items = api.getPlaylistItems(playlist_uuid=PLAYLIST_UUID, limit=25)
+playlist_items = api.getPlaylistItems(playlist_uuid=PLAYLIST_UUID, limit=5)
 
 for item in playlist_items.items:
     track = item.item
@@ -88,7 +98,7 @@ for item in playlist_items.items:
     if isinstance(track, PlaylistItems.PlaylistTrackItem.PlaylistTrack):
         submitTrack(track)
 
-album_items = api.getAlbumItems(album_id=ALBUM_ID, limit=14)
+album_items = api.getAlbumItems(album_id=ALBUM_ID, limit=5)
 
 for item in album_items.items:
     track = item.item
