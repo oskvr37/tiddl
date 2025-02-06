@@ -14,6 +14,10 @@ def cli(ctx: Context, verbose: bool):
     """TIDDL - Download Tidal tracks \u266b"""
     ctx.obj = ContextObj()
 
+    # TODO: add rich console to ctx.obj, edit logging config,
+    # add more verbosity options (silent, info, debug),
+    # maybe logging format configuration
+
     logging.basicConfig(
         level=logging.DEBUG if verbose else logging.INFO,
         handlers=[logging.StreamHandler()],
