@@ -120,7 +120,7 @@ def trackExists(
 
 
 def convertFileExtension(
-    source_file: Path, extension: str, remove_source=False
+    source_file: Path, extension: str, remove_source=False, is_video=False
 ) -> Path:
     """
     Converts `source_file` extension and returns `Path` of file with new `extension`.
@@ -138,9 +138,14 @@ def convertFileExtension(
 
     if extension == source_file.suffix:
         return source_file
+    
+    ffmpeg_args = {"c:a": "copy", "loglevel": "error"}
+
+    if is_video:
+        ffmpeg_args["c:v"] = "copy"
 
     ffmpeg.input(str(source_file)).output(
-        str(output_file), **{"c:a": "copy", "loglevel": "error"}
+        str(output_file), **ffmpeg_args
     ).run(overwrite_output=1)
 
     if remove_source:

@@ -20,6 +20,7 @@ from tiddl.models.api import (
     Track,
     TrackStream,
     Video,
+    VideoStream,
 )
 
 from tiddl.models.constants import TrackQuality
@@ -198,4 +199,15 @@ class TidalApi:
     def getVideo(self, video_id: str | int):
         return self.fetch(
             Video, f"videos/{video_id}", {"countryCode": self.country_code}
+        )
+
+    def getVideoStream(self, video_id: str | int):
+        return self.fetch(
+            VideoStream,
+            f"videos/{video_id}/playbackinfo",
+            {
+                "videoquality": "HIGH",
+                "playbackmode": "STREAM",
+                "assetpresentation": "FULL",
+            },
         )

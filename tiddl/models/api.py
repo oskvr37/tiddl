@@ -127,6 +127,17 @@ class TrackStream(BaseModel):
     sampleRate: Optional[int] = None
 
 
+class VideoStream(BaseModel):
+    videoId: int
+    streamType: Literal["ON_DEMAND"]
+    assetPresentation: Literal["FULL"]
+    videoQuality: Literal["HIGH", "MEDIUM"]
+    # streamingSessionId: str  # only in web?
+    manifestMimeType: Literal["application/vnd.tidal.emu"]
+    manifestHash: str
+    manifest: str
+
+
 class SearchAlbum(Album):
     # TODO: remove the artist field instead of making it None
     artist: None = None

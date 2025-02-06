@@ -14,7 +14,7 @@ class TestApi(unittest.TestCase):
         token, user_id, country_code = (
             auth.token,
             auth.user_id,
-            auth.country_code
+            auth.country_code,
         )
 
         assert token, "No token found in config file"
@@ -76,6 +76,12 @@ class TestApi(unittest.TestCase):
 
     def test_search(self):
         self.api.getSearch("Kanye West")
+
+    def test_video(self):
+        self.api.getVideo(373513584)
+
+    def test_video_stream(self):
+        self.api.getVideoStream(373513584)
 
 
 if __name__ == "__main__":

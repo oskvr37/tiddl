@@ -1,9 +1,12 @@
-"""Example of concurrent playlist downloading with ThreadPoolExecutor and rich."""
+"""
+Example of concurrent album + playlist downloading with ThreadPoolExecutor and rich.
+This will download tracks and videos.
+"""
 
 import logging
 
-from time import sleep
-from random import randint
+from pathlib import Path
+from requests import Session
 from concurrent.futures import ThreadPoolExecutor
 
 from rich.console import Console
@@ -16,9 +19,11 @@ from rich.progress import (
 )
 
 from tiddl.api import TidalApi
+from tiddl.download import parseTrackStream, parseVideoStream
 from tiddl.config import Config
 from tiddl.models.api import PlaylistItems
-from tiddl.models.resource import Track
+from tiddl.models.resource import Track, Video
+from tiddl.utils import convertFileExtension
 
 
 WORKERS_COUNT = 4
@@ -46,18 +51,54 @@ progress = Progress(
 
 
 def handleTrackDownload(task_id: TaskID, track: Track):
-    total = randint(10, 30)
-    progress.update(task_id, total=total, visible=True)
+    track_stream = api.getTrackStream(track.id, "LOW")
+    urls, extension = parseTrackStream(track_stream)
+
+    progress.update(task_id, total=len(urls), visible=True)
     progress.start_task(task_id)
 
-    # simulate track download
+    with Session() as s:
+        stream_data = b""
 
-    for _ in range(total):
-        sleep(0.1)
-        progress.update(task_id, advance=1)
+        for url in urls:
+            req = s.get(url)
+            stream_data += req.content
+            progress.update(task_id, advance=1)
+
+    path = Path("tracks") / f"{track.title}{extension}"
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    with path.open("wb") as f:
+        f.write(stream_data)
 
     console.log(track.title)
+    progress.remove_task(task_id)
 
+
+def handleVideoDownload(task_id: TaskID, video: Video):
+    video_stream = api.getVideoStream(video.id)
+    urls = parseVideoStream(video_stream)
+
+    progress.update(task_id, total=len(urls), visible=True)
+    progress.start_task(task_id)
+
+    with Session() as s:
+        video_data = b""
+
+        for url in urls:
+            req = s.get(url)
+            video_data += req.content
+            progress.update(task_id, advance=1)
+
+    path = Path("videos") / f"{video.id}.ts"
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    with path.open("wb") as f:
+        f.write(video_data)
+
+    convertFileExtension(path, ".mp4", remove_source=True, is_video=True)
+
+    console.log(video.title)
     progress.remove_task(task_id)
 
 
@@ -69,7 +110,6 @@ pool = ThreadPoolExecutor(max_workers=WORKERS_COUNT)
 def submitTrack(track: Track):
     task_id = progress.add_task(
         description=track.title,
-        track=track,
         start=False,
         visible=False,
     )
@@ -77,24 +117,38 @@ def submitTrack(track: Track):
     pool.submit(handleTrackDownload, task_id=task_id, track=track)
 
 
+def submitVideo(video: Video):
+    task_id = progress.add_task(
+        description=video.title,
+        start=False,
+        visible=False,
+    )
+
+    pool.submit(handleVideoDownload, task_id=task_id, video=video)
+
+
 # NOTE: these api requests will run one by one,
 # we will need to add some sleep between requests
 
-playlist_items = api.getPlaylistItems(playlist_uuid=PLAYLIST_UUID, limit=25)
+playlist_items = api.getPlaylistItems(playlist_uuid=PLAYLIST_UUID, limit=10)
 
 for item in playlist_items.items:
-    track = item.item
+    item = item.item
 
-    if isinstance(track, PlaylistItems.PlaylistTrackItem.PlaylistTrack):
-        submitTrack(track)
+    if isinstance(item, PlaylistItems.PlaylistTrackItem.PlaylistTrack):
+        submitTrack(item)
+    elif isinstance(item, PlaylistItems.PlaylistVideoItem.PlaylistVideo):
+        submitVideo(item)
 
-album_items = api.getAlbumItems(album_id=ALBUM_ID, limit=14)
+album_items = api.getAlbumItems(album_id=ALBUM_ID, limit=5)
 
 for item in album_items.items:
-    track = item.item
+    item = item.item
 
-    if isinstance(track, Track):
-        submitTrack(track)
+    if isinstance(item, Track):
+        submitTrack(item)
+    elif isinstance(item, Video):
+        submitVideo(item)
 
 # cleanup
 
