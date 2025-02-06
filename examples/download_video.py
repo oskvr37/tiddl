@@ -6,6 +6,7 @@ from requests import Session
 from tiddl.api import TidalApi
 from tiddl.config import Config
 from tiddl.download import parseVideoStream
+from tiddl.utils import convertFileExtension
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -32,5 +33,4 @@ path.parent.mkdir(parents=True, exist_ok=True)
 with path.open("wb") as f:
     f.write(video_data)
 
-# converting to mp4
-# ffmpeg -i {VIDEO_ID}.ts -c:v copy -c:a copy output.mp4
+convertFileExtension(path, ".mp4", True, True)
