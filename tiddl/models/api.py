@@ -131,7 +131,7 @@ class VideoStream(BaseModel):
     videoId: int
     streamType: Literal["ON_DEMAND"]
     assetPresentation: Literal["FULL"]
-    videoQuality: Literal["HIGH"]
+    videoQuality: Literal["HIGH", "MEDIUM"]
     # streamingSessionId: str  # only in web?
     manifestMimeType: Literal["application/vnd.tidal.emu"]
     manifestHash: str

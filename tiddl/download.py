@@ -1,11 +1,12 @@
 import logging
 
+from m3u8 import M3U8
 from requests import Session
 from pydantic import BaseModel
 from base64 import b64decode
 from xml.etree.ElementTree import fromstring
 
-from tiddl.models.api import TrackStream
+from tiddl.models.api import TrackStream, VideoStream
 
 
 logger = logging.getLogger(__name__)
@@ -99,3 +100,38 @@ def downloadTrackStream(track_stream: TrackStream) -> tuple[bytes, str]:
             stream_data += req.content
 
     return stream_data, file_extension
+
+
+def parseVideoStream(video_stream: VideoStream) -> list[str]:
+    """Parse `video_stream` manifest and return video urls"""
+
+    # TOOD: add video quality arg.
+    # for now we download the highest quality
+
+    class VideoManifest(BaseModel):
+        mimeType: str
+        urls: list[str]
+
+    decoded_manifest = b64decode(video_stream.manifest).decode()
+    manifest = VideoManifest.model_validate_json(decoded_manifest)
+
+    with Session() as s:
+        # get all qualities
+        req = s.get(manifest.urls[0])
+        m3u8 = M3U8(req.text)
+
+        # get highest quality
+        uri = m3u8.playlists[-1].uri
+
+        if not uri:
+            raise ValueError("M3U8 Playlist does not have `uri`.")
+
+        req = s.get(uri)
+        video = M3U8(req.text)
+
+    if not video.files:
+        raise ValueError("M3U8 Playlist is empty.")
+
+    urls = [url for url in video.files if url]
+
+    return urls
