@@ -109,12 +109,17 @@ def DownloadCommand(
                 full_path, ".flac", remove_source=True
             )
 
-        # TODO: add track credits fetching to fill more metadata
-
         if not cover_data and track.album.cover:
             cover_data = Cover(track.album.cover).content
 
-        addMetadata(full_path, track, cover_data=cover_data, credits=credits)
+        try:
+            addMetadata(
+                full_path, track, cover_data=cover_data, credits=credits
+            )
+        except Exception as e:
+            click.echo(
+                f"{click.style('✖', 'yellow')} Cant set metadata to {click.style(file_name, 'yellow')}. {e}"
+            )
 
     def downloadAlbum(album: Album):
         click.echo(f"★ Album {album.title}")
