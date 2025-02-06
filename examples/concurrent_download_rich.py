@@ -1,4 +1,7 @@
-"""Example of concurrent playlist downloading with ThreadPoolExecutor and rich."""
+"""
+Example of concurrent album + playlist downloading with ThreadPoolExecutor and rich.
+This will download tracks and videos.
+"""
 
 import logging
 

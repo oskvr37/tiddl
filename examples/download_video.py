@@ -1,3 +1,5 @@
+"""Example of downloading a video from Tidal"""
+
 import logging
 
 from pathlib import Path
