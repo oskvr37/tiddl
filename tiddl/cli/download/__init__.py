@@ -106,7 +106,7 @@ def DownloadCommand(
 
         if track_stream.audioQuality == "HI_RES_LOSSLESS":
             full_path = convertFileExtension(
-                full_path, ".flac", remove_source=True
+                full_path, ".flac", remove_source=True, copy_audio=True
             )
 
         if not cover_data and track.album.cover:
