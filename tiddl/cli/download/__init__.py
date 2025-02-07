@@ -257,6 +257,7 @@ def DownloadCommand(
 
         except AuthError as e:
             click.echo(click.style(f"✖ {e}", "red"))
+            return
 
 
 UrlGroup.add_command(DownloadCommand)
