@@ -92,7 +92,7 @@ def addMetadata(
                 "date": str(track.streamStartDate)
                 if track.streamStartDate
                 else "",
-                "bpm": str(track.bpm or ""),
+                "bpm": str(track.bpm or 0),
             }
         )
 
