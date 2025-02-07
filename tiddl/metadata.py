@@ -23,7 +23,11 @@ def addMetadata(
     cover_data=b"",
     credits: List[AlbumItemsCredits.ItemWithCredits.CreditsEntry] = [],
 ):
+    logger.debug((track_path, track.id))
+
     extension = track_path.suffix
+
+    # TODO: handle mutagen exceptions
 
     if extension == ".flac":
         metadata = MutagenFLAC(track_path)

@@ -3,8 +3,8 @@ from pathlib import Path
 
 from tiddl.models.constants import TrackArg
 
-
-CONFIG_PATH = Path.home() / "tiddl.json"
+HOME_PATH = Path.home()
+CONFIG_PATH = HOME_PATH / "tiddl.json"
 CONFIG_INDENT = 2
 
 

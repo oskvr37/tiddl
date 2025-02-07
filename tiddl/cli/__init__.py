@@ -6,6 +6,8 @@ from .auth import AuthGroup
 from .download import UrlGroup, FavGroup, SearchGroup, FileGroup
 from .config import ConfigCommand
 
+from tiddl.config import HOME_PATH
+
 
 @click.group()
 @passContext
@@ -18,9 +20,19 @@ def cli(ctx: Context, verbose: bool):
     # add more verbosity options (silent, info, debug),
     # maybe logging format configuration
 
+    # latest logs
+    file_handler = logging.FileHandler(HOME_PATH / "tiddl.log", mode="w", encoding="utf-8")
+    file_handler.setLevel(logging.DEBUG)
+
+    stream_handler = logging.StreamHandler()
+    stream_handler.setLevel(logging.DEBUG if verbose else logging.INFO)
+
     logging.basicConfig(
-        level=logging.DEBUG if verbose else logging.INFO,
-        handlers=[logging.StreamHandler()],
+        level=logging.DEBUG,
+        handlers=[
+            stream_handler,
+            file_handler,
+        ],
         format="%(levelname)s [%(name)s.%(funcName)s] %(message)s",
     )
 
