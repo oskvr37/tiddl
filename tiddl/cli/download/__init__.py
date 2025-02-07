@@ -1,3 +1,4 @@
+import logging
 import click
 
 from .fav import FavGroup
@@ -67,9 +68,7 @@ def DownloadCommand(
         credits: List[AlbumItemsCredits.ItemWithCredits.CreditsEntry] = [],
     ):
         if not track.allowStreaming:
-            click.echo(
-                f"{click.style('✖', 'yellow')} Track {click.style(file_name, 'yellow')} does not allow streaming"
-            )
+            logging.warning(f"Track {file_name} does not allow streaming")
             return
 
         download_quality = ARG_TO_QUALITY[
@@ -83,14 +82,10 @@ def DownloadCommand(
         if not noskip and trackExists(
             track.audioQuality, download_quality, path
         ):
-            click.echo(
-                f"{click.style('✔', 'cyan')} Skipping track {click.style(file_name, 'cyan')}"
-            )
+            logging.info(f"Skipping track {file_name}")
             return
 
-        click.echo(
-            f"{click.style('✔', 'green')} Downloading track {click.style(file_name, 'green')}"
-        )
+        logging.info(f"Downloading track {file_name}")
 
         track_stream = api.getTrackStream(track.id, download_quality)
 
@@ -117,12 +112,10 @@ def DownloadCommand(
                 full_path, track, cover_data=cover_data, credits=credits
             )
         except Exception as e:
-            click.echo(
-                f"{click.style('✖', 'yellow')} Cant set metadata to {click.style(file_name, 'yellow')}: {e}"
-            )
+            logging.error(f"Cant set metadata to {file_name}: {e}")
 
     def downloadAlbum(album: Album):
-        click.echo(f"★ Album {album.title}")
+        logging.info(f"Album {album.title}")
         cover_data = Cover(album.cover).content if album.cover else b""
 
         offset = 0
@@ -204,7 +197,7 @@ def DownloadCommand(
 
             case "playlist":
                 playlist = api.getPlaylist(resource.id)
-                click.echo(f"★ Playlist {playlist.title}")
+                logging.info(f"Playlist {playlist.title}")
 
                 offset = 0
 
@@ -243,10 +236,10 @@ def DownloadCommand(
             handleResource(resource)
 
         except ApiError as e:
-            click.echo(click.style(f"✖ {e}", "red"))
+            logging.error(e)
 
         except AuthError as e:
-            click.echo(click.style(f"✖ {e}", "red"))
+            logging.error(e)
             return
 
 

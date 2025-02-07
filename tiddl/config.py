@@ -1,3 +1,5 @@
+# TODO: 3.0 change config path to ~/.config/tiddl.json
+
 from pydantic import BaseModel
 from pathlib import Path
 

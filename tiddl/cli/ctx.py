@@ -1,6 +1,8 @@
 import functools
 import click
 
+from rich.console import Console
+
 from typing import Callable, TypeVar, cast
 
 from tiddl.api import TidalApi
@@ -12,11 +14,13 @@ class ContextObj:
     api: TidalApi | None
     config: Config
     resources: list[TidalResource]
+    console: Console
 
     def __init__(self) -> None:
         self.config = Config.fromFile()
         self.resources = []
         self.api = None
+        self.console = Console()
 
         auth = self.config.auth
 
