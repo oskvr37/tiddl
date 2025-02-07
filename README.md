@@ -1,11 +1,11 @@
 # Tidal Downloader
 
-TIDDL is Python CLI application that allows downloading Tidal tracks.
-
-![GitHub top language](https://img.shields.io/github/languages/top/oskvr37/tiddl?style=for-the-badge)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/tiddl?style=for-the-badge&color=%2332af64)
 ![PyPI - Version](https://img.shields.io/pypi/v/tiddl?style=for-the-badge)
 ![GitHub commits since latest release](https://img.shields.io/github/commits-since/oskvr37/tiddl/latest?style=for-the-badge)
 [<img src="https://img.shields.io/badge/gitmoji-%20😜%20😍-FFDD67.svg?style=for-the-badge" />](https://gitmoji.dev)
+
+TIDDL is Python CLI application that allows downloading Tidal tracks.
 
 It's inspired by [Tidal-Media-Downloader](https://github.com/yaronzz/Tidal-Media-Downloader) - currently not mantained project.
 This repository will contain features requests from that project and will be the enhanced version.
@@ -40,13 +40,16 @@ Commands:
 
 # Basic usage
 
-Login with Tidal account
+## Login with Tidal account
 
 ```bash
 tiddl auth login
 ```
 
-Download track / album / artist / playlist
+## Download resource
+
+You can download track / album / artist / playlist / (video coming soon)
+<!-- TODO: remove coming soon after adding video download -->
 
 ```bash
 tiddl url https://listen.tidal.com/track/103805726 download
@@ -58,18 +61,28 @@ tiddl url https://listen.tidal.com/playlist/84974059-76af-406a-aede-ece2b78fa372
 > [!TIP]
 > You don't have to paste full urls, track/103805726, album/103805723 etc. will also work
 
-Set download quality and output format
+## Download options
 
 ```bash
 tiddl ... download -q master -o "{artist}/{title} ({album})"
 ```
 
 This command will:
-- download with highest quality
+- download with highest quality (master)
 - save track with title and album name in artist folder
 
-> [!NOTE]
-> More about file templating [on wiki](https://github.com/oskvr37/tiddl/wiki/Template-formatting).
+### Download quality
+
+| Quality | File extension | Details |
+|:-:|:-:|:-:|
+| LOW | .m4a | 96 kbps |
+| NORMAL | .m4a | 320 kbps |
+| HIGH | .flac | 16-bit, 44.1 kHz |
+| MASTER | .flac | Up to 24-bit, 192 kHz |
+
+### Output format
+
+More about file templating [on wiki](https://github.com/oskvr37/tiddl/wiki/Template-formatting).
 
 # Development
 
