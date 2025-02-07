@@ -7,10 +7,10 @@ from pydantic import BaseModel
 from urllib.parse import urlparse
 from pathlib import Path
 
-from typing import Literal, get_args
+from typing import Literal, Union, get_args
 
 from tiddl.models.constants import TrackQuality, QUALITY_TO_ARG
-from tiddl.models.resource import Track
+from tiddl.models.resource import Track, Video
 
 ResourceTypeLiteral = Literal["track", "album", "playlist", "artist"]
 
@@ -79,7 +79,9 @@ def formatTrack(
         "disc": track.volumeNumber,
         "date": (track.streamStartDate if track.streamStartDate else ""),
         # i think we can remove year as we are able to format date
-        "year": track.streamStartDate.strftime("%Y") if track.streamStartDate else "",
+        "year": track.streamStartDate.strftime("%Y")
+        if track.streamStartDate
+        else "",
         "playlist": sanitizeString(playlist_title),
         "bpm": track.bpm or "",
         "quality": QUALITY_TO_ARG[track.audioQuality],
@@ -98,6 +100,69 @@ def formatTrack(
         )
 
     return formatted_track
+
+
+def formatResource(
+    template: str,
+    resource: Union[Track, Video],
+    album_artist="",
+    playlist_title="",
+    playlist_index=0,
+) -> str:
+    artist = sanitizeString(resource.artist.name) if resource.artist else ""
+
+    features = [
+        sanitizeString(item_artist.name)
+        for item_artist in resource.artists
+        if item_artist.name != artist
+    ]
+
+    resource_dict = {
+        "id": str(resource.id),
+        "title": sanitizeString(resource.title),
+        "artist": artist,
+        "artists": ", ".join(features + [artist]),
+        "features": ", ".join(features),
+        "album": sanitizeString(resource.album.title if resource.album else ""),
+        "number": resource.trackNumber,
+        "disc": resource.volumeNumber,
+        "date": (resource.streamStartDate if resource.streamStartDate else ""),
+        # i think we can remove year as we are able to format date
+        "year": resource.streamStartDate.strftime("%Y")
+        if resource.streamStartDate
+        else "",
+        "playlist": sanitizeString(playlist_title),
+        "album_artist": sanitizeString(album_artist),
+        "playlist_number": playlist_index or 0,
+        "quality": "",
+        "version": "",
+        "bpm": "",
+    }
+
+    if isinstance(resource, Track):
+        resource_dict.update(
+            {
+                "version": sanitizeString(resource.version or ""),
+                "quality": QUALITY_TO_ARG[resource.audioQuality],
+                "bpm": resource.bpm or "",
+            }
+        )
+
+    elif isinstance(resource, Video):
+        resource_dict.update({"quality": resource.quality})
+
+    formatted_template = template.format(**resource_dict)
+
+    disallowed_chars = r'[\\:"*?<>|]+'
+    invalid_chars = re.findall(disallowed_chars, formatted_template)
+
+    if invalid_chars:
+        raise ValueError(
+            f"Template '{template}' and formatted resource '{formatted_template}'"
+            f"contains disallowed characters: {' '.join(sorted(set(invalid_chars)))}"
+        )
+
+    return formatted_template
 
 
 def trackExists(
@@ -151,9 +216,9 @@ def convertFileExtension(
     if is_video:
         ffmpeg_args["c:v"] = "copy"
 
-    ffmpeg.input(str(source_file)).output(
-        str(output_file), **ffmpeg_args
-    ).run(overwrite_output=1)
+    ffmpeg.input(str(source_file)).output(str(output_file), **ffmpeg_args).run(
+        overwrite_output=1
+    )
 
     if remove_source:
         os.remove(source_file)

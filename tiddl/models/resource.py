@@ -73,7 +73,7 @@ class Video(BaseModel):
     title: str
     volumeNumber: int
     trackNumber: int
-    releaseDate: str
+    streamStartDate: Optional[datetime] = None
     imagePath: Optional[str] = None
     imageId: str
     vibrantColor: str
@@ -83,7 +83,7 @@ class Video(BaseModel):
     adSupportedStreamReady: bool
     djReady: bool
     stemReady: bool
-    streamStartDate: str
+    streamStartDate: Optional[datetime] = None
     allowStreaming: bool
     explicit: bool
     popularity: int

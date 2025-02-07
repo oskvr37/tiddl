@@ -10,6 +10,7 @@ CONFIG_INDENT = 2
 
 class TemplateConfig(BaseModel):
     track: str = "{artist} - {title}"
+    video: str = "{artist} - {title}"
     album: str = "{album_artist}/{album}/{number:02d}. {title}"
     playlist: str = "{playlist}/{playlist_number:02d}. {artist} - {title}"
 
