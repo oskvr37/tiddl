@@ -7,7 +7,7 @@ from .url import UrlGroup
 
 from ..ctx import Context, passContext
 
-from typing import List, Union, Literal
+from typing import List, Literal
 
 from tiddl.download import downloadTrackStream
 from tiddl.utils import (
@@ -118,20 +118,33 @@ def DownloadCommand(
             )
         except Exception as e:
             click.echo(
-                f"{click.style('✖', 'yellow')} Cant set metadata to {click.style(file_name, 'yellow')}. {e}"
+                f"{click.style('✖', 'yellow')} Cant set metadata to {click.style(file_name, 'yellow')}: {e}"
             )
 
     def downloadAlbum(album: Album):
         click.echo(f"★ Album {album.title}")
+        cover_data = Cover(album.cover).content if album.cover else b""
 
-        all_items: List[
-            Union[AlbumItemsCredits.VideoItem, AlbumItemsCredits.TrackItem]
-        ] = []
         offset = 0
 
         while True:
             album_items = api.getAlbumItemsCredits(album.id, offset=offset)
-            all_items.extend(album_items.items)
+            for item in album_items.items:
+                if isinstance(item.item, Track):
+                    track = item.item
+
+                    file_name = formatTrack(
+                        template=template or ctx.obj.config.template.album,
+                        track=track,
+                        album_artist=album.artist.name,
+                    )
+
+                    downloadTrack(
+                        track=track,
+                        file_name=file_name,
+                        cover_data=cover_data,
+                        credits=item.credits,
+                    )
 
             if (
                 album_items.limit + album_items.offset
@@ -140,25 +153,6 @@ def DownloadCommand(
                 break
 
             offset += album_items.limit
-
-        cover_data = Cover(album.cover).content if album.cover else b""
-
-        for item in all_items:
-            if isinstance(item.item, Track):
-                track = item.item
-
-                file_name = formatTrack(
-                    template=template or ctx.obj.config.template.album,
-                    track=track,
-                    album_artist=album.artist.name,
-                )
-
-                downloadTrack(
-                    track=track,
-                    file_name=file_name,
-                    cover_data=cover_data,
-                    credits=item.credits,
-                )
 
     def handleResource(resource: TidalResource):
         match resource.type:
@@ -182,71 +176,67 @@ def DownloadCommand(
             case "artist":
 
                 def getAllAlbums(singles: bool):
-                    all_albums: List[Album] = []
                     offset = 0
 
                     while True:
-                        items = api.getArtistAlbums(
+                        artist_albums = api.getArtistAlbums(
                             resource.id,
                             offset=offset,
                             filter="EPSANDSINGLES" if singles else "ALBUMS",
                         )
-                        all_albums.extend(items.items)
+
+                        for album in artist_albums.items:
+                            downloadAlbum(album)
 
                         if (
-                            items.limit + items.offset
-                            > items.totalNumberOfItems
+                            artist_albums.limit + artist_albums.offset
+                            > artist_albums.totalNumberOfItems
                         ):
                             break
 
-                        offset += items.limit
-
-                    return all_albums
+                        offset += artist_albums.limit
 
                 if singles_filter == "include":
-                    albums = getAllAlbums(False) + getAllAlbums(True)
+                    getAllAlbums(False)
+                    getAllAlbums(True)
                 else:
-                    albums = getAllAlbums(singles_filter == "only")
-
-                for album in albums:
-                    downloadAlbum(album)
+                    getAllAlbums(singles_filter == "only")
 
             case "playlist":
                 playlist = api.getPlaylist(resource.id)
                 click.echo(f"★ Playlist {playlist.title}")
 
-                all_items: List[
-                    Union[
-                        PlaylistItems.PlaylistVideoItem,
-                        PlaylistItems.PlaylistTrackItem,
-                    ]
-                ] = []
                 offset = 0
 
                 while True:
-                    items = api.getPlaylistItems(playlist.uuid, offset=offset)
-                    all_items.extend(items.items)
+                    playlist_items = api.getPlaylistItems(
+                        playlist.uuid, offset=offset
+                    )
 
-                    if items.limit + items.offset > items.totalNumberOfItems:
+                    for item in playlist_items.items:
+                        if isinstance(
+                            item.item,
+                            PlaylistItems.PlaylistTrackItem.PlaylistTrack,
+                        ):
+                            track = item.item
+
+                            file_name = formatTrack(
+                                template=template
+                                or ctx.obj.config.template.playlist,
+                                track=track,
+                                playlist_title=playlist.title,
+                                playlist_index=track.index // 100000,
+                            )
+
+                            downloadTrack(track=item.item, file_name=file_name)
+
+                    if (
+                        playlist_items.limit + playlist_items.offset
+                        > playlist_items.totalNumberOfItems
+                    ):
                         break
 
-                    offset += items.limit
-
-                for item in all_items:
-                    if isinstance(
-                        item.item, PlaylistItems.PlaylistTrackItem.PlaylistTrack
-                    ):
-                        track = item.item
-
-                        file_name = formatTrack(
-                            template=template
-                            or ctx.obj.config.template.playlist,
-                            track=track,
-                            playlist_title=playlist.title,
-                            playlist_index=track.index // 100000,
-                        )
-
-                        downloadTrack(track=item.item, file_name=file_name)
+                    offset += playlist_items.limit
 
     for resource in ctx.obj.resources:
         try:
