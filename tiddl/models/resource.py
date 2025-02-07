@@ -56,7 +56,7 @@ class Track(BaseModel):
 
 class Video(BaseModel):
 
-    class Arist(BaseModel):
+    class Artist(BaseModel):
         id: int
         name: str
         type: str
@@ -90,8 +90,8 @@ class Video(BaseModel):
     type: str
     adsUrl: Optional[str] = None
     adsPrePaywallOnly: bool
-    artist: Optional[Arist] = None
-    artists: List[Arist]
+    artist: Optional[Artist] = None
+    artists: List[Artist]
     album: Optional[Album] = None
 
 
