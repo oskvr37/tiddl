@@ -168,4 +168,4 @@ class Search(BaseModel):
     playlists: Playlists
     tracks: Tracks
     videos: Videos
-    topHit: TopHit
+    topHit: Optional[TopHit] = None

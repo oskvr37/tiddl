@@ -48,11 +48,11 @@ tiddl auth login
 
 ## Download resource
 
-You can download track / album / artist / playlist / (video coming soon)
-<!-- TODO: remove coming soon after adding video download -->
+You can download track / video / album / artist / playlist
 
 ```bash
 tiddl url https://listen.tidal.com/track/103805726 download
+tiddl url https://listen.tidal.com/video/25747442 download
 tiddl url https://listen.tidal.com/album/103805723 download
 tiddl url https://listen.tidal.com/artist/25022 download
 tiddl url https://listen.tidal.com/playlist/84974059-76af-406a-aede-ece2b78fa372 download

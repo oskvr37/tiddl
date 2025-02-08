@@ -23,6 +23,10 @@ def SearchGroup(ctx: Context, query: str):
     # it's not that big deal as we refetch one resource at most,
     # but it should be redesigned
 
+    if not search.topHit:
+        click.echo(f"No search results for '{query}'")
+        return
+
     value = search.topHit.value
     icon = click.style("\u2bcc", "magenta")
 
@@ -39,6 +43,7 @@ def SearchGroup(ctx: Context, query: str):
         resource = TidalResource(type="playlist", id=str(value.uuid))
         click.echo(f"{icon} Playlist {value.title}")
     elif isinstance(value, Video):
-        click.echo(f"{icon} Video {value.title} (currently not supported)")
+        resource = TidalResource(type="video", id=str(value.id))
+        click.echo(f"{icon} Video {value.title}")
 
     ctx.obj.resources.append(resource)

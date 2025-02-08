@@ -52,8 +52,6 @@ progress = Progress(
 
 
 def handleItemDownload(item: Union[Track, Video]):
-    # TODO: check if item is already downloaded
-
     if isinstance(item, Track):
         track_stream = api.getTrackStream(item.id, quality=QUALITY)
         urls, extension = parseTrackStream(track_stream)
