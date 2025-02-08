@@ -17,6 +17,7 @@ classifiers = [
 dependencies = [
   "pydantic>=2.9.2",
   "requests>=2.20.0",
+  "requests-cache>=1.2.1",
   "click>=8.1.7",
   "mutagen>=1.47.0",
   "ffmpeg-python>=0.2.0",

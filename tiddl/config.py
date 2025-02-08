@@ -1,4 +1,4 @@
-# TODO: 3.0 change config path to ~/.config/tiddl.json
+# 3.0 TODO: change config path to ~/.config/tiddl.json
 
 from pydantic import BaseModel
 from pathlib import Path
@@ -20,6 +20,7 @@ class TemplateConfig(BaseModel):
 class DownloadConfig(BaseModel):
     quality: TrackArg = "high"
     path: Path = Path.home() / "Music" / "Tiddl"
+    threads: int = 1
 
 
 class AuthConfig(BaseModel):
@@ -34,6 +35,7 @@ class Config(BaseModel):
     template: TemplateConfig = TemplateConfig()
     download: DownloadConfig = DownloadConfig()
     auth: AuthConfig = AuthConfig()
+    omit_cache: bool = False
 
     def save(self):
         with open(CONFIG_PATH, "w") as f:

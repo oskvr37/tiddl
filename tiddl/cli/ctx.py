@@ -16,7 +16,7 @@ class ContextObj:
     resources: list[TidalResource]
     console: Console
 
-    def __init__(self) -> None:
+    def __init__(self, omit_cache=False) -> None:
         self.config = Config.fromFile()
         self.resources = []
         self.api = None
@@ -25,7 +25,12 @@ class ContextObj:
         auth = self.config.auth
 
         if auth.token and auth.user_id and auth.country_code:
-            self.api = TidalApi(auth.token, auth.user_id, auth.country_code)
+            self.api = TidalApi(
+                auth.token,
+                auth.user_id,
+                auth.country_code,
+                omit_cache=omit_cache or self.config.omit_cache,
+            )
 
     def getApi(self) -> TidalApi:
         if self.api is None:
