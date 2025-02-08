@@ -49,7 +49,6 @@ SinglesFilter = Literal["none", "only", "include"]
     "THREADS_COUNT",
     type=int,
     help="Number of threads to use in concurrent download; use with caution.",
-    default=1,
 )
 @click.option(
     "--noskip",
@@ -189,7 +188,9 @@ def DownloadCommand(
         progress.remove_task(task_id)
         logging.info(f"✔ '{item.title}'")
 
-    pool = ThreadPoolExecutor(max_workers=THREADS_COUNT)
+    pool = ThreadPoolExecutor(
+        max_workers=THREADS_COUNT or ctx.obj.config.download.threads
+    )
 
     def submitItem(
         item: Union[Track, Video],
