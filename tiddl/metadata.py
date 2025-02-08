@@ -111,8 +111,6 @@ def addVideoMetadata(path: Path, video: Video):
     metadata.update(
         {
             "title": video.title,
-            "tracknumber": str(video.trackNumber),
-            "discnumber": str(video.volumeNumber),
             "albumartist": video.artist.name if video.artist else "",
             "artist": ";".join(
                 [artist.name.strip() for artist in video.artists]
@@ -121,6 +119,12 @@ def addVideoMetadata(path: Path, video: Video):
             "date": str(video.streamStartDate) if video.streamStartDate else "",
         }
     )
+
+    if video.trackNumber:
+        metadata["tracknumber"] = str(video.trackNumber)
+
+    if video.volumeNumber:
+        metadata["discnumber"] = str(video.volumeNumber)
 
     try:
         metadata.save(path)
