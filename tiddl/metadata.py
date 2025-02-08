@@ -9,7 +9,7 @@ from mutagen.flac import Picture
 from mutagen.mp4 import MP4 as MutagenMP4
 from mutagen.mp4 import MP4Cover
 
-from tiddl.models.resource import Track
+from tiddl.models.resource import Track, Video
 from tiddl.models.api import AlbumItemsCredits
 
 from typing import List
@@ -105,7 +105,32 @@ def addMetadata(
         logger.error(f"Failed to add metadata to {track_path}: {e}")
 
 
+def addVideoMetadata(path: Path, video: Video):
+    metadata = MutagenEasyMP4(path)
+
+    metadata.update(
+        {
+            "title": video.title,
+            "tracknumber": str(video.trackNumber),
+            "discnumber": str(video.volumeNumber),
+            "albumartist": video.artist.name if video.artist else "",
+            "artist": ";".join(
+                [artist.name.strip() for artist in video.artists]
+            ),
+            "album": video.album.title if video.album else "",
+            "date": str(video.streamStartDate) if video.streamStartDate else "",
+        }
+    )
+
+    try:
+        metadata.save(path)
+    except Exception as e:
+        logger.error(f"Failed to add metadata to {path}: {e}")
+
+
 class Cover:
+    # TODO: cache covers
+
     def __init__(self, uid: str, size=1280) -> None:
         if size > 1280:
             logger.warning(

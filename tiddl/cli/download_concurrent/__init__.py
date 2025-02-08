@@ -13,7 +13,7 @@ from rich.progress import (
 
 from tiddl.download import parseTrackStream, parseVideoStream
 from tiddl.exceptions import ApiError, AuthError
-from tiddl.metadata import Cover, addMetadata
+from tiddl.metadata import Cover, addMetadata, addVideoMetadata
 from tiddl.models.api import AlbumItemsCredits
 from tiddl.models.constants import ARG_TO_QUALITY, TrackArg
 from tiddl.models.resource import Track, Video, Album
@@ -150,8 +150,8 @@ def DownloadCommand(
             f.write(stream_data)
 
         if isinstance(item, Track):
-            if item.audioQuality == "HI_RES_LOSSLESS":
-                convertFileExtension(
+            if track_stream.audioQuality == "HI_RES_LOSSLESS":
+                path = convertFileExtension(
                     source_file=path,
                     extension=".flac",
                     remove_source=True,
@@ -168,7 +168,7 @@ def DownloadCommand(
                 logging.error(f"Can not add metadata to: {path}, {e}")
 
         elif isinstance(item, Video):
-            convertFileExtension(
+            path = convertFileExtension(
                 source_file=path,
                 extension=".mp4",
                 remove_source=True,
@@ -176,7 +176,10 @@ def DownloadCommand(
                 copy_audio=True,
             )
 
-            # TODO: add metadata
+            try:
+                addVideoMetadata(path, item)
+            except Exception as e:
+                logging.error(f"Can not add metadata to: {path}, {e}")
 
         progress.remove_task(task_id)
         logging.info(f"✔ '{item.title}'")
