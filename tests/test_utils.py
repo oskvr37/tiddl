@@ -9,6 +9,8 @@ class TestTidalResource(unittest.TestCase):
         positive_cases = [
             ("https://tidal.com/browse/track/12345678", "track", "12345678"),
             ("track/12345678", "track", "12345678"),
+            ("https://tidal.com/browse/video/12345678", "video", "12345678"),
+            ("video/12345678", "video", "12345678"),
             ("https://tidal.com/browse/album/12345678", "album", "12345678"),
             ("album/12345678", "album", "12345678"),
             ("https://tidal.com/browse/playlist/12345678", "playlist", "12345678"),

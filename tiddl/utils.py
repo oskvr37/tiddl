@@ -12,7 +12,7 @@ from typing import Literal, Union, get_args
 from tiddl.models.constants import TrackQuality, QUALITY_TO_ARG
 from tiddl.models.resource import Track, Video
 
-ResourceTypeLiteral = Literal["track", "album", "playlist", "artist"]
+ResourceTypeLiteral = Literal["track", "video", "album", "playlist", "artist"]
 
 
 class TidalResource(BaseModel):
