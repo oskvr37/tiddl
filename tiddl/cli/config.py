@@ -11,7 +11,7 @@ from tiddl.config import CONFIG_PATH
     help="Open the configuration file with the default editor",
 )
 def ConfigCommand(open: bool):
-    """Print path to the configuration file"""
+    """Print path to the configuration file."""
 
     click.echo(str(CONFIG_PATH))
 

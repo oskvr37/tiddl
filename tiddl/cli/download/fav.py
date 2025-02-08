@@ -16,7 +16,7 @@ ResourceTypeList: list[ResourceTypeLiteral] = ["track", "video", "album", "artis
 )
 @passContext
 def FavGroup(ctx: Context, resource_types: list[ResourceTypeLiteral]):
-    """Get your Tidal favorites"""
+    """Get your Tidal favorites."""
 
     api = ctx.obj.getApi()
 

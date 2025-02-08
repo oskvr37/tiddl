@@ -19,7 +19,7 @@ from tiddl.config import HOME_PATH
     "--no-cache", "-nc", is_flag=True, help="Omit Tidal API requests caching."
 )
 def cli(ctx: Context, verbose: bool, quiet: bool, no_cache: bool):
-    """TIDDL - Download Tidal tracks \u266b"""
+    """TIDDL - Tidal Downloader \u266b"""
     ctx.obj = ContextObj(omit_cache=no_cache)
 
     # latest logs

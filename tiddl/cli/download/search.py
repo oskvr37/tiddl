@@ -10,7 +10,7 @@ from ..ctx import Context, passContext
 @click.argument("query")
 @passContext
 def SearchGroup(ctx: Context, query: str):
-    """Search on Tidal"""
+    """Search on Tidal."""
 
     # TODO: give user interactive choice what to select
 

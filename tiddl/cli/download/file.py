@@ -12,7 +12,7 @@ from tiddl.utils import TidalResource
 @click.argument("filename", type=click.File(mode="r"))
 @passContext
 def FileGroup(ctx: Context, filename: TextIOWrapper):
-    """Parse txt or JSON file with urls"""
+    """Parse txt or JSON file with urls."""
 
     _, extension = splitext(filename.name)
 

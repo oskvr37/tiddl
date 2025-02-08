@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 @click.group("auth")
 def AuthGroup():
-    """Manage Tidal token"""
+    """Manage Tidal token."""
 
 
 @AuthGroup.command("login")
