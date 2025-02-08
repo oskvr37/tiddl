@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, Literal, Type, TypeVar
 
 from pydantic import BaseModel
-from requests_cache import CachedSession
+from requests_cache import CachedSession, EXPIRE_IMMEDIATELY, NEVER_EXPIRE
 
 from tiddl.models.api import (
     Album,
@@ -70,13 +70,26 @@ class TidalApi:
         }
 
     def fetch(
-        self, model: Type[T], endpoint: str, params: dict[str, Any] = {}
+        self,
+        model: Type[T],
+        endpoint: str,
+        params: dict[str, Any] = {},
+        expire_after=NEVER_EXPIRE,
     ) -> T:
         """Fetch data from the API and parse it into the given Pydantic model."""
 
-        req = self.session.get(f"{self.URL}/{endpoint}", params=params)
+        req = self.session.get(
+            f"{self.URL}/{endpoint}", params=params, expire_after=expire_after
+        )
 
-        logger.debug((endpoint, params, req.status_code))
+        logger.debug(
+            (
+                endpoint,
+                params,
+                req.status_code,
+                "HIT" if req.from_cache else "MISS",
+            )
+        )
 
         data = req.json()
 
@@ -132,7 +145,10 @@ class TidalApi:
 
     def getArtist(self, artist_id: str | int):
         return self.fetch(
-            Artist, f"artists/{artist_id}", {"countryCode": self.country_code}
+            Artist,
+            f"artists/{artist_id}",
+            {"countryCode": self.country_code},
+            expire_after=3600,
         )
 
     def getArtistAlbums(
@@ -151,6 +167,7 @@ class TidalApi:
                 "offset": offset,
                 "filter": filter,
             },
+            expire_after=3600,
         )
 
     def getFavorites(self):
@@ -158,6 +175,7 @@ class TidalApi:
             Favorites,
             f"users/{self.user_id}/favorites/ids",
             {"countryCode": self.country_code},
+            expire_after=EXPIRE_IMMEDIATELY,
         )
 
     def getPlaylist(self, playlist_uuid: str):
@@ -178,15 +196,21 @@ class TidalApi:
                 "limit": limit,
                 "offset": offset,
             },
+            expire_after=EXPIRE_IMMEDIATELY,
         )
 
     def getSearch(self, query: str):
         return self.fetch(
-            Search, "search", {"countryCode": self.country_code, "query": query}
+            Search,
+            "search",
+            {"countryCode": self.country_code, "query": query},
+            expire_after=EXPIRE_IMMEDIATELY,
         )
 
     def getSession(self):
-        return self.fetch(SessionResponse, "sessions")
+        return self.fetch(
+            SessionResponse, "sessions", expire_after=EXPIRE_IMMEDIATELY
+        )
 
     def getTrack(self, track_id: str | int):
         return self.fetch(
@@ -202,6 +226,7 @@ class TidalApi:
                 "playbackmode": "STREAM",
                 "assetpresentation": "FULL",
             },
+            expire_after=3600,
         )
 
     def getVideo(self, video_id: str | int):
@@ -218,4 +243,5 @@ class TidalApi:
                 "playbackmode": "STREAM",
                 "assetpresentation": "FULL",
             },
+            expire_after=3600,
         )
