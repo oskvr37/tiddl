@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, Literal, Type, TypeVar
 
 from pydantic import BaseModel
-from requests import Session
+from requests_cache import CachedSession
 
 from tiddl.models.api import (
     Album,
@@ -25,6 +25,7 @@ from tiddl.models.api import (
 
 from tiddl.models.constants import TrackQuality
 from tiddl.exceptions import ApiError
+from tiddl.config import HOME_PATH
 
 DEBUG = False
 T = TypeVar("T", bound=BaseModel)
@@ -51,11 +52,18 @@ class TidalApi:
     URL = "https://api.tidal.com/v1"
     LIMITS = Limits
 
-    def __init__(self, token: str, user_id: str, country_code: str) -> None:
+    def __init__(
+        self, token: str, user_id: str, country_code: str, cache_time=-1
+    ) -> None:
         self.user_id = user_id
         self.country_code = country_code
 
-        self.session = Session()
+        # 3.0 TODO: change cache path
+        CACHE_NAME = "tiddl_api_cache"
+
+        self.session = CachedSession(
+            cache_name=HOME_PATH / CACHE_NAME, expire_after=cache_time
+        )
         self.session.headers = {
             "Authorization": f"Bearer {token}",
             "Accept": "application/json",

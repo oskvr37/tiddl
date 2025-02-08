@@ -25,7 +25,12 @@ class ContextObj:
         auth = self.config.auth
 
         if auth.token and auth.user_id and auth.country_code:
-            self.api = TidalApi(auth.token, auth.user_id, auth.country_code)
+            self.api = TidalApi(
+                auth.token,
+                auth.user_id,
+                auth.country_code,
+                cache_time=self.config.cache_time,
+            )
 
     def getApi(self) -> TidalApi:
         if self.api is None:
