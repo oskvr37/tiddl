@@ -131,7 +131,9 @@ def DownloadCommand(
 
             for url in urls:
                 req = s.get(url)
-                assert req.status_code == 200, f"Could not download stream data, status code: {req.status_code}"
+                assert req.status_code == 200, (
+                    f"Could not download stream data, status code: {req.status_code}"
+                )
                 stream_data += req.content
                 progress.advance(task_id)
 
