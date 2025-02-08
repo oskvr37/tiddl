@@ -25,17 +25,23 @@ Run the package cli with `tiddl`
 
 ```bash
 $ tiddl
-
 Usage: tiddl [OPTIONS] COMMAND [ARGS]...
 
-  TIDDL - Download Tidal tracks ✨
+  TIDDL - Tidal Downloader ♫
 
 Options:
-  -v, --verbose  Show debug logs
-  --help         Show this message and exit.
+  -v, --verbose    Show debug logs.
+  -q, --quiet      Suppress logs.
+  -nc, --no-cache  Omit Tidal API requests caching.
+  --help           Show this message and exit.
 
 Commands:
-	...
+  auth    Manage Tidal token.
+  config  Print path to the configuration file.
+  fav     Get your Tidal favorites.
+  file    Parse txt or JSON file with urls.
+  search  Search on Tidal.
+  url     Get Tidal URL.
 ```
 
 # Basic usage
@@ -64,21 +70,22 @@ tiddl url https://listen.tidal.com/playlist/84974059-76af-406a-aede-ece2b78fa372
 ## Download options
 
 ```bash
-tiddl ... download -q master -o "{artist}/{title} ({album})"
+tiddl url track/103805726 download -q master -o "{artist}/{title} ({album})"
 ```
 
 This command will:
+
 - download with highest quality (master)
 - save track with title and album name in artist folder
 
 ### Download quality
 
-| Quality | File extension | Details |
-|:-:|:-:|:-:|
-| LOW | .m4a | 96 kbps |
-| NORMAL | .m4a | 320 kbps |
-| HIGH | .flac | 16-bit, 44.1 kHz |
-| MASTER | .flac | Up to 24-bit, 192 kHz |
+| Quality | File extension |        Details        |
+| :-----: | :------------: | :-------------------: |
+|   LOW   |      .m4a      |        96 kbps        |
+| NORMAL  |      .m4a      |       320 kbps        |
+|  HIGH   |     .flac      |   16-bit, 44.1 kHz    |
+| MASTER  |     .flac      | Up to 24-bit, 192 kHz |
 
 ### Output format
 
