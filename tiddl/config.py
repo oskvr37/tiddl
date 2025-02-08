@@ -20,7 +20,7 @@ class TemplateConfig(BaseModel):
 class DownloadConfig(BaseModel):
     quality: TrackArg = "high"
     path: Path = Path.home() / "Music" / "Tiddl"
-    threads: int = 1
+    threads: int = 4
 
 
 class AuthConfig(BaseModel):
