@@ -1,10 +1,10 @@
 import logging
+import click
+
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import List, Literal, Union
-
-import click
 from requests import Session
+
 from rich.progress import (
     BarColumn,
     Progress,
@@ -14,15 +14,17 @@ from rich.progress import (
 from tiddl.download import parseTrackStream, parseVideoStream
 from tiddl.exceptions import ApiError, AuthError
 from tiddl.metadata import Cover, addMetadata
-from tiddl.models.api import AlbumItemsCredits, PlaylistItems
+from tiddl.models.api import AlbumItemsCredits
 from tiddl.models.constants import ARG_TO_QUALITY, TrackArg
 from tiddl.models.resource import Track, Video, Album
 from tiddl.utils import (
     TidalResource,
-    convertFileExtension,
     formatResource,
+    convertFileExtension,
     trackExists,
 )
+
+from typing import List, Literal, Union
 
 from ..ctx import Context, passContext
 
@@ -214,7 +216,7 @@ def DownloadCommand(
         )
 
     def downloadAlbum(album: Album):
-        logging.info(f"★ Album: {album.title}")
+        logging.info(f"★ Album '{album.title}'")
 
         cover_data = Cover(album.cover).content if album.cover else b""
 
@@ -268,22 +270,64 @@ def DownloadCommand(
             case "artist":
                 artist = api.getArtist(resource.id)
                 logging.info(f"★ Artist: {artist.name}")
-                pass
+
+                def getAllAlbums(singles: bool):
+                    offset = 0
+
+                    while True:
+                        artist_albums = api.getArtistAlbums(
+                            resource.id,
+                            offset=offset,
+                            filter="EPSANDSINGLES" if singles else "ALBUMS",
+                        )
+
+                        for album in artist_albums.items:
+                            downloadAlbum(album)
+
+                        if (
+                            artist_albums.limit + artist_albums.offset
+                            > artist_albums.totalNumberOfItems
+                        ):
+                            break
+
+                        offset += artist_albums.limit
+
+                if SINGLES_FILTER == "include":
+                    getAllAlbums(False)
+                    getAllAlbums(True)
+                else:
+                    getAllAlbums(SINGLES_FILTER == "only")
 
             case "playlist":
                 playlist = api.getPlaylist(resource.id)
                 logging.info(f"★ Playlist: {playlist.title}")
-                pass
+                offset = 0
+
+                while True:
+                    playlist_items = api.getPlaylistItems(
+                        playlist.uuid, offset=offset
+                    )
+
+                    for item in playlist_items.items:
+                        filename = formatResource(
+                            template=TEMPLATE
+                            or ctx.obj.config.template.playlist,
+                            resource=item.item,
+                            playlist_title=playlist.title,
+                            playlist_index=item.item.index // 100000,
+                        )
+
+                        submitItem(item.item, filename)
+
+                    if (
+                        playlist_items.limit + playlist_items.offset
+                        > playlist_items.totalNumberOfItems
+                    ):
+                        break
+
+                    offset += playlist_items.limit
 
     progress.start()
-
-    # TODO: remove this
-    ctx.obj.resources.extend(
-        [
-            TidalResource(type="track", id="103805726"),
-            TidalResource(type="album", id="103805723"),
-        ]
-    )
 
     # TODO: make sure every resource is unique
     for resource in ctx.obj.resources:
