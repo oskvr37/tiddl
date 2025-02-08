@@ -21,7 +21,7 @@ def UrlGroup(ctx: Context, url: TidalResource):
     Get Tidal URL.
 
     It can be Tidal link or `resource_type/resource_id` format.
-    The resource can be a track, album, playlist or artist.
+    The resource can be a track, video, album, playlist or artist.
     """
 
     ctx.obj.resources.append(url)

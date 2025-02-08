@@ -3,7 +3,7 @@ import click
 from tiddl.utils import TidalResource, ResourceTypeLiteral
 from ..ctx import Context, passContext
 
-ResourceTypeList: list[ResourceTypeLiteral] = ["track", "album", "artist", "playlist"]
+ResourceTypeList: list[ResourceTypeLiteral] = ["track", "video", "album", "artist", "playlist"]
 
 
 @click.group("fav")
