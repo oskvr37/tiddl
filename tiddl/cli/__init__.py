@@ -7,6 +7,7 @@ from .ctx import ContextObj, passContext, Context
 from .auth import AuthGroup
 from .download import UrlGroup, FavGroup, SearchGroup, FileGroup
 from .config import ConfigCommand
+from .download_concurrent import DownloadCommand
 
 from tiddl.config import HOME_PATH
 
@@ -58,6 +59,7 @@ cli.add_command(UrlGroup)
 cli.add_command(FavGroup)
 cli.add_command(SearchGroup)
 cli.add_command(FileGroup)
+cli.add_command(DownloadCommand)
 
 if __name__ == "__main__":
     cli()
