@@ -34,7 +34,7 @@ class Config(BaseModel):
     template: TemplateConfig = TemplateConfig()
     download: DownloadConfig = DownloadConfig()
     auth: AuthConfig = AuthConfig()
-    cache_time: int = -1
+    omit_cache: bool = False
 
     def save(self):
         with open(CONFIG_PATH, "w") as f:

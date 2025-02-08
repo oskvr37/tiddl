@@ -13,11 +13,14 @@ from tiddl.config import HOME_PATH
 
 @click.group()
 @passContext
-@click.option("--verbose", "-v", is_flag=True, help="Show debug logs")
-@click.option("--quiet", "-q", is_flag=True, help="Suppress logs")
-def cli(ctx: Context, verbose: bool, quiet: bool):
+@click.option("--verbose", "-v", is_flag=True, help="Show debug logs.")
+@click.option("--quiet", "-q", is_flag=True, help="Suppress logs.")
+@click.option(
+    "--no-cache", "-nc", is_flag=True, help="Omit Tidal API requests caching."
+)
+def cli(ctx: Context, verbose: bool, quiet: bool, no_cache: bool):
     """TIDDL - Download Tidal tracks \u266b"""
-    ctx.obj = ContextObj()
+    ctx.obj = ContextObj(omit_cache=no_cache)
 
     # latest logs
     file_handler = logging.FileHandler(

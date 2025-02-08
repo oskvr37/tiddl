@@ -53,7 +53,7 @@ class TidalApi:
     LIMITS = Limits
 
     def __init__(
-        self, token: str, user_id: str, country_code: str, cache_time=-1
+        self, token: str, user_id: str, country_code: str, omit_cache=False
     ) -> None:
         self.user_id = user_id
         self.country_code = country_code
@@ -62,7 +62,7 @@ class TidalApi:
         CACHE_NAME = "tiddl_api_cache"
 
         self.session = CachedSession(
-            cache_name=HOME_PATH / CACHE_NAME, expire_after=cache_time
+            cache_name=HOME_PATH / CACHE_NAME, always_revalidate=omit_cache
         )
         self.session.headers = {
             "Authorization": f"Bearer {token}",
