@@ -23,6 +23,10 @@ def SearchGroup(ctx: Context, query: str):
     # it's not that big deal as we refetch one resource at most,
     # but it should be redesigned
 
+    if not search.topHit:
+        click.echo(f"No search results for '{query}'")
+        return
+
     value = search.topHit.value
     icon = click.style("\u2bcc", "magenta")
 
