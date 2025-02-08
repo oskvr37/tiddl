@@ -77,7 +77,7 @@ def DownloadCommand(
     )
 
     DOWNLOAD_QUALITY = ARG_TO_QUALITY[
-        ctx.obj.config.download.quality or QUALITY
+        QUALITY or ctx.obj.config.download.quality
     ]
 
     api = ctx.obj.getApi()
@@ -98,9 +98,19 @@ def DownloadCommand(
     ):
         if isinstance(item, Track):
             track_stream = api.getTrackStream(item.id, quality=DOWNLOAD_QUALITY)
+            logging.info(
+                f"★ Track: {item.title}"
+                f" {(str(track_stream.bitDepth) + ' bit') if track_stream.bitDepth else ''} "
+                f" {str(track_stream.sampleRate) + ' kHz' if track_stream.sampleRate else ''}"
+            )
+
             urls, extension = parseTrackStream(track_stream)
         elif isinstance(item, Video):
             video_stream = api.getVideoStream(item.id)
+            logging.info(
+                f"★ Video: {item.title} {video_stream.videoQuality} quality"
+            )
+
             urls = parseVideoStream(video_stream)
             extension = ".ts"
         else:
@@ -121,6 +131,7 @@ def DownloadCommand(
 
             for url in urls:
                 req = s.get(url)
+                assert req.status_code == 200, f"Could not download stream data, status code: {req.status_code}"
                 stream_data += req.content
                 progress.advance(task_id)
 
@@ -140,7 +151,13 @@ def DownloadCommand(
                     copy_audio=True,  # extract flac from m4a container
                 )
 
-            addMetadata(path, item, cover_data, credits)
+            if not cover_data and item.album.cover:
+                cover_data = Cover(item.album.cover).content
+
+            try:
+                addMetadata(path, item, cover_data, credits)
+            except Exception as e:
+                logging.error(f"Can not add metadata to: {path}, {e}")
 
         elif isinstance(item, Video):
             convertFileExtension(
@@ -159,16 +176,22 @@ def DownloadCommand(
     pool = ThreadPoolExecutor(max_workers=THREADS_COUNT)
 
     def submitItem(item: Union[Track, Video], filename: str):
-        path = ctx.obj.config.download.path / f"{filename}.*"
+        if not item.allowStreaming:
+            logging.warning(
+                f"✖ {type(item).__name__}: {item.title} does not allow streaming"
+            )
+            return
 
-        logging.debug(f'{type(item).__name__} {item.id} path: "{path}"')
+        path = ctx.obj.config.download.path / f"{filename}.*"
 
         if not DO_NOT_SKIP:  # check if item is already downloaded
             if isinstance(item, Track):
                 if trackExists(item.audioQuality, DOWNLOAD_QUALITY, path):
+                    logging.debug(f"✖ Skipping Track: {item.title}")
                     return
             elif isinstance(item, Video):
                 if path.with_suffix(".mp4").exists():
+                    logging.debug(f"✖ Skipping Video: {item.title}")
                     return
 
         # TODO: cover, credits
@@ -186,8 +209,6 @@ def DownloadCommand(
         match resource.type:
             case "track":
                 track = api.getTrack(resource.id)
-                logging.info(f"★ Track: {track.title}")
-
                 filename = formatResource(
                     TEMPLATE or ctx.obj.config.template.track, track
                 )
@@ -196,8 +217,6 @@ def DownloadCommand(
 
             case "video":
                 video = api.getVideo(resource.id)
-                logging.info(f"★ Video: {video.title}")
-
                 filename = formatResource(
                     TEMPLATE or ctx.obj.config.template.video, video
                 )
