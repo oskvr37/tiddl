@@ -16,7 +16,7 @@ from tiddl.exceptions import ApiError, AuthError
 from tiddl.metadata import Cover, addMetadata
 from tiddl.models.api import AlbumItemsCredits, PlaylistItems
 from tiddl.models.constants import ARG_TO_QUALITY, TrackArg
-from tiddl.models.resource import Track, Video
+from tiddl.models.resource import Track, Video, Album
 from tiddl.utils import (
     TidalResource,
     convertFileExtension,
@@ -99,16 +99,16 @@ def DownloadCommand(
         if isinstance(item, Track):
             track_stream = api.getTrackStream(item.id, quality=DOWNLOAD_QUALITY)
             logging.info(
-                f"★ Track: {item.title}"
-                f" {(str(track_stream.bitDepth) + ' bit') if track_stream.bitDepth else ''} "
-                f" {str(track_stream.sampleRate) + ' kHz' if track_stream.sampleRate else ''}"
+                f"★ Track '{item.title}' "
+                f"{(str(track_stream.bitDepth) + ' bit') if track_stream.bitDepth else ''} "
+                f"{str(track_stream.sampleRate) + ' kHz' if track_stream.sampleRate else ''}"
             )
 
             urls, extension = parseTrackStream(track_stream)
         elif isinstance(item, Video):
             video_stream = api.getVideoStream(item.id)
             logging.info(
-                f"★ Video: {item.title} {video_stream.videoQuality} quality"
+                f"★ Video '{item.title}' {video_stream.videoQuality} quality"
             )
 
             urls = parseVideoStream(video_stream)
@@ -137,7 +137,7 @@ def DownloadCommand(
                     f"{type(item).__name__} '{item.title}', "
                     f"status code: {req.status_code}"
                 )
-                
+
                 stream_data += req.content
                 progress.advance(task_id)
 
@@ -177,14 +177,19 @@ def DownloadCommand(
             # TODO: add metadata
 
         progress.remove_task(task_id)
-        logging.info(f'✔ "{item.title}"')
+        logging.info(f"✔ '{item.title}'")
 
     pool = ThreadPoolExecutor(max_workers=THREADS_COUNT)
 
-    def submitItem(item: Union[Track, Video], filename: str):
+    def submitItem(
+        item: Union[Track, Video],
+        filename: str,
+        cover_data=b"",
+        credits: List[AlbumItemsCredits.ItemWithCredits.CreditsEntry] = [],
+    ):
         if not item.allowStreaming:
             logging.warning(
-                f"✖ {type(item).__name__}: {item.title} does not allow streaming"
+                f"✖ {type(item).__name__} '{item.title}' does not allow streaming"
             )
             return
 
@@ -200,14 +205,40 @@ def DownloadCommand(
                     logging.debug(f"✖ Skipping Video: {item.title}")
                     return
 
-        # TODO: cover, credits
-        future = pool.submit(
-            handleItemDownload, item=item, path=path, cover_data=b"", credits=[]
+        pool.submit(
+            handleItemDownload,
+            item=item,
+            path=path,
+            cover_data=cover_data,
+            credits=credits,
         )
-        try:
-            future.result()
-        except Exception as e:
-            logging.error(e)
+
+    def downloadAlbum(album: Album):
+        logging.info(f"★ Album: {album.title}")
+
+        cover_data = Cover(album.cover).content if album.cover else b""
+
+        offset = 0
+
+        while True:
+            album_items = api.getAlbumItemsCredits(album.id, offset=offset)
+
+            for item in album_items.items:
+                filename = formatResource(
+                    template=TEMPLATE or ctx.obj.config.template.album,
+                    resource=item.item,
+                    album_artist=album.artist.name,
+                )
+
+                submitItem(item.item, filename, cover_data, item.credits)
+
+            if (
+                album_items.limit + album_items.offset
+                > album_items.totalNumberOfItems
+            ):
+                break
+
+            offset += album_items.limit
 
     def handleResource(resource: TidalResource) -> None:
         logging.debug(f"Handling Resource {resource}")
@@ -231,8 +262,8 @@ def DownloadCommand(
 
             case "album":
                 album = api.getAlbum(resource.id)
-                logging.info(f"★ Album: {album.title}")
-                pass
+
+                downloadAlbum(album)
 
             case "artist":
                 artist = api.getArtist(resource.id)
