@@ -4,7 +4,12 @@ from pathlib import Path
 from typing import Any, Literal, Type, TypeVar
 
 from pydantic import BaseModel
-from requests_cache import CachedSession, EXPIRE_IMMEDIATELY, NEVER_EXPIRE
+from requests_cache import (
+    CachedSession,
+    EXPIRE_IMMEDIATELY,
+    NEVER_EXPIRE,
+    DO_NOT_CACHE,
+)
 
 from tiddl.models.api import (
     Album,
@@ -28,6 +33,7 @@ from tiddl.exceptions import ApiError
 from tiddl.config import HOME_PATH
 
 DEBUG = False
+
 T = TypeVar("T", bound=BaseModel)
 
 logger = logging.getLogger(__name__)
@@ -209,7 +215,7 @@ class TidalApi:
 
     def getSession(self):
         return self.fetch(
-            SessionResponse, "sessions", expire_after=EXPIRE_IMMEDIATELY
+            SessionResponse, "sessions", expire_after=DO_NOT_CACHE
         )
 
     def getTrack(self, track_id: str | int):
@@ -226,7 +232,7 @@ class TidalApi:
                 "playbackmode": "STREAM",
                 "assetpresentation": "FULL",
             },
-            expire_after=3600,
+            expire_after=DO_NOT_CACHE,
         )
 
     def getVideo(self, video_id: str | int):
@@ -243,5 +249,5 @@ class TidalApi:
                 "playbackmode": "STREAM",
                 "assetpresentation": "FULL",
             },
-            expire_after=3600,
+            expire_after=DO_NOT_CACHE,
         )
