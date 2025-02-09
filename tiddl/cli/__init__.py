@@ -10,6 +10,8 @@ from .config import ConfigCommand
 
 from tiddl.config import HOME_PATH
 
+from .auth import refresh
+
 
 @click.group()
 @passContext
@@ -50,6 +52,8 @@ def cli(ctx: Context, verbose: bool, quiet: bool, no_cache: bool):
     )
 
     logging.getLogger("urllib3").setLevel(logging.ERROR)
+
+    refresh(ctx)
 
 
 cli.add_command(ConfigCommand)

@@ -4,8 +4,15 @@ import logging
 from click import style
 from time import sleep, time
 
-from tiddl.auth import getDeviceAuth, getToken, refreshToken, removeToken, AuthError
 from tiddl.config import AuthConfig
+from tiddl.auth import (
+    getDeviceAuth,
+    getToken,
+    refreshToken,
+    removeToken,
+    AuthError,
+)
+
 from .ctx import passContext, Context
 
 
@@ -17,27 +24,31 @@ def AuthGroup():
     """Manage Tidal token."""
 
 
+def refresh(ctx: Context):
+    """Refresh auth token when is expired"""
+
+    auth = ctx.obj.config.auth
+
+    if auth.refresh_token and time() > auth.expires:
+        click.echo(style("Refreshing token...", fg="yellow"))
+        token = refreshToken(auth.refresh_token)
+
+        ctx.obj.config.auth.expires = token.expires_in + int(time())
+        ctx.obj.config.auth.token = token.access_token
+
+        ctx.obj.config.save()
+
+        click.echo(style("Refreshed auth token!", fg="green"))
+
+
 @AuthGroup.command("login")
 @passContext
 def login(ctx: Context):
     """Add token to the config"""
 
-    # TODO: refresh token automatically.
-    # we can just invoke this command
-
-    auth = ctx.obj.config.auth
-
-    if auth.token:
-        if auth.refresh_token and time() > auth.expires:
-            click.echo(style("Refreshing token...", fg="yellow"))
-            token = refreshToken(auth.refresh_token)
-
-            ctx.obj.config.auth.expires = token.expires_in + int(time())
-            ctx.obj.config.auth.token = token.access_token
-
-            ctx.obj.config.save()
-
-        click.echo(style("Authenticated!", fg="green"))
+    if ctx.obj.config.auth.token:
+        click.echo(style("Already logged in.", fg="green"))
+        refresh(ctx)
         return
 
     auth = getDeviceAuth()
@@ -58,7 +69,9 @@ def login(ctx: Context):
                 time_left = auth_end_at - time()
                 minutes, seconds = time_left // 60, int(time_left % 60)
 
-                click.echo(f"\rTime left: {minutes:.0f}:{seconds:02d}", nl=False)
+                click.echo(
+                    f"\rTime left: {minutes:.0f}:{seconds:02d}", nl=False
+                )
                 continue
 
             if e.error == "expired_token":
