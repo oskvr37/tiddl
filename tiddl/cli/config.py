@@ -1,6 +1,5 @@
 import click
 
-from rich import print
 from tiddl.config import CONFIG_PATH
 
 from .ctx import Context, passContext
@@ -50,7 +49,7 @@ def ConfigCommand(
     elif PRINT_CONFIG:
         config_without_auth = ctx.obj.config.model_copy()
         del config_without_auth.auth
-        print(config_without_auth.model_dump_json(indent=2))
+        ctx.obj.console.print(config_without_auth.model_dump_json(indent=2))
 
     else:
         click.echo(str(CONFIG_PATH))
