@@ -22,7 +22,8 @@ def AuthGroup():
 def login(ctx: Context):
     """Add token to the config"""
 
-    # TODO: refresh token automatically
+    # TODO: refresh token automatically.
+    # we can just invoke this command
 
     auth = ctx.obj.config.auth
 
@@ -45,7 +46,7 @@ def login(ctx: Context):
     click.launch(uri)
     click.echo(f"Go to {style(uri, fg='cyan')} and complete authentication!")
 
-    time_left = time() + auth.expiresIn
+    auth_end_at = time() + auth.expiresIn
 
     while True:
         sleep(auth.interval)
@@ -54,9 +55,10 @@ def login(ctx: Context):
             token = getToken(auth.deviceCode)
         except AuthError as e:
             if e.error == "authorization_pending":
-                # FIX: `Time left: 0 secondsss` 🐍
+                time_left = auth_end_at - time()
+                minutes, seconds = time_left // 60, int(time_left % 60)
 
-                click.echo(f"\rTime left: {time_left - time():.0f} seconds", nl=False)
+                click.echo(f"\rTime left: {minutes:.0f}:{seconds:02d}", nl=False)
                 continue
 
             if e.error == "expired_token":
@@ -65,15 +67,13 @@ def login(ctx: Context):
                 )
                 break
 
-        new_auth = AuthConfig(
+        ctx.obj.config.auth = AuthConfig(
             token=token.access_token,
             refresh_token=token.refresh_token,
             expires=token.expires_in + int(time()),
             user_id=str(token.user.userId),
             country_code=token.user.countryCode,
         )
-
-        ctx.obj.config.auth = new_auth
         ctx.obj.config.save()
 
         click.echo(style("\nAuthenticated!", fg="green"))
