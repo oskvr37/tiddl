@@ -22,6 +22,8 @@ def AuthGroup():
 def login(ctx: Context):
     """Add token to the config"""
 
+    # TODO: refresh token automatically
+
     auth = ctx.obj.config.auth
 
     if auth.token:

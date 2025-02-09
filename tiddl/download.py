@@ -105,8 +105,9 @@ def downloadTrackStream(track_stream: TrackStream) -> tuple[bytes, str]:
 def parseVideoStream(video_stream: VideoStream) -> list[str]:
     """Parse `video_stream` manifest and return video urls"""
 
-    # TOOD: add video quality arg.
-    # for now we download the highest quality
+    # TODO: add video quality arg,
+    # for now we download the highest quality.
+    # -vq option in download command
 
     class VideoManifest(BaseModel):
         mimeType: str
