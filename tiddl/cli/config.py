@@ -1,22 +1,37 @@
 import click
 
+from rich import print
 from tiddl.config import CONFIG_PATH
+
+from .ctx import Context, passContext
 
 
 @click.command("config")
 @click.option(
     "--open",
     "-o",
+    "OPEN_CONFIG",
     is_flag=True,
     help="Open the configuration file with the default editor.",
 )
 @click.option(
     "--locate",
     "-l",
+    "LOCATE_CONFIG",
     is_flag=True,
     help="Launch a file manager with the located configuration file.",
 )
-def ConfigCommand(open: bool, locate: bool):
+@click.option(
+    "--print",
+    "-p",
+    "PRINT_CONFIG",
+    is_flag=True,
+    help="Show current configuration.",
+)
+@passContext
+def ConfigCommand(
+    ctx: Context, OPEN_CONFIG: bool, LOCATE_CONFIG: bool, PRINT_CONFIG: bool
+):
     """
     Configuration file options.
 
@@ -26,9 +41,16 @@ def ConfigCommand(open: bool, locate: bool):
     - this will open your config with vim editor.
     """
 
-    if open:
+    if OPEN_CONFIG:
         click.launch(str(CONFIG_PATH))
-    elif locate:
+
+    elif LOCATE_CONFIG:
         click.launch(str(CONFIG_PATH), locate=True)
+
+    elif PRINT_CONFIG:
+        config_without_auth = ctx.obj.config.model_copy()
+        del config_without_auth.auth
+        print(config_without_auth.model_dump_json(indent=2))
+
     else:
         click.echo(str(CONFIG_PATH))
