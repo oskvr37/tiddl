@@ -7,6 +7,8 @@
 
 TIDDL is Python CLI application that allows downloading Tidal tracks.
 
+<img src="https://raw.githubusercontent.com/oskvr37/tiddl/refs/heads/main/docs/demo.gif" alt="tiddl album download in 6 seconds" />
+
 It's inspired by [Tidal-Media-Downloader](https://github.com/yaronzz/Tidal-Media-Downloader) - currently not mantained project.
 This repository will contain features requests from that project and will be the enhanced version.
 
