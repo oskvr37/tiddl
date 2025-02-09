@@ -41,7 +41,19 @@ SinglesFilter = Literal["none", "only", "include"]
     "--quality", "-q", "QUALITY", type=click.Choice(TrackArg.__args__)
 )
 @click.option(
-    "--output", "-o", "TEMPLATE", type=str, help="Format track file template."
+    "--output",
+    "-o",
+    "TEMPLATE",
+    type=str,
+    help="Format output file template. "
+    "This will be used instead of your config templates.",
+)
+@click.option(
+    "--path",
+    "-p",
+    "PATH",
+    type=str,
+    help="Base path of download directory. Default is ~/Music/Tiddl.",
 )
 @click.option(
     "--threads",
@@ -64,13 +76,14 @@ SinglesFilter = Literal["none", "only", "include"]
     "SINGLES_FILTER",
     type=click.Choice(SinglesFilter.__args__),
     default="none",
-    help="Defines how to treat artist EPs and singles.",
+    help="Defines how to treat artist EPs and singles, used while downloading artist.",
 )
 @passContext
 def DownloadCommand(
     ctx: Context,
     QUALITY: TrackArg | None,
     TEMPLATE: str | None,
+    PATH: str | None,
     THREADS_COUNT: int,
     DO_NOT_SKIP: bool,
     SINGLES_FILTER: SinglesFilter,
@@ -79,7 +92,7 @@ def DownloadCommand(
 
     # TODO: pretty print
     logging.debug(
-        (QUALITY, TEMPLATE, THREADS_COUNT, DO_NOT_SKIP, SINGLES_FILTER)
+        (QUALITY, TEMPLATE, PATH, THREADS_COUNT, DO_NOT_SKIP, SINGLES_FILTER)
     )
 
     DOWNLOAD_QUALITY = ARG_TO_QUALITY[
@@ -204,7 +217,8 @@ def DownloadCommand(
             )
             return
 
-        path = ctx.obj.config.download.path / f"{filename}.*"
+        path = Path(PATH) if PATH else ctx.obj.config.download.path
+        path /= f"{filename}.*"
 
         if not DO_NOT_SKIP:  # check if item is already downloaded
             if isinstance(item, Track):
