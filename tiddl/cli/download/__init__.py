@@ -38,7 +38,11 @@ SinglesFilter = Literal["none", "only", "include"]
 
 @click.command("download")
 @click.option(
-    "--quality", "-q", "QUALITY", type=click.Choice(TrackArg.__args__)
+    "--quality",
+    "-q",
+    "QUALITY",
+    type=click.Choice(TrackArg.__args__),
+    help="Track quality.",
 )
 @click.option(
     "--output",
@@ -68,7 +72,7 @@ SinglesFilter = Literal["none", "only", "include"]
     "DO_NOT_SKIP",
     is_flag=True,
     default=False,
-    help="Do not skip already downloaded tracks.",
+    help="Do not skip already downloaded files.",
 )
 @click.option(
     "--singles",
