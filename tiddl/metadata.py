@@ -58,7 +58,9 @@ def addMetadata(
             )
             metadata["ORIGINALYEAR"] = str(track.streamStartDate.strftime("%Y"))
 
-        metadata["COPYRIGHT"] = track.copyright
+        if track.copyright:
+            metadata["COPYRIGHT"] = track.copyright
+
         metadata["ISRC"] = track.isrc
 
         if track.bpm:
@@ -83,7 +85,7 @@ def addMetadata(
                 "title": track.title,
                 "tracknumber": str(track.trackNumber),
                 "discnumber": str(track.volumeNumber),
-                "copyright": track.copyright,
+                "copyright": track.copyright if track.copyright else "",
                 "albumartist": track.artist.name if track.artist else "",
                 "artist": ";".join(
                     [artist.name.strip() for artist in track.artists]
