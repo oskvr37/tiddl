@@ -38,7 +38,7 @@ class Track(BaseModel):
     volumeNumber: int
     version: Optional[str] = None
     popularity: int
-    copyright: str
+    copyright: Optional[str] = None
     bpm: Optional[int] = None
     url: str
     isrc: str
