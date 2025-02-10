@@ -5,7 +5,7 @@
 ![GitHub commits since latest release](https://img.shields.io/github/commits-since/oskvr37/tiddl/latest?style=for-the-badge)
 [<img src="https://img.shields.io/badge/gitmoji-%20😜%20😍-FFDD67.svg?style=for-the-badge" />](https://gitmoji.dev)
 
-TIDDL is Python CLI application that allows downloading Tidal tracks.
+TIDDL is the Python CLI application that allows downloading Tidal tracks and videos!
 
 <img src="https://raw.githubusercontent.com/oskvr37/tiddl/refs/heads/main/docs/demo.gif" alt="tiddl album download in 6 seconds" />
 
