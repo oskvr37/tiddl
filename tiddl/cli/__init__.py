@@ -53,8 +53,10 @@ def cli(ctx: Context, verbose: bool, quiet: bool, no_cache: bool):
 
     logging.getLogger("urllib3").setLevel(logging.ERROR)
 
-    # BUG: tiddl raises AuthError after token refresh
-    # probably ctx is not working like this
+    # BUG: tiddl raises AuthError after token refresh,
+    # probably ctx is not working like this.
+    # NOTE: got 'fixed',
+    # but i will know if it works after my token expire
 
     if ctx.invoked_subcommand in ("fav", "file", "search", "url"):
         ctx.invoke(refresh)
