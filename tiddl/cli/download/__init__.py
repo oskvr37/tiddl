@@ -1,16 +1,18 @@
 import logging
 import click
 
+from time import perf_counter
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from requests import Session
 
 from rich.progress import (
-    BarColumn,
+    SpinnerColumn,
     Progress,
     TextColumn,
-    TransferSpeedColumn,
 )
+
+from rich.highlighter import ReprHighlighter
 
 from tiddl.download import parseTrackStream, parseVideoStream
 from tiddl.exceptions import ApiError, AuthError
@@ -107,9 +109,12 @@ def DownloadCommand(
     api = ctx.obj.getApi()
 
     progress = Progress(
-        TextColumn("{task.description}"),
-        BarColumn(bar_width=40),
-        TransferSpeedColumn(),
+        SpinnerColumn(),
+        TextColumn(
+            "{task.description} • "
+            "{task.fields[speed]:.2f} Mbps • {task.fields[size]:.2f} MB",
+            highlighter=ReprHighlighter(),
+        ),
         console=ctx.obj.console,
         transient=True,
         auto_refresh=True,
@@ -123,8 +128,8 @@ def DownloadCommand(
     ):
         if isinstance(item, Track):
             track_stream = api.getTrackStream(item.id, quality=DOWNLOAD_QUALITY)
-            logging.info(
-                f"★ Track '{item.title}' "
+            description = (
+                f"Track '{item.title}' "
                 f"{(str(track_stream.bitDepth) + ' bit') if track_stream.bitDepth else ''} "
                 f"{str(track_stream.sampleRate) + ' kHz' if track_stream.sampleRate else ''}"
             )
@@ -132,8 +137,8 @@ def DownloadCommand(
             urls, extension = parseTrackStream(track_stream)
         elif isinstance(item, Video):
             video_stream = api.getVideoStream(item.id)
-            logging.info(
-                f"★ Video '{item.title}' {video_stream.videoQuality} quality"
+            description = (
+                f"Video '{item.title}' {video_stream.videoQuality} quality"
             )
 
             urls = parseVideoStream(video_stream)
@@ -145,14 +150,18 @@ def DownloadCommand(
             )
 
         task_id = progress.add_task(
-            description=f"{type(item).__name__}: {item.title}",
+            description=description,
             start=True,
             visible=True,
             total=None,
+            # fields
+            speed=0,
+            size=0,
         )
 
         with Session() as s:
             stream_data = b""
+            time_start = perf_counter()
 
             for url in urls:
                 req = s.get(url)
@@ -164,7 +173,18 @@ def DownloadCommand(
                 )
 
                 stream_data += req.content
-                progress.advance(task_id, len(req.content))
+                speed = (
+                    len(stream_data)
+                    / (perf_counter() - time_start)
+                    / (1024 * 128)
+                )
+                size = len(stream_data) / 1024**2
+                progress.update(
+                    task_id,
+                    advance=len(req.content),
+                    speed=speed,
+                    size=size,
+                )
 
         path = path.with_suffix(extension)
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -205,7 +225,7 @@ def DownloadCommand(
                 logging.error(f"Can not add metadata to: {path}, {e}")
 
         progress.remove_task(task_id)
-        logging.info(f"✔ '{item.title}'")
+        logging.info(f"{item.title!r} • {speed:.2f} Mbps • {size:.2f} MB")
 
     pool = ThreadPoolExecutor(
         max_workers=THREADS_COUNT or ctx.obj.config.download.threads
