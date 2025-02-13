@@ -6,13 +6,12 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from requests import Session
 
+from rich.highlighter import ReprHighlighter
 from rich.progress import (
     SpinnerColumn,
     Progress,
     TextColumn,
 )
-
-from rich.highlighter import ReprHighlighter
 
 from tiddl.download import parseTrackStream, parseVideoStream
 from tiddl.exceptions import ApiError, AuthError
@@ -265,7 +264,7 @@ def DownloadCommand(
         )
 
     def downloadAlbum(album: Album):
-        logging.info(f"★ Album '{album.title}'")
+        logging.info(f"Album {album.title!r}")
 
         cover_data = Cover(album.cover).content if album.cover else b""
 
@@ -318,7 +317,7 @@ def DownloadCommand(
 
             case "artist":
                 artist = api.getArtist(resource.id)
-                logging.info(f"★ Artist '{artist.name}'")
+                logging.info(f"Artist {artist.name!r}")
 
                 def getAllAlbums(singles: bool):
                     offset = 0
@@ -349,7 +348,7 @@ def DownloadCommand(
 
             case "playlist":
                 playlist = api.getPlaylist(resource.id)
-                logging.info(f"★ Playlist '{playlist.title}'")
+                logging.info(f"Playlist {playlist.title!r}")
                 offset = 0
 
                 while True:
