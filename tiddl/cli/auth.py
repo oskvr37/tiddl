@@ -1,7 +1,6 @@
 import click
 import logging
 
-from click import style
 from time import sleep, time
 
 from tiddl.config import AuthConfig
@@ -27,18 +26,19 @@ def AuthGroup():
 def refresh(ctx: Context):
     """Refresh auth token when is expired"""
 
+    logger.debug("Invoked refresh command")
+
     auth = ctx.obj.config.auth
 
     if auth.refresh_token and time() > auth.expires:
-        click.echo(style("Refreshing token...", fg="yellow"))
+        logger.info("Refreshing token...")
         token = refreshToken(auth.refresh_token)
 
         ctx.obj.config.auth.expires = token.expires_in + int(time())
         ctx.obj.config.auth.token = token.access_token
 
         ctx.obj.config.save()
-
-        click.echo(style("Refreshed auth token!", fg="green"))
+        logger.info("Refreshed auth token!")
 
 
 @AuthGroup.command("login")
@@ -46,8 +46,10 @@ def refresh(ctx: Context):
 def login(ctx: Context):
     """Add token to the config"""
 
+    logger.debug("Invoked login command")
+
     if ctx.obj.config.auth.token:
-        click.echo(style("Already logged in.", fg="green"))
+        logger.info("Already logged in.")
         refresh(ctx)
         return
 
@@ -55,7 +57,8 @@ def login(ctx: Context):
 
     uri = f"https://{auth.verificationUriComplete}"
     click.launch(uri)
-    click.echo(f"Go to {style(uri, fg='cyan')} and complete authentication!")
+
+    logger.info(f"Go to {uri} and complete authentication!")
 
     auth_end_at = time() + auth.expiresIn
 
@@ -75,9 +78,7 @@ def login(ctx: Context):
                 continue
 
             if e.error == "expired_token":
-                click.echo(
-                    f"\nTime for authentication {style('has expired', fg='red')}."
-                )
+                logger.info("\nTime for authentication has expired.")
                 break
 
         ctx.obj.config.auth = AuthConfig(
@@ -89,7 +90,7 @@ def login(ctx: Context):
         )
         ctx.obj.config.save()
 
-        click.echo(style("\nAuthenticated!", fg="green"))
+        logger.info("\nAuthenticated!")
 
         break
 
@@ -99,10 +100,12 @@ def login(ctx: Context):
 def logout(ctx: Context):
     """Remove token from config"""
 
+    logger.debug("Invoked logout command")
+
     access_token = ctx.obj.config.auth.token
 
     if not access_token:
-        click.echo(style("Not logged in", fg="yellow"))
+        logger.info("Not logged in.")
         return
 
     removeToken(access_token)
@@ -110,4 +113,4 @@ def logout(ctx: Context):
     ctx.obj.config.auth = AuthConfig()
     ctx.obj.config.save()
 
-    click.echo(style("Logged out!", fg="green"))
+    logger.info("Logged out!")
