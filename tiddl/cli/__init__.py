@@ -55,7 +55,9 @@ def cli(ctx: Context, verbose: bool, quiet: bool, no_cache: bool):
 
     # BUG: tiddl raises AuthError after token refresh
     # probably ctx is not working like this
-    refresh(ctx)
+
+    if ctx.invoked_subcommand in ("fav", "file", "search", "url"):
+        ctx.invoke(refresh)
 
 
 cli.add_command(ConfigCommand)

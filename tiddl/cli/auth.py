@@ -24,6 +24,8 @@ def AuthGroup():
     """Manage Tidal token."""
 
 
+@AuthGroup.command("refresh")
+@passContext
 def refresh(ctx: Context):
     """Refresh auth token when is expired"""
 
