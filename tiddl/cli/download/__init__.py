@@ -9,6 +9,7 @@ from rich.progress import (
     BarColumn,
     Progress,
     TextColumn,
+    TransferSpeedColumn,
 )
 
 from tiddl.download import parseTrackStream, parseVideoStream
@@ -108,6 +109,7 @@ def DownloadCommand(
     progress = Progress(
         TextColumn("{task.description}"),
         BarColumn(bar_width=40),
+        TransferSpeedColumn(),
         console=ctx.obj.console,
         transient=True,
         auto_refresh=True,
@@ -146,7 +148,7 @@ def DownloadCommand(
             description=f"{type(item).__name__}: {item.title}",
             start=True,
             visible=True,
-            total=len(urls),
+            total=None,
         )
 
         with Session() as s:
@@ -162,7 +164,7 @@ def DownloadCommand(
                 )
 
                 stream_data += req.content
-                progress.advance(task_id)
+                progress.advance(task_id, len(req.content))
 
         path = path.with_suffix(extension)
         path.parent.mkdir(parents=True, exist_ok=True)
