@@ -54,8 +54,6 @@ def addMetadata(
         elif track.artist:
             metadata["ALBUMARTIST"] = track.artist.name
 
-        logger.info((track.artist, track.artists, album_artist))
-
         if track.streamStartDate:
             metadata["DATE"] = track.streamStartDate.strftime("%Y-%m-%d")
             metadata["ORIGINALDATE"] = track.streamStartDate.strftime(
