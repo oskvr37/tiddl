@@ -11,11 +11,12 @@ assignees: oskvr37
 Describe what happened.
 
 **To Reproduce**
-Which command was used?
+What command was used?
 
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
 **Software (please complete the following information):**
  - tiddl version: [e.g. v2.0.1]
+ - python version: [e.g. 3.11]
  - OS: [e.g. Linux, Windows, iOS]
