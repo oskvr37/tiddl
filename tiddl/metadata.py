@@ -22,6 +22,7 @@ def addMetadata(
     track: Track,
     cover_data=b"",
     credits: List[AlbumItemsCredits.ItemWithCredits.CreditsEntry] = [],
+    album_artist="",
 ):
     logger.debug((track_path, track.id))
 
@@ -42,20 +43,25 @@ def addMetadata(
         metadata["TRACKNUMBER"] = str(track.trackNumber)
         metadata["DISCNUMBER"] = str(track.volumeNumber)
 
-        if track.artist:
-            metadata["ARTIST"] = track.artist.name
-
-        metadata["ARTISTS"] = [artist.name for artist in track.artists]
         metadata["ALBUM"] = track.album.title
-        metadata["ALBUMARTIST"] = ", ".join(
+
+        metadata["ARTIST"] = "; ".join(
             [artist.name.strip() for artist in track.artists]
         )
+
+        if album_artist:
+            metadata["ALBUMARTIST"] = album_artist
+        elif track.artist:
+            metadata["ALBUMARTIST"] = track.artist.name
+
+        logger.info((track.artist, track.artists, album_artist))
 
         if track.streamStartDate:
             metadata["DATE"] = track.streamStartDate.strftime("%Y-%m-%d")
             metadata["ORIGINALDATE"] = track.streamStartDate.strftime(
                 "%Y-%m-%d"
             )
+            metadata["YEAR"] = str(track.streamStartDate.strftime("%Y"))
             metadata["ORIGINALYEAR"] = str(track.streamStartDate.strftime("%Y"))
 
         if track.copyright:
