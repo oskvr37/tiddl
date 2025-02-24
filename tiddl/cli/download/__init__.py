@@ -124,6 +124,7 @@ def DownloadCommand(
         path: Path,
         cover_data=b"",
         credits: List[AlbumItemsCredits.ItemWithCredits.CreditsEntry] = [],
+        album_artist="",
     ):
         if isinstance(item, Track):
             track_stream = api.getTrackStream(item.id, quality=DOWNLOAD_QUALITY)
@@ -205,7 +206,9 @@ def DownloadCommand(
                 cover_data = Cover(item.album.cover).content
 
             try:
-                addMetadata(path, item, cover_data, credits)
+                addMetadata(
+                    path, item, cover_data, credits, album_artist=album_artist
+                )
             except Exception as e:
                 logging.error(f"Can not add metadata to: {path}, {e}")
 
@@ -235,6 +238,7 @@ def DownloadCommand(
         filename: str,
         cover_data=b"",
         credits: List[AlbumItemsCredits.ItemWithCredits.CreditsEntry] = [],
+        album_artist="",
     ):
         if not item.allowStreaming:
             logging.warning(
@@ -261,6 +265,7 @@ def DownloadCommand(
             path=path,
             cover_data=cover_data,
             credits=credits,
+            album_artist=album_artist,
         )
 
     def downloadAlbum(album: Album):
@@ -280,7 +285,13 @@ def DownloadCommand(
                     album_artist=album.artist.name,
                 )
 
-                submitItem(item.item, filename, cover_data, item.credits)
+                submitItem(
+                    item.item,
+                    filename,
+                    cover_data,
+                    item.credits,
+                    album.artist.name,
+                )
 
             if (
                 album_items.limit + album_items.offset
