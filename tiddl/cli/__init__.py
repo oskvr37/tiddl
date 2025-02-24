@@ -22,7 +22,7 @@ from .auth import refresh
 )
 def cli(ctx: Context, verbose: bool, quiet: bool, no_cache: bool):
     """TIDDL - Tidal Downloader \u266b"""
-    ctx.obj = ContextObj(omit_cache=no_cache)
+    ctx.obj = ContextObj()
 
     # latest logs
     file_handler = logging.FileHandler(
@@ -62,13 +62,10 @@ def cli(ctx: Context, verbose: bool, quiet: bool, no_cache: bool):
 
     logging.getLogger("urllib3").setLevel(logging.ERROR)
 
-    # BUG: tiddl raises AuthError after token refresh,
-    # probably ctx is not working like this.
-    # NOTE: got 'fixed',
-    # but i will know if it works after my token expire
-
     if ctx.invoked_subcommand in ("fav", "file", "search", "url"):
         ctx.invoke(refresh)
+
+    ctx.obj.initApi(omit_cache=no_cache)
 
 
 cli.add_command(ConfigCommand)

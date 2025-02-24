@@ -16,12 +16,13 @@ class ContextObj:
     resources: list[TidalResource]
     console: Console
 
-    def __init__(self, omit_cache=False) -> None:
+    def __init__(self) -> None:
         self.config = Config.fromFile()
         self.resources = []
         self.api = None
         self.console = Console()
 
+    def initApi(self, omit_cache=False):
         auth = self.config.auth
 
         if auth.token and auth.user_id and auth.country_code:
