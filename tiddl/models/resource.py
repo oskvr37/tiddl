@@ -51,7 +51,7 @@ class Track(BaseModel):
     artist: Optional[Artist] = None
     artists: List[Artist]
     album: Album
-    mixes: Dict[str, str]
+    mixes: Optional[Dict[str, str]] = None
 
 
 class Video(BaseModel):
