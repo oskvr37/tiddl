@@ -17,7 +17,7 @@ from tiddl.download import parseTrackStream, parseVideoStream
 from tiddl.exceptions import ApiError, AuthError
 from tiddl.metadata import Cover, addMetadata, addVideoMetadata
 from tiddl.models.api import AlbumItemsCredits
-from tiddl.models.constants import ARG_TO_QUALITY, TrackArg
+from tiddl.models.constants import ARG_TO_QUALITY, TrackArg, SinglesFilter
 from tiddl.models.resource import Track, Video, Album
 from tiddl.utils import (
     TidalResource,
@@ -26,7 +26,7 @@ from tiddl.utils import (
     trackExists,
 )
 
-from typing import List, Literal, Union
+from typing import List, Union
 
 from .fav import FavGroup
 from .file import FileGroup
@@ -34,8 +34,6 @@ from .search import SearchGroup
 from .url import UrlGroup
 
 from ..ctx import Context, passContext
-
-SinglesFilter = Literal["none", "only", "include"]
 
 
 @click.command("download")
@@ -81,7 +79,6 @@ SinglesFilter = Literal["none", "only", "include"]
     "-s",
     "SINGLES_FILTER",
     type=click.Choice(SinglesFilter.__args__),
-    default="none",
     help="Defines how to treat artist EPs and singles, used while downloading artist.",
 )
 @passContext
@@ -95,6 +92,8 @@ def DownloadCommand(
     SINGLES_FILTER: SinglesFilter,
 ):
     """Download resources"""
+
+    SINGLES_FILTER = SINGLES_FILTER or ctx.obj.config.download.singles_filter
 
     # TODO: pretty print
     logging.debug(

@@ -3,7 +3,7 @@
 from pydantic import BaseModel
 from pathlib import Path
 
-from tiddl.models.constants import TrackArg
+from tiddl.models.constants import TrackArg, SinglesFilter
 
 HOME_PATH = Path.home()
 CONFIG_PATH = HOME_PATH / "tiddl.json"
@@ -21,6 +21,7 @@ class DownloadConfig(BaseModel):
     quality: TrackArg = "high"
     path: Path = Path.home() / "Music" / "Tiddl"
     threads: int = 4
+    singles_filter: SinglesFilter = "none"
 
 
 class AuthConfig(BaseModel):
