@@ -2,6 +2,7 @@ from typing import Literal
 
 TrackQuality = Literal["LOW", "HIGH", "LOSSLESS", "HI_RES_LOSSLESS"]
 TrackArg = Literal["low", "normal", "high", "master"]
+SinglesFilter = Literal["none", "only", "include"]
 
 ARG_TO_QUALITY: dict[TrackArg, TrackQuality] = {
     "low": "LOW",
