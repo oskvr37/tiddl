@@ -1,7 +1,8 @@
 import re
 import os
-import ffmpeg
 import logging
+
+from ffmpeg import FFmpeg
 
 from pydantic import BaseModel
 from urllib.parse import urlparse
@@ -216,8 +217,12 @@ def convertFileExtension(
     if is_video:
         ffmpeg_args["c:v"] = "copy"
 
-    ffmpeg = ffmpeg.FFmpeg().option("y").input(url=str(source_file)).output(str(output_file),**ffmpeg_args)
-    ffmpeg.execute()
+    (
+        FFmpeg()
+        .option("y")
+        .input(url=str(source_file))
+        .output(url=str(output_file), options=None, **ffmpeg_args)
+    ).execute()
 
     if remove_source:
         os.remove(source_file)
