@@ -216,9 +216,8 @@ def convertFileExtension(
     if is_video:
         ffmpeg_args["c:v"] = "copy"
 
-    ffmpeg.input(str(source_file)).output(str(output_file), **ffmpeg_args).run(
-        overwrite_output=1
-    )
+    ffmpeg = ffmpeg.FFmpeg().option("y").input(url=str(source_file)).output(str(output_file),**ffmpeg_args)
+    ffmpeg.execute()
 
     if remove_source:
         os.remove(source_file)
