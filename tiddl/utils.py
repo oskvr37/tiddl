@@ -90,7 +90,7 @@ def formatTrack(
         "playlist_number": playlist_index or 0,
     }
 
-    formatted_track = template.format(**track_dict)
+    formatted_track = template.format(**track_dict).strip()
 
     disallowed_chars = r'[\\:"*?<>|]+'
     invalid_chars = re.findall(disallowed_chars, formatted_track)
@@ -152,7 +152,7 @@ def formatResource(
     elif isinstance(resource, Video):
         resource_dict.update({"quality": resource.quality})
 
-    formatted_template = template.format(**resource_dict)
+    formatted_template = template.format(**resource_dict).strip()
 
     disallowed_chars = r'[\\:"*?<>|]+'
     invalid_chars = re.findall(disallowed_chars, formatted_template)
