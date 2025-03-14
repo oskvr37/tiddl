@@ -38,8 +38,8 @@ def addMetadata(
             picture.mime = "image/jpeg"
             metadata.add_picture(picture)
 
-        metadata["TITLE"] = track.title + (track.version if track.version else "")
-        metadata["WORK"] = track.title + (track.version if track.version else "")
+        metadata["TITLE"] = track.title + (" ({})".format(track.version) if track.version else "")
+        metadata["WORK"] = track.title + (" ({})".format(track.version) if track.version else "")
         metadata["TRACKNUMBER"] = str(track.trackNumber)
         metadata["DISCNUMBER"] = str(track.volumeNumber)
 
