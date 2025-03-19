@@ -3,14 +3,12 @@ import logging
 
 from rich.logging import RichHandler
 
-from .ctx import ContextObj, passContext, Context
-from .auth import AuthGroup
-from .download import UrlGroup, FavGroup, SearchGroup, FileGroup
-from .config import ConfigCommand
-
 from tiddl.config import HOME_PATH
-
-from .auth import refresh
+from tiddl.cli.ctx import ContextObj, passContext, Context
+from tiddl.cli.auth import AuthGroup
+from tiddl.cli.download import UrlGroup, FavGroup, SearchGroup, FileGroup
+from tiddl.cli.config import ConfigCommand
+from tiddl.cli.auth import refresh
 
 
 @click.group()

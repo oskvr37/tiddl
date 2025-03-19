@@ -1,7 +1,8 @@
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional, List, Literal, Dict
-from .constants import TrackQuality
+
+from tiddl.models.constants import TrackQuality
 
 
 __all__ = ["Track", "Video", "Album", "Playlist", "Artist"]

@@ -11,8 +11,7 @@ from tiddl.auth import (
     removeToken,
     AuthError,
 )
-
-from .ctx import passContext, Context
+from tiddl.cli.ctx import passContext, Context
 
 
 logger = logging.getLogger(__name__)
@@ -74,9 +73,7 @@ def login(ctx: Context):
                 time_left = auth_end_at - time()
                 minutes, seconds = time_left // 60, int(time_left % 60)
 
-                click.echo(
-                    f"\rTime left: {minutes:.0f}:{seconds:02d}", nl=False
-                )
+                click.echo(f"\rTime left: {minutes:.0f}:{seconds:02d}", nl=False)
                 continue
 
             if e.error == "expired_token":

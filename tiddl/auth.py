@@ -2,8 +2,8 @@ import logging
 
 from requests import request
 
-from .exceptions import AuthError
-from .models import auth
+from tiddl.exceptions import AuthError
+from tiddl.models import auth
 
 AUTH_URL = "https://auth.tidal.com/v1/oauth2"
 CLIENT_ID = "zU4XHVVkc2tDPo4t"

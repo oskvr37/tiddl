@@ -1,8 +1,7 @@
 import click
 
-from ..ctx import Context, passContext
-
 from tiddl.utils import TidalResource
+from tiddl.cli.ctx import Context, passContext
 
 
 class TidalURL(click.ParamType):

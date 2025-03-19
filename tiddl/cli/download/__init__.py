@@ -26,14 +26,13 @@ from tiddl.utils import (
     trackExists,
 )
 
+from tiddl.cli.ctx import Context, passContext
+from tiddl.cli.download.fav import FavGroup
+from tiddl.cli.download.file import FileGroup
+from tiddl.cli.download.search import SearchGroup
+from tiddl.cli.download.url import UrlGroup
+
 from typing import List, Union
-
-from .fav import FavGroup
-from .file import FileGroup
-from .search import SearchGroup
-from .url import UrlGroup
-
-from ..ctx import Context, passContext
 
 
 @click.command("download")
@@ -96,13 +95,9 @@ def DownloadCommand(
     SINGLES_FILTER = SINGLES_FILTER or ctx.obj.config.download.singles_filter
 
     # TODO: pretty print
-    logging.debug(
-        (QUALITY, TEMPLATE, PATH, THREADS_COUNT, DO_NOT_SKIP, SINGLES_FILTER)
-    )
+    logging.debug((QUALITY, TEMPLATE, PATH, THREADS_COUNT, DO_NOT_SKIP, SINGLES_FILTER))
 
-    DOWNLOAD_QUALITY = ARG_TO_QUALITY[
-        QUALITY or ctx.obj.config.download.quality
-    ]
+    DOWNLOAD_QUALITY = ARG_TO_QUALITY[QUALITY or ctx.obj.config.download.quality]
 
     api = ctx.obj.getApi()
 
@@ -136,9 +131,7 @@ def DownloadCommand(
             urls, extension = parseTrackStream(track_stream)
         elif isinstance(item, Video):
             video_stream = api.getVideoStream(item.id)
-            description = (
-                f"Video '{item.title}' {video_stream.videoQuality} quality"
-            )
+            description = f"Video '{item.title}' {video_stream.videoQuality} quality"
 
             urls = parseVideoStream(video_stream)
             extension = ".ts"
@@ -172,11 +165,7 @@ def DownloadCommand(
                 )
 
                 stream_data += req.content
-                speed = (
-                    len(stream_data)
-                    / (perf_counter() - time_start)
-                    / (1024 * 128)
-                )
+                speed = len(stream_data) / (perf_counter() - time_start) / (1024 * 128)
                 size = len(stream_data) / 1024**2
                 progress.update(
                     task_id,
@@ -205,9 +194,7 @@ def DownloadCommand(
                 cover_data = Cover(item.album.cover).content
 
             try:
-                addMetadata(
-                    path, item, cover_data, credits, album_artist=album_artist
-                )
+                addMetadata(path, item, cover_data, credits, album_artist=album_artist)
             except Exception as e:
                 logging.error(f"Can not add metadata to: {path}, {e}")
 
@@ -292,10 +279,7 @@ def DownloadCommand(
                     album.artist.name,
                 )
 
-            if (
-                album_items.limit + album_items.offset
-                > album_items.totalNumberOfItems
-            ):
+            if album_items.limit + album_items.offset > album_items.totalNumberOfItems:
                 break
 
             offset += album_items.limit
@@ -362,14 +346,11 @@ def DownloadCommand(
                 offset = 0
 
                 while True:
-                    playlist_items = api.getPlaylistItems(
-                        playlist.uuid, offset=offset
-                    )
+                    playlist_items = api.getPlaylistItems(playlist.uuid, offset=offset)
 
                     for item in playlist_items.items:
                         filename = formatResource(
-                            template=TEMPLATE
-                            or ctx.obj.config.template.playlist,
+                            template=TEMPLATE or ctx.obj.config.template.playlist,
                             resource=item.item,
                             playlist_title=playlist.title,
                             playlist_index=item.item.index // 100000,

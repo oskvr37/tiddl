@@ -2,8 +2,7 @@ import click
 
 from tiddl.utils import TidalResource
 from tiddl.models.resource import Artist, Album, Playlist, Track, Video
-
-from ..ctx import Context, passContext
+from tiddl.cli.ctx import Context, passContext
 
 
 @click.group("search")

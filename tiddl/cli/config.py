@@ -1,8 +1,7 @@
 import click
 
 from tiddl.config import CONFIG_PATH
-
-from .ctx import Context, passContext
+from tiddl.cli.ctx import Context, passContext
 
 
 @click.command("config")

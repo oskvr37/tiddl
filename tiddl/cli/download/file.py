@@ -4,8 +4,8 @@ import json
 from io import TextIOWrapper
 from os.path import splitext
 
-from ..ctx import Context, passContext
 from tiddl.utils import TidalResource
+from tiddl.cli.ctx import Context, passContext
 
 
 @click.group("file")

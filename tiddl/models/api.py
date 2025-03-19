@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional, List, Literal, Union
 
-from .resource import Album, Artist, Playlist, Track, TrackQuality, Video
+from tiddl.models.resource import Album, Artist, Playlist, Track, TrackQuality, Video
 
 __all__ = [
     "SessionResponse",
@@ -114,9 +114,7 @@ class TrackStream(BaseModel):
     assetPresentation: Literal["FULL"]
     audioMode: Literal["STEREO"]
     audioQuality: TrackQuality
-    manifestMimeType: Literal[
-        "application/dash+xml", "application/vnd.tidal.bts"
-    ]
+    manifestMimeType: Literal["application/dash+xml", "application/vnd.tidal.bts"]
     manifestHash: str
     manifest: str
     albumReplayGain: float
