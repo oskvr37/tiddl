@@ -93,6 +93,16 @@ This command will:
 
 More about file templating [on wiki](https://github.com/oskvr37/tiddl/wiki/Template-formatting).
 
+## Custom tiddl home path
+
+You can set `TIDDL_PATH` environment variable to use custom home path for tiddl.
+
+Example CLI usage:
+
+```sh
+TIDDL_PATH=~/custom/tiddl tiddl auth login
+```
+
 # Development
 
 Clone the repository
