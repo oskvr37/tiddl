@@ -51,7 +51,7 @@ def login(ctx: Context):
 
     if ctx.obj.config.auth.token:
         logger.info("Already logged in.")
-        refresh(ctx)
+        ctx.invoke(refresh)
         return
 
     auth = getDeviceAuth()
