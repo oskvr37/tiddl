@@ -1,14 +1,17 @@
-# 3.0 TODO: change config path to ~/.config/tiddl.json
-
+from os import environ
 from pydantic import BaseModel
 from pathlib import Path
 
 from tiddl.models.constants import TrackArg, SinglesFilter
 
-HOME_PATH = Path.home()
+TIDDL_ENV_KEY = "TIDDL_PATH"
+
+# 3.0 TODO: rename HOME_PATH to TIDDL_PATH
+# 3.0 TODO: add /tiddl to Path.home()
+HOME_PATH = Path(environ[TIDDL_ENV_KEY]) if environ.get(TIDDL_ENV_KEY) else Path.home()
+
 CONFIG_PATH = HOME_PATH / "tiddl.json"
 CONFIG_INDENT = 2
-
 
 class TemplateConfig(BaseModel):
     track: str = "{artist} - {title}"
