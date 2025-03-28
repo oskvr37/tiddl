@@ -9,6 +9,7 @@ from tiddl.cli.auth import AuthGroup
 from tiddl.cli.download import UrlGroup, FavGroup, SearchGroup, FileGroup
 from tiddl.cli.config import ConfigCommand
 from tiddl.cli.auth import refresh
+from tiddl.cli.server import serve
 
 
 @click.group()
@@ -60,7 +61,7 @@ def cli(ctx: Context, verbose: bool, quiet: bool, no_cache: bool):
 
     logging.getLogger("urllib3").setLevel(logging.ERROR)
 
-    if ctx.invoked_subcommand in ("fav", "file", "search", "url"):
+    if ctx.invoked_subcommand in ("fav", "file", "search", "url", "serve"):
         ctx.invoke(refresh)
 
     ctx.obj.initApi(omit_cache=no_cache)
@@ -72,6 +73,7 @@ cli.add_command(UrlGroup)
 cli.add_command(FavGroup)
 cli.add_command(SearchGroup)
 cli.add_command(FileGroup)
+cli.add_command(serve)
 
 if __name__ == "__main__":
     cli()

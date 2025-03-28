@@ -75,6 +75,10 @@ class TidalApi:
             "Accept": "application/json",
         }
 
+    def update_token(self, new_token: str):
+        """Use to update the token in the session when using in server mode"""
+        self.session.headers["Authorization"] = f"Bearer {new_token}"
+
     def fetch(
         self,
         model: Type[T],
