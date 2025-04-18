@@ -121,7 +121,7 @@ class Album(BaseModel):
     numberOfVideos: int
     numberOfVolumes: int
     releaseDate: str
-    copyright: str
+    copyright: Optional[str] = None
     type: str
     version: Optional[str] = None
     url: str
