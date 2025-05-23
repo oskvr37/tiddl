@@ -16,7 +16,7 @@ class AuthUser(BaseModel):
     postalcode: Optional[str]
     usState: Optional[str]
     phoneNumber: Optional[str]
-    birthday: Optional[str]
+    birthday: Optional[int]
     channelId: int
     parentId: int
     acceptedEULA: bool

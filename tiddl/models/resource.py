@@ -67,7 +67,7 @@ class Video(BaseModel):
         id: int
         title: str
         cover: str
-        vibrantColor: str
+        vibrantColor: Optional[str] = None
         videoCover: Optional[str] = None
 
     id: int
@@ -77,7 +77,7 @@ class Video(BaseModel):
     streamStartDate: Optional[datetime] = None
     imagePath: Optional[str] = None
     imageId: str
-    vibrantColor: str
+    vibrantColor: Optional[str] = None
     duration: int
     quality: str
     streamReady: bool
