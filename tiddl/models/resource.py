@@ -120,7 +120,7 @@ class Album(BaseModel):
     numberOfTracks: int
     numberOfVideos: int
     numberOfVolumes: int
-    releaseDate: str
+    releaseDate: Optional[str] = None
     copyright: Optional[str] = None
     type: str
     version: Optional[str] = None
