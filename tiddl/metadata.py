@@ -1,6 +1,7 @@
 import logging
 import requests
 
+from os import makedirs
 from pathlib import Path
 
 from mutagen.easymp4 import EasyMP4 as MutagenEasyMP4
@@ -174,12 +175,14 @@ class Cover:
         if not self.content:
             logger.error("cover file content is empty")
             return
-
+        
         file = directory_path / "cover.jpg"
 
         if file.exists():
             logger.debug(f"cover already exists ({file})")
             return
+        
+        makedirs(directory_path, exist_ok=True)
 
         try:
             with file.open("wb") as f:
