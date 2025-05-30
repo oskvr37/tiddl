@@ -257,7 +257,7 @@ def DownloadCommand(
     def downloadAlbum(album: Album):
         logging.info(f"Album {album.title!r}")
 
-        cover = Cover(album.cover) if album.cover else None
+        cover = Cover(uid=album.cover, size=COVER_SIZE) if album.cover else None
         is_cover_saved = False
 
         offset = 0
@@ -272,7 +272,7 @@ def DownloadCommand(
                     album_artist=album.artist.name,
                 )
 
-                if cover and not is_cover_saved:
+                if cover and not is_cover_saved and SAVE_COVERS:
                     path = Path(PATH) if PATH else ctx.obj.config.download.path
                     cover_path = path / Path(filename).parent
                     cover.save(cover_path)
