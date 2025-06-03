@@ -202,8 +202,10 @@ def DownloadCommand(
             if not cover_data and item.album.cover:
                 cover_data = Cover(item.album.cover).content
 
+            lyrics = api.getLyrics(item.id)
+
             try:
-                addMetadata(path, item, cover_data, credits, album_artist=album_artist)
+                addMetadata(path, item, cover_data, credits, album_artist=album_artist, lyrics=lyrics.subtitles)
             except Exception as e:
                 logging.error(f"Can not add metadata to: {path}, {e}")
 
