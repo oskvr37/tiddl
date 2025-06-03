@@ -80,6 +80,13 @@ from typing import List, Union
     type=click.Choice(SinglesFilter.__args__),
     help="Defines how to treat artist EPs and singles, used while downloading artist.",
 )
+@click.option(
+    "--lyrics",
+    "-l",
+    "EMBED_LYRICS",
+    is_flag=True,
+    help="Embed track lyrics in file metadata.",
+)
 @passContext
 def DownloadCommand(
     ctx: Context,
@@ -89,10 +96,12 @@ def DownloadCommand(
     THREADS_COUNT: int,
     DO_NOT_SKIP: bool,
     SINGLES_FILTER: SinglesFilter,
+    EMBED_LYRICS: bool
 ):
     """Download resources"""
 
     SINGLES_FILTER = SINGLES_FILTER or ctx.obj.config.download.singles_filter
+    EMBED_LYRICS = EMBED_LYRICS or ctx.obj.config.download.embed_lyrics
 
     # TODO: pretty print
     logging.debug(
@@ -103,6 +112,7 @@ def DownloadCommand(
             THREADS_COUNT,
             DO_NOT_SKIP,
             SINGLES_FILTER,
+            EMBED_LYRICS
         )
     )
 
@@ -201,11 +211,14 @@ def DownloadCommand(
 
             if not cover_data and item.album.cover:
                 cover_data = Cover(item.album.cover).content
-
-            lyrics = api.getLyrics(item.id)
+            
+            if EMBED_LYRICS:
+                lyrics_subtitles = api.getLyrics(item.id).subtitles
+            else:
+                lyrics_subtitles = ""
 
             try:
-                addMetadata(path, item, cover_data, credits, album_artist=album_artist, lyrics=lyrics.subtitles)
+                addMetadata(path, item, cover_data, credits, album_artist=album_artist, lyrics=lyrics_subtitles)
             except Exception as e:
                 logging.error(f"Can not add metadata to: {path}, {e}")
 
