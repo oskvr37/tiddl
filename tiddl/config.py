@@ -40,6 +40,7 @@ class AuthConfig(BaseModel):
 class CoverConfig(BaseModel):
     save: bool = False
     size: int = 1280
+    filename: str = "cover.jpg"
 
 
 class Config(BaseModel):

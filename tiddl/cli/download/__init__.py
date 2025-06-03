@@ -92,7 +92,6 @@ def DownloadCommand(
 ):
     """Download resources"""
 
-    SAVE_COVERS, COVER_SIZE = ctx.obj.config.cover.save, ctx.obj.config.cover.size
     SINGLES_FILTER = SINGLES_FILTER or ctx.obj.config.download.singles_filter
 
     # TODO: pretty print
@@ -104,8 +103,6 @@ def DownloadCommand(
             THREADS_COUNT,
             DO_NOT_SKIP,
             SINGLES_FILTER,
-            SAVE_COVERS,
-            COVER_SIZE,
         )
     )
 
@@ -269,7 +266,11 @@ def DownloadCommand(
     def downloadAlbum(album: Album):
         logging.info(f"Album {album.title!r}")
 
-        cover = Cover(uid=album.cover, size=COVER_SIZE) if album.cover else None
+        cover = (
+            Cover(uid=album.cover, size=ctx.obj.config.cover.size)
+            if album.cover
+            else None
+        )
         is_cover_saved = False
 
         offset = 0
@@ -284,10 +285,10 @@ def DownloadCommand(
                     album_artist=album.artist.name,
                 )
 
-                if cover and not is_cover_saved and SAVE_COVERS:
+                if cover and not is_cover_saved and ctx.obj.config.cover.save:
                     path = Path(PATH) if PATH else ctx.obj.config.download.path
                     cover_path = path / Path(filename).parent
-                    cover.save(cover_path)
+                    cover.save(cover_path, ctx.obj.config.cover.filename)
                     is_cover_saved = True
 
                 submitItem(
