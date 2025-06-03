@@ -92,10 +92,22 @@ def DownloadCommand(
 ):
     """Download resources"""
 
+    SAVE_COVERS, COVER_SIZE = ctx.obj.config.cover.save, ctx.obj.config.cover.size
     SINGLES_FILTER = SINGLES_FILTER or ctx.obj.config.download.singles_filter
 
     # TODO: pretty print
-    logging.debug((QUALITY, TEMPLATE, PATH, THREADS_COUNT, DO_NOT_SKIP, SINGLES_FILTER))
+    logging.debug(
+        (
+            QUALITY,
+            TEMPLATE,
+            PATH,
+            THREADS_COUNT,
+            DO_NOT_SKIP,
+            SINGLES_FILTER,
+            SAVE_COVERS,
+            COVER_SIZE,
+        )
+    )
 
     DOWNLOAD_QUALITY = ARG_TO_QUALITY[QUALITY or ctx.obj.config.download.quality]
 

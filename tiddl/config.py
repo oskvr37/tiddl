@@ -37,9 +37,15 @@ class AuthConfig(BaseModel):
     country_code: str = ""
 
 
+class CoverConfig(BaseModel):
+    save: bool = False
+    size: int = 1280
+
+
 class Config(BaseModel):
     template: TemplateConfig = TemplateConfig()
     download: DownloadConfig = DownloadConfig()
+    cover: CoverConfig = CoverConfig()
     auth: AuthConfig = AuthConfig()
     omit_cache: bool = False
 
