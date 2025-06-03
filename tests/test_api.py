@@ -83,6 +83,11 @@ class TestApi(unittest.TestCase):
     def test_video_stream(self):
         self.api.getVideoStream(373513584)
 
+    def test_lyrics(self):
+        track_id = 103805726
+        lyrics = self.api.getLyrics(track_id)
+        self.assertEqual(lyrics.trackId, track_id)
+
 
 if __name__ == "__main__":
     unittest.main()
