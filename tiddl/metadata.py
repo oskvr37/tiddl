@@ -24,6 +24,7 @@ def addMetadata(
     cover_data=b"",
     credits: List[AlbumItemsCredits.ItemWithCredits.CreditsEntry] = [],
     album_artist="",
+    lyrics="",
 ):
     logger.debug((track_path, track.id))
 
@@ -76,13 +77,22 @@ def addMetadata(
                 contributor.name for contributor in entry.contributors
             ]
 
+        if lyrics:
+            metadata["LYRICS"] = lyrics
+
     elif extension == ".m4a":
-        if cover_data:
+        if lyrics or cover_data:
             metadata = MutagenMP4(track_path)
-            metadata["covr"] = [
-                MP4Cover(cover_data, imageformat=MP4Cover.FORMAT_JPEG)
-            ]
-            metadata.save(track_path)
+
+            if lyrics:
+                metadata["\xa9lyr"] = [lyrics]
+
+            if cover_data:
+                metadata["covr"] = [
+                    MP4Cover(cover_data, imageformat=MP4Cover.FORMAT_JPEG)
+                ]
+
+            metadata.save()
 
         metadata = MutagenEasyMP4(track_path)
         metadata.update(

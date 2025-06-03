@@ -11,6 +11,7 @@ __all__ = [
     "Favorites",
     "TrackStream",
     "Search",
+    "Lyrics"
 ]
 
 
@@ -167,3 +168,13 @@ class Search(BaseModel):
     tracks: Tracks
     videos: Videos
     topHit: Optional[TopHit] = None
+
+
+class Lyrics(BaseModel):
+    isRightToLeft: bool
+    lyrics: str
+    lyricsProvider: str
+    providerCommontrackId: str
+    providerLyricsId: str
+    subtitles: str
+    trackId: int

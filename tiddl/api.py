@@ -26,6 +26,7 @@ from tiddl.models.api import (
     TrackStream,
     Video,
     VideoStream,
+    Lyrics
 )
 
 from tiddl.models.constants import TrackQuality
@@ -216,6 +217,11 @@ class TidalApi:
     def getSession(self):
         return self.fetch(
             SessionResponse, "sessions", expire_after=DO_NOT_CACHE
+        )
+
+    def getLyrics(self, track_id: str | int):
+        return self.fetch(
+            Lyrics, f"tracks/{track_id}/lyrics", {"countryCode": self.country_code}
         )
 
     def getTrack(self, track_id: str | int):

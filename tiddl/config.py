@@ -27,6 +27,7 @@ class DownloadConfig(BaseModel):
     path: Path = Path.home() / "Music" / "Tiddl"
     threads: int = 4
     singles_filter: SinglesFilter = "none"
+    embed_lyrics: bool = False
 
 
 class AuthConfig(BaseModel):
