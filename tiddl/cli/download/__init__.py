@@ -95,7 +95,16 @@ def DownloadCommand(
     SINGLES_FILTER = SINGLES_FILTER or ctx.obj.config.download.singles_filter
 
     # TODO: pretty print
-    logging.debug((QUALITY, TEMPLATE, PATH, THREADS_COUNT, DO_NOT_SKIP, SINGLES_FILTER))
+    logging.debug(
+        (
+            QUALITY,
+            TEMPLATE,
+            PATH,
+            THREADS_COUNT,
+            DO_NOT_SKIP,
+            SINGLES_FILTER,
+        )
+    )
 
     DOWNLOAD_QUALITY = ARG_TO_QUALITY[QUALITY or ctx.obj.config.download.quality]
 
@@ -257,7 +266,12 @@ def DownloadCommand(
     def downloadAlbum(album: Album):
         logging.info(f"Album {album.title!r}")
 
-        cover_data = Cover(album.cover).content if album.cover else b""
+        cover = (
+            Cover(uid=album.cover, size=ctx.obj.config.cover.size)
+            if album.cover
+            else None
+        )
+        is_cover_saved = False
 
         offset = 0
 
@@ -271,10 +285,16 @@ def DownloadCommand(
                     album_artist=album.artist.name,
                 )
 
+                if cover and not is_cover_saved and ctx.obj.config.cover.save:
+                    path = Path(PATH) if PATH else ctx.obj.config.download.path
+                    cover_path = path / Path(filename).parent
+                    cover.save(cover_path, ctx.obj.config.cover.filename)
+                    is_cover_saved = True
+
                 submitItem(
                     item.item,
                     filename,
-                    cover_data,
+                    cover.content if cover else b"",
                     item.credits,
                     album.artist.name,
                 )
