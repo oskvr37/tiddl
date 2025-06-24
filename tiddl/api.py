@@ -65,7 +65,6 @@ class TidalApi:
         self.user_id = user_id
         self.country_code = country_code
 
-        # 3.0 TODO: change cache path
         CACHE_NAME = "tiddl_api_cache"
 
         self.session = CachedSession(
@@ -89,35 +88,48 @@ class TidalApi:
             f"{self.URL}/{endpoint}", params=params, expire_after=expire_after
         )
 
-        logger.debug(
-            (
-                endpoint,
-                params,
-                req.status_code,
-                "HIT" if req.from_cache else "MISS",
+        try:
+            logger.debug(
+                (
+                    endpoint,
+                    params,
+                    req.status_code,
+                    "HIT" if req.from_cache else "MISS",
+                )
             )
-        )
 
-        data = req.json()
+            data = req.json()
 
-        if DEBUG:
-            debug_data = {
-                "status_code": req.status_code,
-                "endpoint": endpoint,
-                "params": params,
-                "data": data,
-            }
+            if DEBUG:
+                debug_data = {
+                    "status_code": req.status_code,
+                    "endpoint": endpoint,
+                    "params": params,
+                    "data": data,
+                }
 
-            path = Path(f"debug_data/{endpoint}.json")
-            path.parent.mkdir(parents=True, exist_ok=True)
+                path = Path(f"debug_data/{endpoint}.json")
+                path.parent.mkdir(parents=True, exist_ok=True)
 
-            with path.open("w", encoding="utf-8") as f:
-                json.dump(debug_data, f, indent=2)
+                with path.open("w", encoding="utf-8") as f:
+                    json.dump(debug_data, f, indent=2)
 
-        if req.status_code != 200:
-            raise ApiError(**data)
+            if req.status_code != 200:
+                raise ApiError(**data)
 
-        return model.model_validate(data)
+            return model.model_validate(data)
+
+        finally:
+            # Chiude la response
+            try:
+                req.close()
+            except Exception:
+                pass
+            # Chiude la sessione
+            try:
+                self.session.close()
+            except Exception:
+                pass
 
     def getAlbum(self, album_id: str | int):
         return self.fetch(
@@ -170,7 +182,7 @@ class TidalApi:
             f"artists/{artist_id}/albums",
             {
                 "countryCode": self.country_code,
-                "limit": limit,  # tested limit 10,000
+                "limit": limit,
                 "offset": offset,
                 "filter": filter,
             },

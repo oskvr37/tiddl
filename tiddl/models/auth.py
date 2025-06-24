@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 
 class AuthUser(BaseModel):
@@ -16,7 +16,7 @@ class AuthUser(BaseModel):
     postalcode: Optional[str]
     usState: Optional[str]
     phoneNumber: Optional[str]
-    birthday: Optional[int]
+    birthday: Optional[str]
     channelId: int
     parentId: int
     acceptedEULA: bool
@@ -28,6 +28,13 @@ class AuthUser(BaseModel):
     accountLinkCreated: bool
     emailVerified: bool
     newUser: bool
+
+    @field_validator('birthday', mode='before')
+    def fix_birthday(cls, v):
+        #Se Tidal restituisce un int (ms dal 1970), lo trasformiamo in stringa prima che Pydantic tenti la validazione.
+        if isinstance(v, int):
+            return str(v)
+        return v
 
 
 class AuthResponse(BaseModel):
