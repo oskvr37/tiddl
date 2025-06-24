@@ -281,6 +281,32 @@ def DownloadCommand(
     def downloadAlbum(album: Album):
         logging.info(f"Album {album.title!r}")
 
+        # Get the base path for downloads
+        base_path = Path(PATH) if PATH else ctx.obj.config.download.path
+        
+        # Create a sample track to get the album directory structure
+        # We'll get the first track to determine the folder structure
+        sample_items = api.getAlbumItems(album.id, limit=1)
+        if sample_items.items:
+            sample_filename = formatResource(
+                template=TEMPLATE or ctx.obj.config.template.album,
+                resource=sample_items.items[0].item,
+                album_artist=album.artist.name,
+            )
+            # Extract the directory part (everything before the last /)
+            album_dir = Path(sample_filename).parent
+            album_base_dir = base_path / album_dir
+        else:
+            # Fallback if no tracks found
+            album_base_dir = base_path / f"{album.artist.name}/{album.title}"
+        
+        # Download album assets (cover and lyrics) using your new method
+        try:
+            api.downloadAlbumAssets(album.id, album_base_dir, skip_existing=not DO_NOT_SKIP)
+            # Removed the duplicate logging here since it's now handled in downloadAlbumAssets
+        except Exception as e:
+            logging.warning(f"Could not download album assets: {e}")
+
         cover = (
             Cover(uid=album.cover, size=ctx.obj.config.cover.size)
             if album.cover
@@ -300,12 +326,6 @@ def DownloadCommand(
                     album_artist=album.artist.name,
                 )
 
-                if cover and not is_cover_saved and ctx.obj.config.cover.save:
-                    path = Path(PATH) if PATH else ctx.obj.config.download.path
-                    cover_path = path / Path(filename).parent
-                    cover.save(cover_path, ctx.obj.config.cover.filename)
-                    is_cover_saved = True
-
                 submitItem(
                     item.item,
                     filename,
@@ -318,7 +338,7 @@ def DownloadCommand(
                 break
 
             offset += album_items.limit
-
+    
     def handleResource(resource: TidalResource) -> None:
         logging.debug(f"Handling Resource '{resource}'")
 
