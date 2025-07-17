@@ -87,6 +87,13 @@ from typing import List, Union
     is_flag=True,
     help="Embed track lyrics in file metadata.",
 )
+@click.option(
+    "--video",
+    "-v",
+    "DOWNLOAD_VIDEO",
+    is_flag=True,
+    help="Enable downloading videos",
+)
 @passContext
 def DownloadCommand(
     ctx: Context,
@@ -150,14 +157,11 @@ def DownloadCommand(
 
             urls, extension = parseTrackStream(track_stream)
         elif isinstance(item, Video):
-            if (DOWNLOAD_VIDEO):
-                video_stream = api.getVideoStream(item.id)
-                description = f"Video '{item.title}' {video_stream.videoQuality} quality"
-
-                urls = parseVideoStream(video_stream)
-                extension = ".ts"
-            else:
-                f"Skipped video '{item.title}'"
+            video_stream = api.getVideoStream(item.id)
+            description = f"Video '{item.title}' {video_stream.videoQuality} quality"
+            urls = parseVideoStream(video_stream)
+            extension = ".ts"
+    
         else:
             raise TypeError(
                 f"Invalid item type: expected an instance of Track or Video, "
@@ -269,7 +273,7 @@ def DownloadCommand(
                     logging.warning(f"Track '{item.title}' skipped")
                     return
             elif isinstance(item, Video):
-                if path.with_suffix(".mp4").exists() or !DOWNLOAD_VIDEO:
+                if path.with_suffix(".mp4").exists() or not DOWNLOAD_VIDEO:
                     logging.warning(f"Video '{item.title}' skipped")
                     return
 
