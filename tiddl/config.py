@@ -28,6 +28,7 @@ class DownloadConfig(BaseModel):
     threads: int = 4
     singles_filter: SinglesFilter = "none"
     embed_lyrics: bool = False
+    download_video: bool = False
 
 
 class AuthConfig(BaseModel):
