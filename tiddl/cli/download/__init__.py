@@ -103,7 +103,8 @@ def DownloadCommand(
     THREADS_COUNT: int,
     DO_NOT_SKIP: bool,
     SINGLES_FILTER: SinglesFilter,
-    EMBED_LYRICS: bool
+    EMBED_LYRICS: bool,
+    DOWNLOAD_VIDEO: bool
 ):
     """Download resources"""
 
