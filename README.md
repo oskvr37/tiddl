@@ -1,3 +1,5 @@
+### Simply added a DOWNLOAD_VIDEO flag which defaults to false.
+
 # Tidal Downloader
 
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/tiddl?style=for-the-badge&color=%2332af64)
