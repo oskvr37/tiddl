@@ -87,6 +87,13 @@ from typing import List, Union
     is_flag=True,
     help="Embed track lyrics in file metadata.",
 )
+@click.option(
+    "--video",
+    "-v",
+    "DOWNLOAD_VIDEO",
+    is_flag=True,
+    help="Enable downloading videos",
+)
 @passContext
 def DownloadCommand(
     ctx: Context,
@@ -96,10 +103,11 @@ def DownloadCommand(
     THREADS_COUNT: int,
     DO_NOT_SKIP: bool,
     SINGLES_FILTER: SinglesFilter,
-    EMBED_LYRICS: bool
+    EMBED_LYRICS: bool,
+    DOWNLOAD_VIDEO: bool
 ):
     """Download resources"""
-
+    DOWNLOAD_VIDEO = DOWNLOAD_VIDEO or ctx.obj.config.download.download_video
     SINGLES_FILTER = SINGLES_FILTER or ctx.obj.config.download.singles_filter
     EMBED_LYRICS = EMBED_LYRICS or ctx.obj.config.download.embed_lyrics
 
@@ -265,7 +273,7 @@ def DownloadCommand(
                     logging.warning(f"Track '{item.title}' skipped")
                     return
             elif isinstance(item, Video):
-                if path.with_suffix(".mp4").exists():
+                if path.with_suffix(".mp4").exists() or not DOWNLOAD_VIDEO:
                     logging.warning(f"Video '{item.title}' skipped")
                     return
 
