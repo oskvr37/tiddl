@@ -102,7 +102,7 @@ def DownloadCommand(
 
     SINGLES_FILTER = SINGLES_FILTER or ctx.obj.config.download.singles_filter
     EMBED_LYRICS = EMBED_LYRICS or ctx.obj.config.download.embed_lyrics
-
+    DOWNLOAD_VIDEO = DOWNLOAD_VIDEO or ctx.obj.config.download.download_video
     # TODO: pretty print
     logging.debug(
         (
@@ -112,7 +112,8 @@ def DownloadCommand(
             THREADS_COUNT,
             DO_NOT_SKIP,
             SINGLES_FILTER,
-            EMBED_LYRICS
+            EMBED_LYRICS,
+            DOWNLOAD_VIDEO
         )
     )
 
@@ -149,11 +150,14 @@ def DownloadCommand(
 
             urls, extension = parseTrackStream(track_stream)
         elif isinstance(item, Video):
-            video_stream = api.getVideoStream(item.id)
-            description = f"Video '{item.title}' {video_stream.videoQuality} quality"
+            if (DOWNLOAD_VIDEO):
+                video_stream = api.getVideoStream(item.id)
+                description = f"Video '{item.title}' {video_stream.videoQuality} quality"
 
-            urls = parseVideoStream(video_stream)
-            extension = ".ts"
+                urls = parseVideoStream(video_stream)
+                extension = ".ts"
+            else:
+                f"Skipped video '{item.title}'"
         else:
             raise TypeError(
                 f"Invalid item type: expected an instance of Track or Video, "
@@ -265,7 +269,7 @@ def DownloadCommand(
                     logging.warning(f"Track '{item.title}' skipped")
                     return
             elif isinstance(item, Video):
-                if path.with_suffix(".mp4").exists():
+                if path.with_suffix(".mp4").exists() or !DOWNLOAD_VIDEO:
                     logging.warning(f"Video '{item.title}' skipped")
                     return
 
@@ -336,7 +340,7 @@ def DownloadCommand(
                 filename = formatResource(
                     TEMPLATE or ctx.obj.config.template.video, video
                 )
-
+                
                 submitItem(video, filename)
 
             case "album":
