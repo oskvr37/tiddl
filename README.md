@@ -46,6 +46,7 @@ Commands:
   url     Get Tidal URL.
 ```
 ## Dockerised Version (no Python required)
+
 Based on python:alpine, slim build
 **Docker run example (quickest / easiest)**
 ```
