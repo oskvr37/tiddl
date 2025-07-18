@@ -267,14 +267,19 @@ def DownloadCommand(
         path = Path(PATH) if PATH else ctx.obj.config.download.path
         path /= f"{filename}.*"
 
-        if not DO_NOT_SKIP:  # check if item is already downloaded
+        # Respect DOWNLOAD_VIDEO = FALSE over DO_NOT_SKIP (as it's for the file exists check)
+        if isinstance(item, Video) and not DOWNLOAD_VIDEO: 
+            logging.warning(f"Video '{item.title}' skipped as DOWNLOAD_VIDEO is false")
+            return
+        
+        if not DO_NOT_SKIP:  # check if item is already downloaded (unless DO_NOT_SKIP is set, then override anything)
             if isinstance(item, Track):
                 if trackExists(item.audioQuality, DOWNLOAD_QUALITY, path):
-                    logging.warning(f"Track '{item.title}' skipped")
+                    logging.warning(f"Track '{item.title}' skipped - exists")
                     return
             elif isinstance(item, Video):
-                if path.with_suffix(".mp4").exists() or not DOWNLOAD_VIDEO:
-                    logging.warning(f"Video '{item.title}' skipped")
+                if path.with_suffix(".mp4").exists():
+                    logging.warning(f"Video '{item.title}' skipped - exists")
                     return
 
         pool.submit(
