@@ -2,7 +2,7 @@ import re
 import os
 import logging
 
-from ffmpeg import FFmpeg
+from ffmpeg_asyncio import FFmpeg
 
 from pydantic import BaseModel
 from urllib.parse import urlparse
@@ -185,7 +185,7 @@ def trackExists(
     return full_file_name.exists()
 
 
-def convertFileExtension(
+async def convertFileExtension(
     source_file: Path,
     extension: str,
     remove_source=False,
@@ -204,27 +204,35 @@ def convertFileExtension(
         logging.error(e)
         return source_file
 
-    logging.debug((source_file, output_file, extension))
+    logging.debug((source_file, output_file, extension, copy_audio, is_video))
 
     if extension == source_file.suffix:
+        logging.debug("Conversion not required, already %s", extension)
         return source_file
 
     ffmpeg_args = {"loglevel": "error"}
-
     if copy_audio:
-        ffmpeg_args["c:a"] = "copy"
-
+        ffmpeg_args["acodec"] = "copy"
     if is_video:
-        ffmpeg_args["c:v"] = "copy"
+        ffmpeg_args["vcodec"] = "copy"
 
-    (
-        FFmpeg()
-        .option("y")
-        .input(url=str(source_file))
-        .output(url=str(output_file), options=None, **ffmpeg_args)
-    ).execute()
+    try:
+        logging.debug("Trying conversion")
+        ffmpeg = FFmpeg().option("y")
+        ffmpeg.input(str(source_file))
+        ffmpeg.output(str(output_file), **ffmpeg_args)
 
-    if remove_source:
-        os.remove(source_file)
 
+        @ffmpeg.on("completed")
+        def on_completed():
+            logging.debug("Conversion successful for: %s", output_file)
+            if remove_source:
+                try:
+                    os.remove(source_file)
+                except OSError as e:
+                    logging.error(f"Error removing source file {source_file}: {e}")
+        await ffmpeg.execute()
+    except Exception as e:
+        logging.error(f"FFMPEG Error during conversion of {source_file}: {e}")
+        return source_file
     return output_file
