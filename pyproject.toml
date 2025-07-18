@@ -20,7 +20,7 @@ dependencies = [
   "requests-cache>=1.2.1",
   "click>=8.1.7",
   "mutagen>=1.47.0",
-  "python-ffmpeg>=2.0.0",
+  "ffmpeg-asyncio>=0.0.31"
   "m3u8>=6.0.0",
   "rich>=13.9.4"
 ]
