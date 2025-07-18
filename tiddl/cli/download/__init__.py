@@ -89,7 +89,7 @@ from typing import List, Union
 )
 @click.option(
     "--video",
-    "-v",
+    "-V",
     "DOWNLOAD_VIDEO",
     is_flag=True,
     help="Enable downloading videos",
