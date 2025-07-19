@@ -1,6 +1,6 @@
 import logging
 import click
-
+import asyncio
 from time import perf_counter
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -209,13 +209,13 @@ def DownloadCommand(
 
         if isinstance(item, Track):
             if track_stream.audioQuality == "HI_RES_LOSSLESS":
-                path = convertFileExtension(
+                path =  asyncio.run(convertFileExtension(
                     source_file=path,
                     extension=".flac",
                     remove_source=True,
                     is_video=False,
                     copy_audio=True,  # extract flac from m4a container
-                )
+                ))
 
             if not cover_data and item.album.cover:
                 cover_data = Cover(item.album.cover).content
@@ -231,13 +231,13 @@ def DownloadCommand(
                 logging.error(f"Can not add metadata to: {path}, {e}")
 
         elif isinstance(item, Video):
-            path = convertFileExtension(
+            path =  asyncio.run(convertFileExtension(
                 source_file=path,
                 extension=".mp4",
                 remove_source=True,
                 is_video=True,
                 copy_audio=True,
-            )
+            ))
 
             try:
                 addVideoMetadata(path, item)
