@@ -50,7 +50,7 @@ Commands:
 Based on python:alpine, slim build
 **Docker run example (quickest / easiest)**
 ```
-docker run -rm -v /downloads/dir:/root/Music/Tiddl/ -v ./config/tiddl/:/root/ >
+docker run -rm -v /downloads/dir:/root/Music/Tiddl/ -v ./config/tiddl/:/root/ ghcr.io/oskvr37/tiddl:latest
 ```
 
 **docker-compose.yml example (not required, though allows for advanced configs)**
@@ -58,7 +58,7 @@ docker run -rm -v /downloads/dir:/root/Music/Tiddl/ -v ./config/tiddl/:/root/ >
 services:
   tiddl:
     container_name: tiddl
-    image: <ghcr.ioURL>:latest
+    image: ghcr.io/oskvr37/tiddl:latest
     volumes:
       - /downloads/dir:/root/Music/Tiddl/ #default dir
       - ./config/tiddl/:/root/ # Default location of config file 
