@@ -125,6 +125,7 @@ def formatResource(
         "artists": ", ".join(features + [artist]),
         "features": ", ".join(features),
         "album": sanitizeString(resource.album.title if resource.album else ""),
+        "album_id": str(resource.album.id if resource.album else ""),
         "number": resource.trackNumber,
         "disc": resource.volumeNumber,
         "date": (resource.streamStartDate if resource.streamStartDate else ""),
