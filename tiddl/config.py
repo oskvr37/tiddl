@@ -31,6 +31,7 @@ class DownloadConfig(BaseModel):
     download_video: bool = False
 
 
+
 class AuthConfig(BaseModel):
     token: str = ""
     refresh_token: str = ""
