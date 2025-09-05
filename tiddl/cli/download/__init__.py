@@ -286,7 +286,7 @@ def DownloadCommand(
                     logging.warning(f"Track '{item.title}' skipped - exists")
                     return
             elif isinstance(item, Video):
-                if path.with_suffix(".mp4").exists():
+                if scan_path.with_suffix(".mp4").exists():
                     logging.warning(f"Video '{item.title}' skipped - exists")
                     return
 
