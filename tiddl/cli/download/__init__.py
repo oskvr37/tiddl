@@ -94,6 +94,12 @@ from typing import List, Union
     is_flag=True,
     help="Enable downloading videos",
 )
+@click.option(
+    "--scan_path",
+    "SCAN_PATH",
+    type=str,
+    help="Base music directory to scan for existing. Default is 'path'",
+)
 @passContext
 def DownloadCommand(
     ctx: Context,
@@ -104,7 +110,8 @@ def DownloadCommand(
     DO_NOT_SKIP: bool,
     SINGLES_FILTER: SinglesFilter,
     EMBED_LYRICS: bool,
-    DOWNLOAD_VIDEO: bool
+    DOWNLOAD_VIDEO: bool,
+    SCAN_PATH: str | None
 ):
     """Download resources"""
     DOWNLOAD_VIDEO = DOWNLOAD_VIDEO or ctx.obj.config.download.download_video
@@ -219,7 +226,7 @@ def DownloadCommand(
 
             if not cover_data and item.album.cover:
                 cover_data = Cover(item.album.cover).content
-            
+
             if EMBED_LYRICS:
                 lyrics_subtitles = api.getLyrics(item.id).subtitles
             else:
@@ -266,19 +273,20 @@ def DownloadCommand(
 
         path = Path(PATH) if PATH else ctx.obj.config.download.path
         path /= f"{filename}.*"
+        scan_path = Path(SCAN_PATH or ctx.obj.config.download.scan_path) / f"{filename}.*" if (SCAN_PATH or ctx.obj.config.download.scan_path) else path # Scan scan_path if set, else scans 'path'.
 
         # Respect DOWNLOAD_VIDEO = FALSE over DO_NOT_SKIP (as it's for the file exists check)
-        if isinstance(item, Video) and not DOWNLOAD_VIDEO: 
+        if isinstance(item, Video) and not DOWNLOAD_VIDEO:
             logging.warning(f"Video '{item.title}' skipped as DOWNLOAD_VIDEO is false")
             return
-        
+
         if not DO_NOT_SKIP:  # check if item is already downloaded (unless DO_NOT_SKIP is set, then override anything)
             if isinstance(item, Track):
-                if trackExists(item.audioQuality, DOWNLOAD_QUALITY, path):
+                if trackExists(item.audioQuality, DOWNLOAD_QUALITY, scan_path):
                     logging.warning(f"Track '{item.title}' skipped - exists")
                     return
             elif isinstance(item, Video):
-                if path.with_suffix(".mp4").exists():
+                if scan_path.with_suffix(".mp4").exists():
                     logging.warning(f"Video '{item.title}' skipped - exists")
                     return
 
