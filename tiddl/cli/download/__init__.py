@@ -2,7 +2,7 @@ import logging
 import click
 import asyncio
 from time import perf_counter
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, Future
 from pathlib import Path
 from requests import Session
 
@@ -23,7 +23,8 @@ from tiddl.utils import (
     TidalResource,
     formatResource,
     convertFileExtension,
-    trackExists,
+    savePlaylistM3U,
+    findTrackFilename,
 )
 
 from tiddl.cli.ctx import Context, passContext
@@ -153,7 +154,7 @@ def DownloadCommand(
         cover_data=b"",
         credits: List[AlbumItemsCredits.ItemWithCredits.CreditsEntry] = [],
         album_artist="",
-    ):
+    ) -> Path:
         if isinstance(item, Track):
             track_stream = api.getTrackStream(item.id, quality=DOWNLOAD_QUALITY)
             description = (
@@ -265,6 +266,8 @@ def DownloadCommand(
         progress.remove_task(task_id)
         logging.info(f"{item.title!r} • {speed:.2f} Mbps • {size:.2f} MB")
 
+        return path
+
     pool = ThreadPoolExecutor(
         max_workers=THREADS_COUNT or ctx.obj.config.download.threads
     )
@@ -275,7 +278,7 @@ def DownloadCommand(
         cover_data=b"",
         credits: List[AlbumItemsCredits.ItemWithCredits.CreditsEntry] = [],
         album_artist="",
-    ):
+    ) -> Future[Path] | None:
         if not item.allowStreaming:
             logging.warning(
                 f"✖ {type(item).__name__} '{item.title}' does not allow streaming"
@@ -299,15 +302,21 @@ def DownloadCommand(
             not DO_NOT_SKIP
         ):  # check if item is already downloaded (unless DO_NOT_SKIP is set, then override anything)
             if isinstance(item, Track):
-                if trackExists(item.audioQuality, DOWNLOAD_QUALITY, scan_path):
+                track_path = findTrackFilename(
+                    item.audioQuality, DOWNLOAD_QUALITY, scan_path
+                )
+                if track_path.exists():
                     logging.warning(f"Track '{item.title}' skipped - exists")
-                    return
+                    future = Future()
+                    future.set_result(track_path)
+                    return future
+
             elif isinstance(item, Video):
                 if scan_path.with_suffix(".mp4").exists():
                     logging.warning(f"Video '{item.title}' skipped - exists")
                     return
 
-        pool.submit(
+        future = pool.submit(
             handleItemDownload,
             item=item,
             path=path,
@@ -315,6 +324,8 @@ def DownloadCommand(
             credits=credits,
             album_artist=album_artist,
         )
+
+        return future
 
     def downloadAlbum(album: Album):
         logging.info(f"Album {album.title!r}")
@@ -418,6 +429,7 @@ def DownloadCommand(
                 logging.info(f"Playlist {playlist.title!r}")
                 offset = 0
                 cover_path = None
+                playlist_tracks: dict[str, Track] = {}
 
                 while True:
                     playlist_items = api.getPlaylistItems(playlist.uuid, offset=offset)
@@ -430,7 +442,11 @@ def DownloadCommand(
                             playlist_index=item.item.index // 100000,
                         )
 
-                        submitItem(item.item, filename)
+                        track_path_future = submitItem(item.item, filename)
+
+                        if track_path_future:
+                            track_path = track_path_future.result()
+                            playlist_tracks[track_path] = item.item
 
                         cover_path = Path(filename).parent
 
@@ -442,10 +458,18 @@ def DownloadCommand(
 
                     offset += playlist_items.limit
 
+                path = Path(PATH) if PATH else ctx.obj.config.download.path
+
+                savePlaylistM3U(
+                    playlist_tracks=playlist_tracks,
+                    path=path / cover_path,
+                    filename=f"{playlist.title}.m3u",
+                )
+
                 if playlist.squareImage and cover_path:
-                    path = Path(PATH) if PATH else ctx.obj.config.download.path
                     cover = Cover(
-                        uid=playlist.squareImage, size=ctx.obj.config.cover.size
+                        uid=playlist.squareImage,
+                        size=1080,  # playlist cover must be 1080x1080
                     )
                     cover.save(path / cover_path, ctx.obj.config.cover.filename)
 
