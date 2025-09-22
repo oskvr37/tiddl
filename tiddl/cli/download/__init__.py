@@ -392,6 +392,7 @@ def DownloadCommand(
                 playlist = api.getPlaylist(resource.id)
                 logging.info(f"Playlist {playlist.title!r}")
                 offset = 0
+                cover_path = None
 
                 while True:
                     playlist_items = api.getPlaylistItems(playlist.uuid, offset=offset)
@@ -406,6 +407,8 @@ def DownloadCommand(
 
                         submitItem(item.item, filename)
 
+                        cover_path = Path(filename).parent
+
                     if (
                         playlist_items.limit + playlist_items.offset
                         > playlist_items.totalNumberOfItems
@@ -413,6 +416,13 @@ def DownloadCommand(
                         break
 
                     offset += playlist_items.limit
+
+                if playlist.squareImage and cover_path:
+                    path = Path(PATH) if PATH else ctx.obj.config.download.path
+                    cover = Cover(
+                        uid=playlist.squareImage, size=ctx.obj.config.cover.size
+                    )
+                    cover.save(path / cover_path, ctx.obj.config.cover.filename)
 
     progress.start()
 
