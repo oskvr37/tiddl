@@ -111,7 +111,7 @@ def DownloadCommand(
     SINGLES_FILTER: SinglesFilter,
     EMBED_LYRICS: bool,
     DOWNLOAD_VIDEO: bool,
-    SCAN_PATH: str | None
+    SCAN_PATH: str | None,
 ):
     """Download resources"""
     DOWNLOAD_VIDEO = DOWNLOAD_VIDEO or ctx.obj.config.download.download_video
@@ -127,7 +127,7 @@ def DownloadCommand(
             THREADS_COUNT,
             DO_NOT_SKIP,
             SINGLES_FILTER,
-            EMBED_LYRICS
+            EMBED_LYRICS,
         )
     )
 
@@ -216,13 +216,15 @@ def DownloadCommand(
 
         if isinstance(item, Track):
             if track_stream.audioQuality == "HI_RES_LOSSLESS":
-                path =  asyncio.run(convertFileExtension(
-                    source_file=path,
-                    extension=".flac",
-                    remove_source=True,
-                    is_video=False,
-                    copy_audio=True,  # extract flac from m4a container
-                ))
+                path = asyncio.run(
+                    convertFileExtension(
+                        source_file=path,
+                        extension=".flac",
+                        remove_source=True,
+                        is_video=False,
+                        copy_audio=True,  # extract flac from m4a container
+                    )
+                )
 
             if not cover_data and item.album.cover:
                 cover_data = Cover(item.album.cover).content
@@ -233,18 +235,27 @@ def DownloadCommand(
                 lyrics_subtitles = ""
 
             try:
-                addMetadata(path, item, cover_data, credits, album_artist=album_artist, lyrics=lyrics_subtitles)
+                addMetadata(
+                    path,
+                    item,
+                    cover_data,
+                    credits,
+                    album_artist=album_artist,
+                    lyrics=lyrics_subtitles,
+                )
             except Exception as e:
                 logging.error(f"Can not add metadata to: {path}, {e}")
 
         elif isinstance(item, Video):
-            path =  asyncio.run(convertFileExtension(
-                source_file=path,
-                extension=".mp4",
-                remove_source=True,
-                is_video=True,
-                copy_audio=True,
-            ))
+            path = asyncio.run(
+                convertFileExtension(
+                    source_file=path,
+                    extension=".mp4",
+                    remove_source=True,
+                    is_video=True,
+                    copy_audio=True,
+                )
+            )
 
             try:
                 addVideoMetadata(path, item)
@@ -273,14 +284,20 @@ def DownloadCommand(
 
         path = Path(PATH) if PATH else ctx.obj.config.download.path
         path /= f"{filename}.*"
-        scan_path = Path(SCAN_PATH or ctx.obj.config.download.scan_path) / f"{filename}.*" if (SCAN_PATH or ctx.obj.config.download.scan_path) else path # Scan scan_path if set, else scans 'path'.
+        scan_path = (
+            Path(SCAN_PATH or ctx.obj.config.download.scan_path) / f"{filename}.*"
+            if (SCAN_PATH or ctx.obj.config.download.scan_path)
+            else path
+        )  # Scan scan_path if set, else scans 'path'.
 
         # Respect DOWNLOAD_VIDEO = FALSE over DO_NOT_SKIP (as it's for the file exists check)
         if isinstance(item, Video) and not DOWNLOAD_VIDEO:
             logging.warning(f"Video '{item.title}' skipped as DOWNLOAD_VIDEO is false")
             return
 
-        if not DO_NOT_SKIP:  # check if item is already downloaded (unless DO_NOT_SKIP is set, then override anything)
+        if (
+            not DO_NOT_SKIP
+        ):  # check if item is already downloaded (unless DO_NOT_SKIP is set, then override anything)
             if isinstance(item, Track):
                 if trackExists(item.audioQuality, DOWNLOAD_QUALITY, scan_path):
                     logging.warning(f"Track '{item.title}' skipped - exists")

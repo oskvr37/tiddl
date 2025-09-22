@@ -15,6 +15,7 @@ makedirs(HOME_PATH, exist_ok=True)
 CONFIG_PATH = HOME_PATH / "tiddl.json"
 CONFIG_INDENT = 2
 
+
 class TemplateConfig(BaseModel):
     track: str = "{artist} - {title}"
     video: str = "{artist} - {title}"

@@ -34,18 +34,14 @@ def cli(ctx: Context, verbose: bool, quiet: bool, no_cache: bool):
         )
     )
 
-    LEVEL = (
-        logging.DEBUG if verbose else logging.ERROR if quiet else logging.INFO
-    )
+    LEVEL = logging.DEBUG if verbose else logging.ERROR if quiet else logging.INFO
 
     rich_handler = RichHandler(console=ctx.obj.console, rich_tracebacks=True)
     rich_handler.setLevel(LEVEL)
 
     if LEVEL == logging.DEBUG:
         rich_handler.setFormatter(
-            logging.Formatter(
-                "[%(name)s.%(funcName)s] %(message)s", datefmt="[%X]"
-            )
+            logging.Formatter("[%(name)s.%(funcName)s] %(message)s", datefmt="[%X]")
         )
 
     logging.basicConfig(

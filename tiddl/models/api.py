@@ -11,7 +11,7 @@ __all__ = [
     "Favorites",
     "TrackStream",
     "Search",
-    "Lyrics"
+    "Lyrics",
 ]
 
 

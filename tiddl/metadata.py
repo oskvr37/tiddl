@@ -40,8 +40,12 @@ def addMetadata(
             picture.mime = "image/jpeg"
             metadata.add_picture(picture)
 
-        metadata["TITLE"] = track.title + (" ({})".format(track.version) if track.version else "")
-        metadata["WORK"] = track.title + (" ({})".format(track.version) if track.version else "")
+        metadata["TITLE"] = track.title + (
+            " ({})".format(track.version) if track.version else ""
+        )
+        metadata["WORK"] = track.title + (
+            " ({})".format(track.version) if track.version else ""
+        )
         metadata["TRACKNUMBER"] = str(track.trackNumber)
         metadata["DISCNUMBER"] = str(track.volumeNumber)
 
@@ -58,9 +62,7 @@ def addMetadata(
 
         if track.streamStartDate:
             metadata["DATE"] = track.streamStartDate.strftime("%Y-%m-%d")
-            metadata["ORIGINALDATE"] = track.streamStartDate.strftime(
-                "%Y-%m-%d"
-            )
+            metadata["ORIGINALDATE"] = track.streamStartDate.strftime("%Y-%m-%d")
             metadata["YEAR"] = str(track.streamStartDate.strftime("%Y"))
             metadata["ORIGINALYEAR"] = str(track.streamStartDate.strftime("%Y"))
 
@@ -102,13 +104,9 @@ def addMetadata(
                 "discnumber": str(track.volumeNumber),
                 "copyright": track.copyright if track.copyright else "",
                 "albumartist": track.artist.name if track.artist else "",
-                "artist": ";".join(
-                    [artist.name.strip() for artist in track.artists]
-                ),
+                "artist": ";".join([artist.name.strip() for artist in track.artists]),
                 "album": track.album.title,
-                "date": str(track.streamStartDate)
-                if track.streamStartDate
-                else "",
+                "date": str(track.streamStartDate) if track.streamStartDate else "",
                 "bpm": str(track.bpm or 0),
             }
         )
@@ -129,9 +127,7 @@ def addVideoMetadata(path: Path, video: Video):
         {
             "title": video.title,
             "albumartist": video.artist.name if video.artist else "",
-            "artist": ";".join(
-                [artist.name.strip() for artist in video.artists]
-            ),
+            "artist": ";".join([artist.name.strip() for artist in video.artists]),
             "album": video.album.title if video.album else "",
             "date": str(video.streamStartDate) if video.streamStartDate else "",
         }
@@ -162,7 +158,9 @@ class Cover:
         self.uid = uid
 
         formatted_uid = uid.replace("-", "/")
-        self.url = f"https://resources.tidal.com/images/{formatted_uid}/{size}x{size}.jpg"
+        self.url = (
+            f"https://resources.tidal.com/images/{formatted_uid}/{size}x{size}.jpg"
+        )
 
         logger.debug((self.uid, self.url))
 
@@ -172,9 +170,7 @@ class Cover:
         req = requests.get(self.url)
 
         if req.status_code != 200:
-            logger.error(
-                f"could not download cover. ({req.status_code}) {self.url}"
-            )
+            logger.error(f"could not download cover. ({req.status_code}) {self.url}")
             return b""
 
         logger.debug(f"got cover: {self.uid}")
@@ -185,13 +181,13 @@ class Cover:
         if not self.content:
             logger.error("cover file content is empty")
             return
-        
+
         file = directory_path / filename
 
         if file.exists():
             logger.debug(f"cover already exists ({file})")
             return
-        
+
         makedirs(directory_path, exist_ok=True)
 
         try:

@@ -80,9 +80,7 @@ def formatTrack(
         "disc": track.volumeNumber,
         "date": (track.streamStartDate if track.streamStartDate else ""),
         # i think we can remove year as we are able to format date
-        "year": track.streamStartDate.strftime("%Y")
-        if track.streamStartDate
-        else "",
+        "year": track.streamStartDate.strftime("%Y") if track.streamStartDate else "",
         "playlist": sanitizeString(playlist_title),
         "bpm": track.bpm or "",
         "quality": QUALITY_TO_ARG[track.audioQuality],
@@ -130,9 +128,9 @@ def formatResource(
         "disc": resource.volumeNumber,
         "date": (resource.streamStartDate if resource.streamStartDate else ""),
         # i think we can remove year as we are able to format date
-        "year": resource.streamStartDate.strftime("%Y")
-        if resource.streamStartDate
-        else "",
+        "year": (
+            resource.streamStartDate.strftime("%Y") if resource.streamStartDate else ""
+        ),
         "playlist": sanitizeString(playlist_title),
         "album_artist": sanitizeString(album_artist),
         "playlist_number": playlist_index or 0,
@@ -223,7 +221,6 @@ async def convertFileExtension(
         ffmpeg.input(str(source_file))
         ffmpeg.output(str(output_file), **ffmpeg_args)
 
-
         @ffmpeg.on("completed")
         def on_completed():
             logging.debug("Conversion successful for: %s", output_file)
@@ -232,6 +229,7 @@ async def convertFileExtension(
                     os.remove(source_file)
                 except OSError as e:
                     logging.error(f"Error removing source file {source_file}: {e}")
+
         await ffmpeg.execute()
     except Exception as e:
         logging.error(f"FFMPEG Error during conversion of {source_file}: {e}")

@@ -80,9 +80,7 @@ def parseTrackStream(track_stream: TrackStream) -> tuple[list[str], str]:
     elif codecs.startswith("mp4"):
         file_extension = ".m4a"
     else:
-        raise ValueError(
-            f"Unknown codecs `{codecs}` (trackId {track_stream.trackId}"
-        )
+        raise ValueError(f"Unknown codecs `{codecs}` (trackId {track_stream.trackId}")
 
     return urls, file_extension
 

@@ -26,7 +26,7 @@ from tiddl.models.api import (
     TrackStream,
     Video,
     VideoStream,
-    Lyrics
+    Lyrics,
 )
 
 from tiddl.models.constants import TrackQuality
@@ -124,9 +124,7 @@ class TidalApi:
             Album, f"albums/{album_id}", {"countryCode": self.country_code}
         )
 
-    def getAlbumItems(
-        self, album_id: str | int, limit=LIMITS.ALBUM_ITEMS, offset=0
-    ):
+    def getAlbumItems(self, album_id: str | int, limit=LIMITS.ALBUM_ITEMS, offset=0):
         return self.fetch(
             AlbumItems,
             f"albums/{album_id}/items",
@@ -192,9 +190,7 @@ class TidalApi:
             {"countryCode": self.country_code},
         )
 
-    def getPlaylistItems(
-        self, playlist_uuid: str, limit=LIMITS.PLAYLIST, offset=0
-    ):
+    def getPlaylistItems(self, playlist_uuid: str, limit=LIMITS.PLAYLIST, offset=0):
         return self.fetch(
             PlaylistItems,
             f"playlists/{playlist_uuid}/items",
@@ -215,9 +211,7 @@ class TidalApi:
         )
 
     def getSession(self):
-        return self.fetch(
-            SessionResponse, "sessions", expire_after=DO_NOT_CACHE
-        )
+        return self.fetch(SessionResponse, "sessions", expire_after=DO_NOT_CACHE)
 
     def getLyrics(self, track_id: str | int):
         return self.fetch(
