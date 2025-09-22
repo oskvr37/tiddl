@@ -236,3 +236,19 @@ async def convertFileExtension(
         logging.error(f"FFMPEG Error during conversion of {source_file}: {e}")
         return source_file
     return output_file
+
+
+def savePlaylistM3U(
+    playlist_tracks: dict[str, Track], path: Path, filename="playlist.m3u"
+):
+    file = path / filename
+
+    if not playlist_tracks:
+        return
+
+    with file.open("w", encoding="utf-8") as f:
+        f.write("#EXTM3U\n")
+        for track_path, track in playlist_tracks.items():
+            f.write(
+                f"#EXTINF:{track.duration},{track.artist.name} - {track.title}\n{track_path}\n"
+            )
