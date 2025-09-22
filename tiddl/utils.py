@@ -165,11 +165,11 @@ def formatResource(
     return formatted_template
 
 
-def trackExists(
+def findTrackFilename(
     track_quality: TrackQuality, download_quality: TrackQuality, file_name: Path
-):
+) -> Path:
     """
-    Predict track extension and check if track file exists.
+    Predict track extension.
     """
 
     FLAC_QUALITIES: list[TrackQuality] = ["LOSSLESS", "HI_RES_LOSSLESS"]
@@ -181,7 +181,8 @@ def trackExists(
 
     full_file_name = file_name.with_suffix(extension)
 
-    return full_file_name.exists()
+    return full_file_name
+
 
 
 async def convertFileExtension(
