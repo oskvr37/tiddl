@@ -107,7 +107,7 @@ def DownloadCommand(
     QUALITY: TrackArg | None,
     TEMPLATE: str | None,
     PATH: str | None,
-    THREADS_COUNT: int,
+    THREADS_COUNT: int | None,
     DO_NOT_SKIP: bool,
     SINGLES_FILTER: SinglesFilter,
     EMBED_LYRICS: bool,
@@ -129,6 +129,8 @@ def DownloadCommand(
             DO_NOT_SKIP,
             SINGLES_FILTER,
             EMBED_LYRICS,
+            DOWNLOAD_VIDEO,
+            SCAN_PATH,
         )
     )
 
@@ -285,22 +287,22 @@ def DownloadCommand(
             )
             return
 
-        path = Path(PATH) if PATH else ctx.obj.config.download.path
-        path /= f"{filename}.*"
-        scan_path = (
-            Path(SCAN_PATH or ctx.obj.config.download.scan_path) / f"{filename}.*"
-            if (SCAN_PATH or ctx.obj.config.download.scan_path)
-            else path
-        )  # Scan scan_path if set, else scans 'path'.
+        download_path = Path(PATH) if PATH else ctx.obj.config.download.path
+        download_path /= f"{filename}.*"
+
+        scan_path = Path(SCAN_PATH) if SCAN_PATH else ctx.obj.config.download.scan_path
+        if scan_path:
+            scan_path /= f"{filename}.*"
+        else:
+            scan_path = download_path
 
         # Respect DOWNLOAD_VIDEO = FALSE over DO_NOT_SKIP (as it's for the file exists check)
         if isinstance(item, Video) and not DOWNLOAD_VIDEO:
             logging.warning(f"Video '{item.title}' skipped as DOWNLOAD_VIDEO is false")
             return
 
-        if (
-            not DO_NOT_SKIP
-        ):  # check if item is already downloaded (unless DO_NOT_SKIP is set, then override anything)
+        # check if item is already downloaded (unless DO_NOT_SKIP is set, then override anything)
+        if not DO_NOT_SKIP:
             if isinstance(item, Track):
                 track_path = findTrackFilename(
                     item.audioQuality, DOWNLOAD_QUALITY, scan_path
@@ -319,7 +321,7 @@ def DownloadCommand(
         future = pool.submit(
             handleItemDownload,
             item=item,
-            path=path,
+            path=download_path,
             cover_data=cover_data,
             credits=credits,
             album_artist=album_artist,
@@ -428,7 +430,7 @@ def DownloadCommand(
                 playlist = api.getPlaylist(resource.id)
                 logging.info(f"Playlist {playlist.title!r}")
                 offset = 0
-                cover_path = None
+                playlist_path = None
                 playlist_tracks: dict[str, Track] = {}
 
                 while True:
@@ -448,7 +450,7 @@ def DownloadCommand(
                             track_path = track_path_future.result()
                             playlist_tracks[track_path] = item.item
 
-                        cover_path = Path(filename).parent
+                        playlist_path = Path(filename).parent
 
                     if (
                         playlist_items.limit + playlist_items.offset
@@ -460,18 +462,19 @@ def DownloadCommand(
 
                 path = Path(PATH) if PATH else ctx.obj.config.download.path
 
-                savePlaylistM3U(
-                    playlist_tracks=playlist_tracks,
-                    path=path / cover_path,
-                    filename=f"{playlist.title}.m3u",
-                )
+                if playlist_path:
+                    savePlaylistM3U(
+                        playlist_tracks=playlist_tracks,
+                        path=path / playlist_path,
+                        filename=f"{playlist.title}.m3u",
+                    )
 
-                if playlist.squareImage and cover_path:
+                if playlist.squareImage and playlist_path:
                     cover = Cover(
                         uid=playlist.squareImage,
                         size=1080,  # playlist cover must be 1080x1080
                     )
-                    cover.save(path / cover_path, ctx.obj.config.cover.filename)
+                    cover.save(path / playlist_path, ctx.obj.config.cover.filename)
 
     progress.start()
 
