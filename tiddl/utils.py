@@ -3,6 +3,7 @@ import os
 import logging
 
 from ffmpeg_asyncio import FFmpeg
+from ffmpeg_asyncio.types import Option as FFmpegOption
 
 from pydantic import BaseModel
 from urllib.parse import urlparse
@@ -184,7 +185,6 @@ def findTrackFilename(
     return full_file_name
 
 
-
 async def convertFileExtension(
     source_file: Path,
     extension: str,
@@ -210,9 +210,11 @@ async def convertFileExtension(
         logging.debug("Conversion not required, already %s", extension)
         return source_file
 
-    ffmpeg_args = {"loglevel": "error"}
+    ffmpeg_args: dict[str, FFmpegOption | None] = {"loglevel": "error"}
+
     if copy_audio:
         ffmpeg_args["acodec"] = "copy"
+
     if is_video:
         ffmpeg_args["vcodec"] = "copy"
 
@@ -220,21 +222,23 @@ async def convertFileExtension(
         logging.debug("Trying conversion")
         ffmpeg = FFmpeg().option("y")
         ffmpeg.input(str(source_file))
-        ffmpeg.output(str(output_file), **ffmpeg_args)
+        ffmpeg.output(str(output_file), ffmpeg_args)
 
         @ffmpeg.on("completed")
         def on_completed():
-            logging.debug("Conversion successful for: %s", output_file)
+            logging.debug(f"converted {output_file}")
             if remove_source:
                 try:
                     os.remove(source_file)
                 except OSError as e:
-                    logging.error(f"Error removing source file {source_file}: {e}")
+                    logging.error(f"can't remove source file {source_file}: {e}")
 
         await ffmpeg.execute()
+
     except Exception as e:
-        logging.error(f"FFMPEG Error during conversion of {source_file}: {e}")
+        logging.error(f"can't convert file {source_file}: {e}")
         return source_file
+
     return output_file
 
 
@@ -242,13 +246,23 @@ def savePlaylistM3U(
     playlist_tracks: dict[str, Track], path: Path, filename="playlist.m3u"
 ):
     file = path / filename
+    logging.debug(f"saving m3u file at {file}")
 
     if not playlist_tracks:
+        logging.warning(f"playlist {file} is empty")
         return
 
-    with file.open("w", encoding="utf-8") as f:
-        f.write("#EXTM3U\n")
-        for track_path, track in playlist_tracks.items():
-            f.write(
-                f"#EXTINF:{track.duration},{track.artist.name} - {track.title}\n{track_path}\n"
+    try:
+        with file.open("w", encoding="utf-8") as f:
+            f.write("#EXTM3U\n")
+            for track_path, track in playlist_tracks.items():
+                f.write(
+                    f"#EXTINF:{track.duration},{track.artist.name if track.artist else ''} - {track.title}\n{track_path}\n"
+                )
+
+            logging.debug(
+                f"saved m3u file as {file} with {len(playlist_tracks)} tracks"
             )
+
+    except Exception as e:
+        logging.error(f"can't save playlist m3u file: {e}")
