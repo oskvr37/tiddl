@@ -31,6 +31,7 @@ class DownloadConfig(BaseModel):
     embed_lyrics: bool = False
     download_video: bool = False
     scan_path: Path | None = path
+    save_playlist_m3u: bool = False
 
 
 class AuthConfig(BaseModel):

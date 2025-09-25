@@ -244,11 +244,20 @@ def savePlaylistM3U(
     file = path / filename
 
     if not playlist_tracks:
+        logging.warning(f"playlist {file} is empty")
         return
 
-    with file.open("w", encoding="utf-8") as f:
-        f.write("#EXTM3U\n")
-        for track_path, track in playlist_tracks.items():
-            f.write(
-                f"#EXTINF:{track.duration},{track.artist.name} - {track.title}\n{track_path}\n"
+    try:
+        with file.open("w", encoding="utf-8") as f:
+            f.write("#EXTM3U\n")
+            for track_path, track in playlist_tracks.items():
+                f.write(
+                    f"#EXTINF:{track.duration},{track.artist.name if track.artist else ''} - {track.title}\n{track_path}\n"
+                )
+
+            logging.debug(
+                f"saved m3u file as {file} with {len(playlist_tracks)} tracks"
             )
+
+    except Exception as e:
+        logging.error(f"can't save playlist m3u file: {e}")

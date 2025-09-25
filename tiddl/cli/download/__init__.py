@@ -99,7 +99,14 @@ from typing import List, Union
     "--scan_path",
     "SCAN_PATH",
     type=str,
-    help="Base music directory to scan for existing. Default is 'path'",
+    help="Base directory to scan for existing tracks. Default is 'path'",
+)
+@click.option(
+    "--save-m3u",
+    "-m3u",
+    "SAVE_M3U",
+    is_flag=True,
+    help="Save M3U file for playlists.",
 )
 @passContext
 def DownloadCommand(
@@ -113,6 +120,7 @@ def DownloadCommand(
     EMBED_LYRICS: bool,
     DOWNLOAD_VIDEO: bool,
     SCAN_PATH: str | None,
+    SAVE_M3U: bool,
 ):
     """Download resources"""
     DOWNLOAD_VIDEO = DOWNLOAD_VIDEO or ctx.obj.config.download.download_video
@@ -131,6 +139,7 @@ def DownloadCommand(
             EMBED_LYRICS,
             DOWNLOAD_VIDEO,
             SCAN_PATH,
+            SAVE_M3U,
         )
     )
 
@@ -462,7 +471,7 @@ def DownloadCommand(
 
                 path = Path(PATH) if PATH else ctx.obj.config.download.path
 
-                if playlist_path:
+                if playlist_path and SAVE_M3U:
                     savePlaylistM3U(
                         playlist_tracks=playlist_tracks,
                         path=path / playlist_path,
