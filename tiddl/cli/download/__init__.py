@@ -1,8 +1,9 @@
 import logging
 import click
 import asyncio
+
 from time import perf_counter
-from concurrent.futures import ThreadPoolExecutor, Future
+from concurrent.futures import ThreadPoolExecutor, Future, as_completed
 from pathlib import Path
 from requests import Session
 
@@ -442,6 +443,8 @@ def DownloadCommand(
                 playlist_path = None
                 playlist_tracks: dict[str, Track] = {}
 
+                futures = {}
+
                 while True:
                     playlist_items = api.getPlaylistItems(playlist.uuid, offset=offset)
 
@@ -453,11 +456,9 @@ def DownloadCommand(
                             playlist_index=item.item.index // 100000,
                         )
 
-                        track_path_future = submitItem(item.item, filename)
-
-                        if track_path_future:
-                            track_path = track_path_future.result()
-                            playlist_tracks[track_path] = item.item
+                        future = submitItem(item.item, filename)
+                        if future:
+                            futures[future] = item.item
 
                         playlist_path = Path(filename).parent
 
@@ -468,6 +469,10 @@ def DownloadCommand(
                         break
 
                     offset += playlist_items.limit
+
+                    for future in as_completed(futures):
+                        track_path = future.result()
+                        playlist_tracks[track_path] = futures[future]
 
                 path = Path(PATH) if PATH else ctx.obj.config.download.path
 
