@@ -96,7 +96,7 @@ from typing import List, Union
     help="Enable downloading videos",
 )
 @click.option(
-    "--scan_path",
+    "--scan-path",
     "SCAN_PATH",
     type=str,
     help="Base directory to scan for existing tracks. Default is 'path'",
