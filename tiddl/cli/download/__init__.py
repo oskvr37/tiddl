@@ -380,7 +380,7 @@ def DownloadCommand(
             offset += album_items.limit
 
     def handleResource(resource: TidalResource) -> None:
-        logging.debug(f"Handling Resource '{resource}'")
+        logging.debug(f"'{resource}'")
 
         match resource.type:
             case "track":
@@ -437,7 +437,7 @@ def DownloadCommand(
 
             case "playlist":
                 playlist = api.getPlaylist(resource.id)
-                logging.info(f"Playlist {playlist.title!r}")
+                logging.info(f"downloading playlist {playlist.title!r}")
                 offset = 0
                 playlist_path = None
                 playlist_tracks: dict[str, Track] = {}
