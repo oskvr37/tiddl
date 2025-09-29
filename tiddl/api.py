@@ -27,6 +27,7 @@ from tiddl.models.api import (
     Video,
     VideoStream,
     Lyrics,
+    MixItems,
 )
 
 from tiddl.models.constants import TrackQuality
@@ -53,6 +54,7 @@ class Limits:
     ALBUM_ITEMS = 10
     ALBUM_ITEMS_MAX = 100
     PLAYLIST = 50
+    MIX_ITEMS = 100
 
 
 class TidalApi:
@@ -171,6 +173,23 @@ class TidalApi:
                 "limit": limit,  # tested limit 10,000
                 "offset": offset,
                 "filter": filter,
+            },
+            expire_after=3600,
+        )
+
+    def getMix(
+        self,
+        mix_id: str | int,
+        limit=LIMITS.MIX_ITEMS,
+        offset=0,
+    ):
+        return self.fetch(
+            MixItems,
+            f"mixes/{mix_id}/items",
+            {
+                "countryCode": self.country_code,
+                "limit": limit,
+                "offset": offset,
             },
             expire_after=3600,
         )

@@ -14,7 +14,7 @@ from typing import Literal, Union, get_args
 from tiddl.models.constants import TrackQuality, QUALITY_TO_ARG
 from tiddl.models.resource import Track, Video
 
-ResourceTypeLiteral = Literal["track", "video", "album", "playlist", "artist"]
+ResourceTypeLiteral = Literal["track", "video", "album", "playlist", "artist", "mix"]
 
 
 class TidalResource(BaseModel):
@@ -41,7 +41,14 @@ class TidalResource(BaseModel):
         if resource_type not in get_args(ResourceTypeLiteral):
             raise ValueError(f"Invalid resource type: {resource_type}")
 
-        if not resource_id.isdigit() and resource_type != "playlist":
+        digit_resource_types: list[ResourceTypeLiteral] = [
+            "track",
+            "album",
+            "video",
+            "artist",
+        ]
+
+        if resource_type in digit_resource_types and not resource_id.isdigit():
             raise ValueError(f"Invalid resource id: {resource_id}")
 
         return cls(type=resource_type, id=resource_id)  # type: ignore

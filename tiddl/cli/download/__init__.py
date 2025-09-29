@@ -405,6 +405,16 @@ def DownloadCommand(
 
                 downloadAlbum(album)
 
+            case "mix":
+                mix = api.getMix(resource.id)
+
+                for mix_item in mix.items:
+                    filename = formatResource(
+                        TEMPLATE or ctx.obj.config.template.track, mix_item.item
+                    )
+
+                    submitItem(mix_item.item, filename)
+
             case "artist":
                 artist = api.getArtist(resource.id)
                 logging.info(f"Artist {artist.name!r}")

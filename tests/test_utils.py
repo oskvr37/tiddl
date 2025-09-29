@@ -17,6 +17,12 @@ class TestTidalResource(unittest.TestCase):
             ("playlist/12345678", "playlist", "12345678"),
             ("https://tidal.com/browse/artist/12345678", "artist", "12345678"),
             ("artist/12345678", "artist", "12345678"),
+            (
+                "https://tidal.com/browse/mix/f93b015796bf93b015796b",
+                "mix",
+                "f93b015796bf93b015796b",
+            ),
+            ("mix/f93b015796bf93b015796b", "mix", "f93b015796bf93b015796b"),
         ]
 
         for resource, expected_type, expected_id in positive_cases:

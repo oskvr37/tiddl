@@ -102,6 +102,13 @@ class PlaylistItems(Items):
     items: List[Union[PlaylistTrackItem, PlaylistVideoItem]]
 
 
+class MixItems(Items):
+    class MixItem(BaseModel):
+        item: Track
+        type: ItemType = "track"
+
+    items: List[MixItem]
+
 class Favorites(BaseModel):
     PLAYLIST: List[str]
     ALBUM: List[str]
