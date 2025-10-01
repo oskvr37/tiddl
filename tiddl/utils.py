@@ -250,9 +250,15 @@ async def convertFileExtension(
 
 
 def savePlaylistM3U(
-    playlist_tracks: dict[str, Track], path: Path, filename="playlist.m3u"
+    playlist_tracks: list[tuple[Path, Track]], path: Path, filename="playlist.m3u"
 ):
-    file = path / filename
+    """
+    playlist_tracks: [track_path, Track]
+    path: m3u file location
+    filename: name of the m3u file
+    """
+
+    file = path / sanitizeString(filename)
     logging.debug(f"saving m3u file at {file}")
 
     if not playlist_tracks:
@@ -262,7 +268,7 @@ def savePlaylistM3U(
     try:
         with file.open("w", encoding="utf-8") as f:
             f.write("#EXTM3U\n")
-            for track_path, track in playlist_tracks.items():
+            for track_path, track in playlist_tracks:
                 f.write(
                     f"#EXTINF:{track.duration},{track.artist.name if track.artist else ''} - {track.title}\n{track_path}\n"
                 )

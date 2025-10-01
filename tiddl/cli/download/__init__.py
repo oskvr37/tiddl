@@ -3,7 +3,7 @@ import click
 import asyncio
 
 from time import perf_counter
-from concurrent.futures import ThreadPoolExecutor, Future, as_completed
+from concurrent.futures import ThreadPoolExecutor, Future
 from pathlib import Path
 from requests import Session
 
@@ -318,14 +318,14 @@ def DownloadCommand(
                     item.audioQuality, DOWNLOAD_QUALITY, scan_path
                 )
                 if track_path.exists():
-                    logging.warning(f"Track '{item.title}' skipped - exists")
+                    logging.info(f"Track '{item.title}' skipped - exists")
                     future = Future()
                     future.set_result(track_path)
                     return future
 
             elif isinstance(item, Video):
                 if scan_path.with_suffix(".mp4").exists():
-                    logging.warning(f"Video '{item.title}' skipped - exists")
+                    logging.info(f"Video '{item.title}' skipped - exists")
                     return
 
         future = pool.submit(
@@ -451,9 +451,8 @@ def DownloadCommand(
                 logging.info(f"downloading playlist {playlist.title!r}")
                 offset = 0
                 playlist_path = None
-                playlist_tracks: dict[str, Track] = {}
 
-                futures = {}
+                futures: list[tuple[Future[Path], Track]] = []
 
                 while True:
                     playlist_items = api.getPlaylistItems(playlist.uuid, offset=offset)
@@ -468,7 +467,7 @@ def DownloadCommand(
 
                         future = submitItem(item.item, filename)
                         if future:
-                            futures[future] = item.item
+                            futures.append((future, item.item))
 
                         playlist_path = Path(filename).parent
 
@@ -480,9 +479,10 @@ def DownloadCommand(
 
                     offset += playlist_items.limit
 
-                    for future in as_completed(futures):
-                        track_path = future.result()
-                        playlist_tracks[track_path] = futures[future]
+                playlist_tracks: list[tuple[Path, Track]] = []
+                for future, track in futures:
+                    track_path = future.result()
+                    playlist_tracks.append((track_path, track))
 
                 path = Path(PATH) if PATH else ctx.obj.config.download.path
 
