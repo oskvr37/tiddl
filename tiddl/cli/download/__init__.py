@@ -486,7 +486,7 @@ def DownloadCommand(
 
                 path = Path(PATH) if PATH else ctx.obj.config.download.path
 
-                if playlist_path and SAVE_M3U:
+                if playlist_path and (SAVE_M3U or ctx.obj.config.download.save_playlist_m3u):
                     savePlaylistM3U(
                         playlist_tracks=playlist_tracks,
                         path=path / playlist_path,
