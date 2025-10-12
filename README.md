@@ -45,6 +45,10 @@ Commands:
   search  Search on Tidal.
   url     Get Tidal URL.
 ```
+
+> [!NOTE]
+> Also make sure you have installed `ffmpeg` if you want to convert track file extensions.
+
 ## Dockerised Version (no Python required)
 
 Based on python:alpine, slim build
