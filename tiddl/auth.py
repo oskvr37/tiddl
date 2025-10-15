@@ -1,4 +1,6 @@
 import logging
+import base64
+from os import environ
 
 from requests import request
 
@@ -6,9 +8,28 @@ from tiddl.exceptions import AuthError
 from tiddl.models import auth
 
 AUTH_URL = "https://auth.tidal.com/v1/oauth2"
-CLIENT_ID = "zU4XHVVkc2tDPo4t"
-CLIENT_SECRET = "VJKhDFqJPqvsPVNBV6ukXTJmwlvbttP7wlMlrc72se4="
 
+
+def get_auth_credentials() -> tuple[str, str]:
+    ENV_KEY = "TIDDL_AUTH"
+
+    client_id, client_secret = (
+        base64.b64decode(
+            "N203QXAwSkM5ajFjT00zbjt2UkFkQTEwOHRsdmtKcFRzR1pTOHJHWjd4VGxiSjBxYVoySzlzYUV6c2dZPQ=="
+        )
+        .decode()
+        .split(";")
+    )
+
+    env_value = environ.get(ENV_KEY, None)
+
+    if env_value:
+        client_id, client_secret = env_value.split(";")
+
+    return client_id, client_secret
+
+
+CLIENT_ID, CLIENT_SECRET = get_auth_credentials()
 
 logger = logging.getLogger(__name__)
 
