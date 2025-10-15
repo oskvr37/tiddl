@@ -228,17 +228,6 @@ def DownloadCommand(
             f.write(stream_data)
 
         if isinstance(item, Track):
-            if track_stream.audioQuality == "HI_RES_LOSSLESS":
-                path = asyncio.run(
-                    convertFileExtension(
-                        source_file=path,
-                        extension=".flac",
-                        remove_source=True,
-                        is_video=False,
-                        copy_audio=True,  # extract flac from m4a container
-                    )
-                )
-
             if not cover_data and item.album.cover:
                 cover_data = Cover(item.album.cover).content
 
@@ -258,6 +247,17 @@ def DownloadCommand(
                 )
             except Exception as e:
                 logging.error(f"Can not add metadata to: {path}, {e}")
+
+            if track_stream.audioQuality in ["HI_RES_LOSSLESS", "LOSSLESS"]:
+                path = asyncio.run(
+                    convertFileExtension(
+                        source_file=path,
+                        extension=".flac",
+                        remove_source=True,
+                        is_video=False,
+                        copy_audio=True,  # extract flac from m4a container
+                    )
+                )
 
         elif isinstance(item, Video):
             path = asyncio.run(
@@ -486,7 +486,9 @@ def DownloadCommand(
 
                 path = Path(PATH) if PATH else ctx.obj.config.download.path
 
-                if playlist_path and (SAVE_M3U or ctx.obj.config.download.save_playlist_m3u):
+                if playlist_path and (
+                    SAVE_M3U or ctx.obj.config.download.save_playlist_m3u
+                ):
                     savePlaylistM3U(
                         playlist_tracks=playlist_tracks,
                         path=path / playlist_path,
