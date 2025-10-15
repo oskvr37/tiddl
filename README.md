@@ -132,6 +132,12 @@ Example CLI usage:
 TIDDL_PATH=~/custom/tiddl tiddl auth login
 ```
 
+## Auth stopped working?
+
+Set `TIDDL_AUTH` environment variable to use another credentials.
+
+TIDDL_AUTH=<CLIENT_ID>;<CLIENT_SECRET>
+
 # Development
 
 Clone the repository
