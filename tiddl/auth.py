@@ -1,4 +1,5 @@
 import logging
+import base64
 from os import environ
 
 from requests import request
@@ -13,8 +14,11 @@ def get_auth_credentials() -> tuple[str, str]:
     ENV_KEY = "TIDDL_AUTH"
 
     client_id, client_secret = (
-        "7m7Ap0JC9j1cOM3n",
-        "vRAdA108tlvkJpTsGZS8rGZ7xTlbJ0qaZ2K9saEzsgY=",
+        base64.b64decode(
+            "N203QXAwSkM5ajFjT00zbjt2UkFkQTEwOHRsdmtKcFRzR1pTOHJHWjd4VGxiSjBxYVoySzlzYUV6c2dZPQ=="
+        )
+        .decode()
+        .split(";")
     )
 
     env_value = environ.get(ENV_KEY, None)
