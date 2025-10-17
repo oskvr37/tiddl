@@ -236,6 +236,17 @@ def DownloadCommand(
             else:
                 lyrics_subtitles = ""
 
+            if track_stream.audioQuality in ["HI_RES_LOSSLESS"]:
+                path = asyncio.run(
+                    convertFileExtension(
+                        source_file=path,
+                        extension=".flac",
+                        remove_source=True,
+                        is_video=False,
+                        copy_audio=True,  # extract flac from m4a container
+                    )
+                )
+
             try:
                 addMetadata(
                     path,
@@ -247,17 +258,6 @@ def DownloadCommand(
                 )
             except Exception as e:
                 logging.error(f"Can not add metadata to: {path}, {e}")
-
-            if track_stream.audioQuality in ["HI_RES_LOSSLESS", "LOSSLESS"]:
-                path = asyncio.run(
-                    convertFileExtension(
-                        source_file=path,
-                        extension=".flac",
-                        remove_source=True,
-                        is_video=False,
-                        copy_audio=True,  # extract flac from m4a container
-                    )
-                )
 
         elif isinstance(item, Video):
             path = asyncio.run(

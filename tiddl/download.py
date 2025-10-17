@@ -73,16 +73,14 @@ def parseTrackStream(track_stream: TrackStream) -> tuple[list[str], str]:
         case "application/dash+xml":
             urls, codecs = parseManifestXML(decoded_manifest)
 
-    # if codecs == "flac":
-    #     file_extension = ".flac"
-    #     if track_stream.audioQuality == "HI_RES_LOSSLESS":
-    #         file_extension = ".m4a"
-    # elif codecs.startswith("mp4"):
-    #     file_extension = ".m4a"
-    # else:
-    #     raise ValueError(f"Unknown codecs `{codecs}` (trackId {track_stream.trackId}")
-
-    file_extension = ".m4a"
+    if codecs == "flac":
+        file_extension = ".flac"
+        if track_stream.audioQuality == "HI_RES_LOSSLESS":
+            file_extension = ".m4a"
+    elif codecs.startswith("mp4"):
+        file_extension = ".m4a"
+    else:
+        raise ValueError(f"Unknown codecs `{codecs}` (trackId {track_stream.trackId}")
 
     return urls, file_extension
 
