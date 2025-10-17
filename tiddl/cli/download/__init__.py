@@ -229,7 +229,7 @@ def DownloadCommand(
 
         if isinstance(item, Track):
             if not cover_data and item.album.cover:
-                cover_data = Cover(item.album.cover).content
+                cover_data = Cover(item.album.cover, size=ctx.obj.config.cover.size).content
 
             if EMBED_LYRICS:
                 lyrics_subtitles = api.getLyrics(item.id).subtitles
