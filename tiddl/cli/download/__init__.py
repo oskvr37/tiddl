@@ -36,6 +36,8 @@ from tiddl.cli.download.url import UrlGroup
 
 from typing import List, Union
 
+logger = logging.getLogger(__name__)
+
 
 @click.command("download")
 @click.option(
@@ -129,7 +131,7 @@ def DownloadCommand(
     EMBED_LYRICS = EMBED_LYRICS or ctx.obj.config.download.embed_lyrics
 
     # TODO: pretty print
-    logging.debug(
+    logger.debug(
         (
             QUALITY,
             TEMPLATE,
@@ -229,12 +231,17 @@ def DownloadCommand(
 
         if isinstance(item, Track):
             if not cover_data and item.album.cover:
-                cover_data = Cover(item.album.cover, size=ctx.obj.config.cover.size).content
+                cover_data = Cover(
+                    item.album.cover, size=ctx.obj.config.cover.size
+                ).content
+
+            lyrics_subtitles = ""
 
             if EMBED_LYRICS:
-                lyrics_subtitles = api.getLyrics(item.id).subtitles
-            else:
-                lyrics_subtitles = ""
+                try:
+                    lyrics_subtitles = api.getLyrics(item.id).subtitles
+                except Exception as e:
+                    logger.error(e)
 
             if track_stream.audioQuality in ["HI_RES_LOSSLESS"]:
                 path = asyncio.run(
@@ -257,7 +264,7 @@ def DownloadCommand(
                     lyrics=lyrics_subtitles,
                 )
             except Exception as e:
-                logging.error(f"Can not add metadata to: {path}, {e}")
+                logger.error(f"Can not add metadata to: {path}, {e}")
 
         elif isinstance(item, Video):
             path = asyncio.run(
@@ -273,10 +280,10 @@ def DownloadCommand(
             try:
                 addVideoMetadata(path, item)
             except Exception as e:
-                logging.error(f"Can not add metadata to: {path}, {e}")
+                logger.error(f"Can not add metadata to: {path}, {e}")
 
         progress.remove_task(task_id)
-        logging.info(f"{item.title!r} • {speed:.2f} Mbps • {size:.2f} MB")
+        logger.info(f"{item.title!r} • {speed:.2f} Mbps • {size:.2f} MB")
 
         return path
 
@@ -292,7 +299,7 @@ def DownloadCommand(
         album_artist="",
     ) -> Future[Path] | None:
         if not item.allowStreaming:
-            logging.warning(
+            logger.warning(
                 f"✖ {type(item).__name__} '{item.title}' does not allow streaming"
             )
             return
@@ -308,7 +315,7 @@ def DownloadCommand(
 
         # Respect DOWNLOAD_VIDEO = FALSE over DO_NOT_SKIP (as it's for the file exists check)
         if isinstance(item, Video) and not DOWNLOAD_VIDEO:
-            logging.warning(f"Video '{item.title}' skipped as DOWNLOAD_VIDEO is false")
+            logger.warning(f"Video '{item.title}' skipped as DOWNLOAD_VIDEO is false")
             return
 
         # check if item is already downloaded (unless DO_NOT_SKIP is set, then override anything)
@@ -318,14 +325,14 @@ def DownloadCommand(
                     item.audioQuality, DOWNLOAD_QUALITY, scan_path
                 )
                 if track_path.exists():
-                    logging.info(f"Track '{item.title}' skipped - exists")
+                    logger.info(f"Track '{item.title}' skipped - exists")
                     future = Future()
                     future.set_result(track_path)
                     return future
 
             elif isinstance(item, Video):
                 if scan_path.with_suffix(".mp4").exists():
-                    logging.info(f"Video '{item.title}' skipped - exists")
+                    logger.info(f"Video '{item.title}' skipped - exists")
                     return
 
         future = pool.submit(
@@ -340,7 +347,7 @@ def DownloadCommand(
         return future
 
     def downloadAlbum(album: Album):
-        logging.info(f"Album {album.title!r}")
+        logger.info(f"Album {album.title!r}")
 
         cover = (
             Cover(uid=album.cover, size=ctx.obj.config.cover.size)
@@ -381,7 +388,7 @@ def DownloadCommand(
             offset += album_items.limit
 
     def handleResource(resource: TidalResource) -> None:
-        logging.debug(f"'{resource}'")
+        logger.debug(f"'{resource}'")
 
         match resource.type:
             case "track":
@@ -417,7 +424,7 @@ def DownloadCommand(
 
             case "artist":
                 artist = api.getArtist(resource.id)
-                logging.info(f"Artist {artist.name!r}")
+                logger.info(f"Artist {artist.name!r}")
 
                 def getAllAlbums(singles: bool):
                     offset = 0
@@ -448,7 +455,7 @@ def DownloadCommand(
 
             case "playlist":
                 playlist = api.getPlaylist(resource.id)
-                logging.info(f"downloading playlist {playlist.title!r}")
+                logger.info(f"downloading playlist {playlist.title!r}")
                 offset = 0
                 playlist_path = None
 
@@ -510,11 +517,11 @@ def DownloadCommand(
             handleResource(resource)
 
         except AuthError as e:
-            logging.error(e)
+            logger.error(e)
             break
 
         except ApiError as e:
-            logging.error(e)
+            logger.error(e)
 
             # session does not have streaming privileges
             if e.sub_status == 4006:
