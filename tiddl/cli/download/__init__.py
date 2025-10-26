@@ -229,12 +229,17 @@ def DownloadCommand(
 
         if isinstance(item, Track):
             if not cover_data and item.album.cover:
-                cover_data = Cover(item.album.cover, size=ctx.obj.config.cover.size).content
+                cover_data = Cover(
+                    item.album.cover, size=ctx.obj.config.cover.size
+                ).content
+
+            lyrics_subtitles = ""
 
             if EMBED_LYRICS:
-                lyrics_subtitles = api.getLyrics(item.id).subtitles
-            else:
-                lyrics_subtitles = ""
+                try:
+                    lyrics_subtitles = api.getLyrics(item.id).subtitles
+                except Exception as e:
+                    logger.error(e)
 
             if track_stream.audioQuality in ["HI_RES_LOSSLESS"]:
                 path = asyncio.run(
