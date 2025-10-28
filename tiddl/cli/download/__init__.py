@@ -1,3 +1,4 @@
+import os
 import logging
 import click
 import asyncio
@@ -318,22 +319,25 @@ def DownloadCommand(
             logger.warning(f"Video '{item.title}' skipped as DOWNLOAD_VIDEO is false")
             return
 
-        # check if item is already downloaded (unless DO_NOT_SKIP is set, then override anything)
-        if not DO_NOT_SKIP:
-            if isinstance(item, Track):
-                track_path = findTrackFilename(
-                    item.audioQuality, DOWNLOAD_QUALITY, scan_path
-                )
-                if track_path.exists():
-                    logger.info(f"Track '{item.title}' skipped - exists")
-                    future = Future()
-                    future.set_result(track_path)
-                    return future
+        if isinstance(item, Track):
+            existing_filename = findTrackFilename(
+                item.audioQuality, DOWNLOAD_QUALITY, scan_path
+            )
+        elif isinstance(item, Video):
+            existing_filename = scan_path.with_suffix(".mp4")
 
-            elif isinstance(item, Video):
-                if scan_path.with_suffix(".mp4").exists():
-                    logger.info(f"Video '{item.title}' skipped - exists")
-                    return
+        if ctx.obj.config.update_mtime:
+            try:
+                os.utime(existing_filename, None)
+            except Exception:
+                logger.warning(f"Could not update mtime for {existing_filename}")
+
+        if not DO_NOT_SKIP and existing_filename.exists():
+            logger.info(f"Item '{item.title}' skipped - exists")
+            future = Future()
+            future.set_result(existing_filename)
+
+            return future
 
         future = pool.submit(
             handleItemDownload,
