@@ -54,6 +54,7 @@ class Config(BaseModel):
     cover: CoverConfig = CoverConfig()
     auth: AuthConfig = AuthConfig()
     omit_cache: bool = False
+    update_mtime: bool = False
 
     def save(self):
         with open(CONFIG_PATH, "w") as f:
