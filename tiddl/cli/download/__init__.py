@@ -326,13 +326,13 @@ def DownloadCommand(
         elif isinstance(item, Video):
             existing_filename = scan_path.with_suffix(".mp4")
 
-        if ctx.obj.config.update_mtime:
-            try:
-                os.utime(existing_filename, None)
-            except Exception:
-                logger.warning(f"Could not update mtime for {existing_filename}")
-
         if not DO_NOT_SKIP and existing_filename.exists():
+            if ctx.obj.config.update_mtime:
+                try:
+                    os.utime(existing_filename, None)
+                except Exception:
+                    logger.warning(f"Could not update mtime for {existing_filename}")
+
             logger.info(f"Item '{item.title}' skipped - exists")
             future = Future()
             future.set_result(existing_filename)
