@@ -1,3 +1,4 @@
+import os
 import logging
 import click
 import asyncio
@@ -313,27 +314,32 @@ def DownloadCommand(
         else:
             scan_path = download_path
 
-        # Respect DOWNLOAD_VIDEO = FALSE over DO_NOT_SKIP (as it's for the file exists check)
-        if isinstance(item, Video) and not DOWNLOAD_VIDEO:
-            logger.warning(f"Video '{item.title}' skipped as DOWNLOAD_VIDEO is false")
+        if isinstance(item, Track):
+            existing_filename = findTrackFilename(
+                item.audioQuality, DOWNLOAD_QUALITY, scan_path
+            )
+        elif isinstance(item, Video):
+            existing_filename = scan_path.with_suffix(".mp4")
+
+        if existing_filename.exists():
+            if ctx.obj.config.update_mtime:
+                try:
+                    os.utime(existing_filename, None)
+                except Exception:
+                    logger.warning(f"Could not update mtime for {existing_filename}")
+
+            if not DO_NOT_SKIP:
+                logger.info(f"Item '{item.title}' skipped - exists")
+                future = Future()
+                future.set_result(existing_filename)
+
+                return future
+
+        if not DOWNLOAD_VIDEO and isinstance(item, Video):
+            logger.warning(
+                f"Video '{item.title}' skipped - video download is not allowed"
+            )
             return
-
-        # check if item is already downloaded (unless DO_NOT_SKIP is set, then override anything)
-        if not DO_NOT_SKIP:
-            if isinstance(item, Track):
-                track_path = findTrackFilename(
-                    item.audioQuality, DOWNLOAD_QUALITY, scan_path
-                )
-                if track_path.exists():
-                    logger.info(f"Track '{item.title}' skipped - exists")
-                    future = Future()
-                    future.set_result(track_path)
-                    return future
-
-            elif isinstance(item, Video):
-                if scan_path.with_suffix(".mp4").exists():
-                    logger.info(f"Video '{item.title}' skipped - exists")
-                    return
 
         future = pool.submit(
             handleItemDownload,
