@@ -314,11 +314,6 @@ def DownloadCommand(
         else:
             scan_path = download_path
 
-        # Respect DOWNLOAD_VIDEO = FALSE over DO_NOT_SKIP (as it's for the file exists check)
-        if isinstance(item, Video) and not DOWNLOAD_VIDEO:
-            logger.warning(f"Video '{item.title}' skipped as DOWNLOAD_VIDEO is false")
-            return
-
         if isinstance(item, Track):
             existing_filename = findTrackFilename(
                 item.audioQuality, DOWNLOAD_QUALITY, scan_path
@@ -326,18 +321,23 @@ def DownloadCommand(
         elif isinstance(item, Video):
             existing_filename = scan_path.with_suffix(".mp4")
 
-        if not DO_NOT_SKIP and existing_filename.exists():
+        if existing_filename.exists():
             if ctx.obj.config.update_mtime:
                 try:
                     os.utime(existing_filename, None)
                 except Exception:
                     logger.warning(f"Could not update mtime for {existing_filename}")
 
-            logger.info(f"Item '{item.title}' skipped - exists")
-            future = Future()
-            future.set_result(existing_filename)
+            if not DO_NOT_SKIP:
+                logger.info(f"Item '{item.title}' skipped - exists")
+                future = Future()
+                future.set_result(existing_filename)
 
-            return future
+                return future
+
+        if not DOWNLOAD_VIDEO and isinstance(item, Video):
+            logger.warning(f"Video '{item.title}' skipped - ")
+            return
 
         future = pool.submit(
             handleItemDownload,
