@@ -336,7 +336,9 @@ def DownloadCommand(
                 return future
 
         if not DOWNLOAD_VIDEO and isinstance(item, Video):
-            logger.warning(f"Video '{item.title}' skipped - ")
+            logger.warning(
+                f"Video '{item.title}' skipped - video download is not allowed"
+            )
             return
 
         future = pool.submit(
