@@ -100,6 +100,13 @@ logger = logging.getLogger(__name__)
     help="Enable downloading videos",
 )
 @click.option(
+    "--only-video",
+    "-ov",
+    "ONLY_VIDEO",
+    is_flag=True,
+    help="Download only videos from an artist.",
+)
+@click.option(
     "--scan-path",
     "SCAN_PATH",
     type=str,
@@ -123,6 +130,7 @@ def DownloadCommand(
     SINGLES_FILTER: SinglesFilter,
     EMBED_LYRICS: bool,
     DOWNLOAD_VIDEO: bool,
+    ONLY_VIDEO: bool,
     SCAN_PATH: str | None,
     SAVE_M3U: bool,
 ):
@@ -431,6 +439,26 @@ def DownloadCommand(
             case "artist":
                 artist = api.getArtist(resource.id)
                 logger.info(f"Artist {artist.name!r}")
+
+                if ONLY_VIDEO:
+                    offset = 0
+
+                    while True:
+                        artist_videos = api.getArtistVideos(resource.id, offset=offset)
+
+                        for video in artist_videos.items:
+                            filename = formatResource(
+                                TEMPLATE or ctx.obj.config.template.video, video
+                            )
+
+                            submitItem(video, filename)
+
+                        if offset > artist_videos.totalNumberOfItems:
+                            break
+
+                        offset += artist_videos.limit
+
+                    return
 
                 def getAllAlbums(singles: bool):
                     offset = 0

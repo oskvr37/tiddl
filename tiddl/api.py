@@ -17,6 +17,7 @@ from tiddl.models.api import (
     AlbumItemsCredits,
     Artist,
     ArtistAlbumsItems,
+    ArtistVideosItems,
     Favorites,
     Playlist,
     PlaylistItems,
@@ -51,6 +52,7 @@ def ensureLimit(limit: int, max_limit: int) -> int:
 
 class Limits:
     ARTIST_ALBUMS = 50
+    ARTIST_VIDEOS = 50
     ALBUM_ITEMS = 10
     ALBUM_ITEMS_MAX = 100
     PLAYLIST = 50
@@ -173,6 +175,23 @@ class TidalApi:
                 "limit": limit,  # tested limit 10,000
                 "offset": offset,
                 "filter": filter,
+            },
+            expire_after=3600,
+        )
+
+    def getArtistVideos(
+        self,
+        artist_id: str | int,
+        limit: int = LIMITS.ARTIST_VIDEOS,
+        offset: int = 0,
+    ):
+        return self.fetch(
+            ArtistVideosItems,
+            f"artists/{artist_id}/videos",
+            {
+                "countryCode": self.country_code,
+                "limit": limit,
+                "offset": offset,
             },
             expire_after=3600,
         )

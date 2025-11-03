@@ -6,6 +6,7 @@ from tiddl.models.resource import Album, Artist, Playlist, Track, TrackQuality, 
 __all__ = [
     "SessionResponse",
     "ArtistAlbumsItems",
+    "ArtistVideosItems",
     "AlbumItems",
     "PlaylistItems",
     "Favorites",
@@ -39,6 +40,8 @@ class Items(BaseModel):
 class ArtistAlbumsItems(Items):
     items: List[Album]
 
+class ArtistVideosItems(Items):
+    items: List[Video]
 
 ItemType = Literal["track", "video"]
 
