@@ -53,11 +53,13 @@ Commands:
 
 Based on python:alpine, slim build
 **Docker run example (quickest / easiest)**
+
 ```
 docker run -rm -v /downloads/dir:/root/Music/Tiddl/ -v ./config/tiddl/:/root/ ghcr.io/oskvr37/tiddl:latest
 ```
 
 **docker-compose.yml example (not required, though allows for advanced configs)**
+
 ```
 services:
   tiddl:
@@ -65,10 +67,12 @@ services:
     image: ghcr.io/oskvr37/tiddl:latest
     volumes:
       - /downloads/dir:/root/Music/Tiddl/ #default dir
-      - ./config/tiddl/:/root/ # Default location of config file 
+      - ./config/tiddl/:/root/ # Default location of config file
     command: tail -f /dev/null # Keep it running in background
 ```
+
 **Access the container:**
+
 ```
 docker exec -it tiddl sh
 ```
@@ -146,16 +150,17 @@ Clone the repository
 git clone https://github.com/oskvr37/tiddl
 ```
 
+You should create virtual environment and activate it
+
+```bash
+python -m venv .venv
+source .venv/Scripts/activate
+```
+
 Install package with `--editable` flag
 
 ```bash
 pip install -e .
-```
-
-Run tests
-
-```bash
-python -m unittest
 ```
 
 # Resources
