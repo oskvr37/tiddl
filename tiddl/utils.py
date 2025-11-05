@@ -62,53 +62,6 @@ def sanitizeString(string: str) -> str:
     return re.sub(pattern, "", string)
 
 
-def formatTrack(
-    template: str,
-    track: Track,
-    album_artist="",
-    playlist_title="",
-    playlist_index=0,
-) -> str:
-    artist = sanitizeString(track.artist.name) if track.artist else ""
-    features = [
-        sanitizeString(track_artist.name)
-        for track_artist in track.artists
-        if track_artist.name != artist
-    ]
-
-    track_dict = {
-        "id": str(track.id),
-        "title": sanitizeString(track.title),
-        "version": sanitizeString(track.version or ""),
-        "artist": artist,
-        "artists": ", ".join(features + [artist]),
-        "features": ", ".join(features),
-        "album": sanitizeString(track.album.title),
-        "number": track.trackNumber,
-        "disc": track.volumeNumber,
-        "date": (track.streamStartDate if track.streamStartDate else ""),
-        # i think we can remove year as we are able to format date
-        "year": track.streamStartDate.strftime("%Y") if track.streamStartDate else "",
-        "playlist": sanitizeString(playlist_title),
-        "bpm": track.bpm or "",
-        "quality": QUALITY_TO_ARG[track.audioQuality],
-        "album_artist": sanitizeString(album_artist),
-        "playlist_number": playlist_index or 0,
-    }
-
-    formatted_track = template.format(**track_dict).strip()
-
-    disallowed_chars = r'[\\:"*?<>|]+'
-    invalid_chars = re.findall(disallowed_chars, formatted_track)
-
-    if invalid_chars:
-        raise ValueError(
-            f"Template '{template}' and formatted track '{formatted_track}' contains disallowed characters: {' '.join(sorted(set(invalid_chars)))}"
-        )
-
-    return formatted_track
-
-
 def formatResource(
     template: str,
     resource: Union[Track, Video],
@@ -128,7 +81,7 @@ def formatResource(
         "id": str(resource.id),
         "title": sanitizeString(resource.title),
         "artist": artist,
-        "artists": ", ".join(features + [artist]),
+        "artists": ", ".join(sorted(features + [artist])),
         "features": ", ".join(features),
         "album": sanitizeString(resource.album.title if resource.album else ""),
         "album_id": str(resource.album.id if resource.album else ""),

@@ -104,7 +104,9 @@ def addMetadata(
                 "discnumber": str(track.volumeNumber),
                 "copyright": track.copyright if track.copyright else "",
                 "albumartist": track.artist.name if track.artist else "",
-                "artist": ";".join([artist.name.strip() for artist in track.artists]),
+                "artist": ", ".join(
+                    sorted([artist.name.strip() for artist in track.artists])
+                ),
                 "album": track.album.title,
                 "date": str(track.streamStartDate) if track.streamStartDate else "",
                 "bpm": str(track.bpm or 0),
