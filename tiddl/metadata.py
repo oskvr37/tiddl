@@ -26,6 +26,7 @@ def addMetadata(
     album_artist="",
     lyrics="",
     comment: str = "",
+    album_release: str | None = None,
 ):
     logger.debug((track_path, track.id))
 
@@ -64,8 +65,11 @@ def addMetadata(
         elif track.artist:
             metadata["ALBUMARTIST"] = track.artist.name
 
-        # Prefer album release date over stream start date for accurate dating
-        release_date = track.album.releaseDate if getattr(track, "album", None) else None
+        release_date = album_release or (
+            getattr(track, "album", None).releaseDate
+            if getattr(track, "album", None) and hasattr(track.album, "releaseDate")
+            else None
+        )
         if release_date:
             metadata["DATE"] = release_date
             metadata["ORIGINALDATE"] = release_date
@@ -111,9 +115,13 @@ def addMetadata(
             metadata.save()
 
         metadata = MutagenEasyMP4(track_path)
-        # Compute date string: prefer album release date
         date_str = (
-            (track.album.releaseDate if getattr(track, "album", None) else None)
+            album_release
+            or (
+                getattr(track, "album", None).releaseDate
+                if getattr(track, "album", None) and hasattr(track.album, "releaseDate")
+                else None
+            )
             or (track.streamStartDate.strftime("%Y-%m-%d") if track.streamStartDate else "")
         )
         metadata.update(

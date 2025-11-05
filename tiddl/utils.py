@@ -77,7 +77,6 @@ def formatTrack(
         if track_artist.name != artist
     ]
 
-    # Prefer album release date over stream date
     date_str = track.album.releaseDate or (
         track.streamStartDate.strftime("%Y-%m-%d") if track.streamStartDate else ""
     )
@@ -97,7 +96,6 @@ def formatTrack(
         "number": track.trackNumber,
         "disc": track.volumeNumber,
         "date": date_str,
-        # keep year for templates that need it
         "year": year_str,
         "playlist": sanitizeString(playlist_title),
         "bpm": track.bpm or "",
@@ -125,6 +123,7 @@ def formatResource(
     album_artist="",
     playlist_title="",
     playlist_index=0,
+    album_release: str | None = None,
 ) -> str:
     artist = sanitizeString(resource.artist.name) if resource.artist else ""
 
@@ -134,13 +133,14 @@ def formatResource(
         if item_artist.name != artist
     ]
 
-    # Prefer album release date when available
-    album_release = resource.album.releaseDate if getattr(resource, "album", None) else None
-    date_str_res = album_release or (
+    release = album_release or (
+        getattr(resource, "album", None).releaseDate if getattr(resource, "album", None) and hasattr(resource.album, "releaseDate") else None
+    )
+    date_str_res = release or (
         resource.streamStartDate.strftime("%Y-%m-%d") if getattr(resource, "streamStartDate", None) else ""
     )
     year_str_res = (
-        (album_release[:4] if album_release else "")
+        (release[:4] if release else "")
         or (resource.streamStartDate.strftime("%Y") if getattr(resource, "streamStartDate", None) else "")
     )
 
