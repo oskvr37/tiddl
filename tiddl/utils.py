@@ -77,13 +77,9 @@ def formatTrack(
         if track_artist.name != artist
     ]
 
-    date_str = track.album.releaseDate or (
-        track.streamStartDate.strftime("%Y-%m-%d") if track.streamStartDate else ""
-    )
-    year_str = (
-        (track.album.releaseDate[:4] if track.album.releaseDate else "")
-        or (track.streamStartDate.strftime("%Y") if track.streamStartDate else "")
-    )
+    # Safe date values: Track.Album does not expose releaseDate; use streamStartDate here
+    date_str = track.streamStartDate.strftime("%Y-%m-%d") if track.streamStartDate else ""
+    year_str = track.streamStartDate.strftime("%Y") if track.streamStartDate else ""
 
     track_dict = {
         "id": str(track.id),
