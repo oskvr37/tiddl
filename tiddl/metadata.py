@@ -64,11 +64,21 @@ def addMetadata(
         elif track.artist:
             metadata["ALBUMARTIST"] = track.artist.name
 
-        if track.streamStartDate:
+        # Prefer album release date over stream start date for accurate dating
+        release_date = track.album.releaseDate if getattr(track, "album", None) else None
+        if release_date:
+            metadata["DATE"] = release_date
+            metadata["ORIGINALDATE"] = release_date
+            year = release_date[:4]
+            if year.isdigit():
+                metadata["YEAR"] = year
+                metadata["ORIGINALYEAR"] = year
+        elif track.streamStartDate:
             metadata["DATE"] = track.streamStartDate.strftime("%Y-%m-%d")
             metadata["ORIGINALDATE"] = track.streamStartDate.strftime("%Y-%m-%d")
-            metadata["YEAR"] = str(track.streamStartDate.strftime("%Y"))
-            metadata["ORIGINALYEAR"] = str(track.streamStartDate.strftime("%Y"))
+            year = track.streamStartDate.strftime("%Y")
+            metadata["YEAR"] = year
+            metadata["ORIGINALYEAR"] = year
 
         if track.copyright:
             metadata["COPYRIGHT"] = track.copyright
@@ -101,6 +111,11 @@ def addMetadata(
             metadata.save()
 
         metadata = MutagenEasyMP4(track_path)
+        # Compute date string: prefer album release date
+        date_str = (
+            (track.album.releaseDate if getattr(track, "album", None) else None)
+            or (track.streamStartDate.strftime("%Y-%m-%d") if track.streamStartDate else "")
+        )
         metadata.update(
             {
                 "title": track.title,
@@ -110,7 +125,7 @@ def addMetadata(
                 "albumartist": track.artist.name if track.artist else "",
                 "artist": ";".join([artist.name.strip() for artist in track.artists]),
                 "album": track.album.title,
-                "date": str(track.streamStartDate) if track.streamStartDate else "",
+                "date": date_str,
                 "bpm": str(track.bpm or 0),
                 **({"comment": comment} if comment else {}),
             }

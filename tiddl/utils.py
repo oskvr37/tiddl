@@ -77,6 +77,15 @@ def formatTrack(
         if track_artist.name != artist
     ]
 
+    # Prefer album release date over stream date
+    date_str = track.album.releaseDate or (
+        track.streamStartDate.strftime("%Y-%m-%d") if track.streamStartDate else ""
+    )
+    year_str = (
+        (track.album.releaseDate[:4] if track.album.releaseDate else "")
+        or (track.streamStartDate.strftime("%Y") if track.streamStartDate else "")
+    )
+
     track_dict = {
         "id": str(track.id),
         "title": sanitizeString(track.title),
@@ -87,9 +96,9 @@ def formatTrack(
         "album": sanitizeString(track.album.title),
         "number": track.trackNumber,
         "disc": track.volumeNumber,
-        "date": (track.streamStartDate if track.streamStartDate else ""),
-        # i think we can remove year as we are able to format date
-        "year": track.streamStartDate.strftime("%Y") if track.streamStartDate else "",
+        "date": date_str,
+        # keep year for templates that need it
+        "year": year_str,
         "playlist": sanitizeString(playlist_title),
         "bpm": track.bpm or "",
         "quality": QUALITY_TO_ARG[track.audioQuality],
@@ -125,6 +134,16 @@ def formatResource(
         if item_artist.name != artist
     ]
 
+    # Prefer album release date when available
+    album_release = resource.album.releaseDate if getattr(resource, "album", None) else None
+    date_str_res = album_release or (
+        resource.streamStartDate.strftime("%Y-%m-%d") if getattr(resource, "streamStartDate", None) else ""
+    )
+    year_str_res = (
+        (album_release[:4] if album_release else "")
+        or (resource.streamStartDate.strftime("%Y") if getattr(resource, "streamStartDate", None) else "")
+    )
+
     resource_dict = {
         "id": str(resource.id),
         "title": sanitizeString(resource.title),
@@ -135,11 +154,8 @@ def formatResource(
         "album_id": str(resource.album.id if resource.album else ""),
         "number": resource.trackNumber,
         "disc": resource.volumeNumber,
-        "date": (resource.streamStartDate if resource.streamStartDate else ""),
-        # i think we can remove year as we are able to format date
-        "year": (
-            resource.streamStartDate.strftime("%Y") if resource.streamStartDate else ""
-        ),
+        "date": date_str_res,
+        "year": year_str_res,
         "playlist": sanitizeString(playlist_title),
         "album_artist": sanitizeString(album_artist),
         "playlist_number": playlist_index or 0,
