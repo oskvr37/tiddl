@@ -38,6 +38,8 @@ def addMetadata(
             picture = Picture()
             picture.data = cover_data
             picture.mime = "image/jpeg"
+            picture.type = 3
+            metadata.clear_pictures()
             metadata.add_picture(picture)
 
         metadata["TITLE"] = track.title + (
