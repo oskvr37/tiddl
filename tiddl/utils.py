@@ -81,7 +81,7 @@ def formatTrack(
         "title": sanitizeString(track.title),
         "version": sanitizeString(track.version or ""),
         "artist": artist,
-        "artists": ", ".join(features + [artist]),
+        "artists": ", ".join([artist] + features),
         "features": ", ".join(features),
         "album": sanitizeString(track.album.title),
         "number": track.trackNumber,
