@@ -144,7 +144,7 @@ def formatResource(
         "id": str(resource.id),
         "title": sanitizeString(resource.title),
         "artist": artist,
-        "artists": ", ".join(features + [artist]),
+        "artists": ", ".join(sorted(features + [artist])),
         "features": ", ".join(features),
         "album": sanitizeString(resource.album.title if resource.album else ""),
         "album_id": str(resource.album.id if resource.album else ""),
