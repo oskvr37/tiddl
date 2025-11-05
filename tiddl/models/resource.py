@@ -104,6 +104,10 @@ class Album(BaseModel):
         type: Literal["MAIN", "FEATURED"]
         picture: Optional[str] = None
 
+    class Review(BaseModel):
+        text: str
+        source: Optional[str] = None
+
     class MediaMetadata(BaseModel):
         tags: List[Literal["LOSSLESS", "HIRES_LOSSLESS", "DOLBY_ATMOS"]]
 
@@ -136,6 +140,7 @@ class Album(BaseModel):
     mediaMetadata: MediaMetadata
     artist: Artist
     artists: List[Artist]
+    review: Optional[Review] = None
 
 
 class Playlist(BaseModel):

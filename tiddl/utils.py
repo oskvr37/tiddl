@@ -1,6 +1,7 @@
 import re
 import os
 import logging
+import html
 
 from ffmpeg_asyncio import FFmpeg
 from ffmpeg_asyncio.types import Option as FFmpegOption
@@ -279,3 +280,33 @@ def savePlaylistM3U(
 
     except Exception as e:
         logging.error(f"can't save playlist m3u file: {e}")
+
+
+def normalizeReviewText(text: str) -> str:
+    """Normalize Tidal album review text.
+
+    - Remove [wimpLink ...]...[/wimpLink] markup while keeping the inner text.
+    - Strip any stray wimpLink tags if malformed.
+    - Unescape HTML entities.
+    - Collapse excess whitespace and trim.
+    """
+    if not text:
+        return ""
+
+    # Replace [wimpLink ...]inner[/wimpLink] -> inner
+    cleaned = re.sub(r"\[wimpLink[^\]]*](.*?)\[/wimpLink]", r"\1", text, flags=re.DOTALL)
+    # Remove any leftover single tags (in case of malformed markup)
+    cleaned = re.sub(r"\[/?wimpLink[^\]]*]", "", cleaned)
+
+    # Unescape HTML entities
+    try:
+        cleaned = html.unescape(cleaned)
+    except Exception:
+        pass
+
+    # Normalize whitespace
+    cleaned = re.sub(r"[ \t]+", " ", cleaned)
+    cleaned = re.sub(r"\s+\n", "\n", cleaned)
+    cleaned = re.sub(r"\n{3,}", "\n\n", cleaned)
+
+    return cleaned.strip()

@@ -25,6 +25,7 @@ def addMetadata(
     credits: List[AlbumItemsCredits.ItemWithCredits.CreditsEntry] = [],
     album_artist="",
     lyrics="",
+    comment: str = "",
 ):
     logger.debug((track_path, track.id))
 
@@ -39,6 +40,9 @@ def addMetadata(
             picture.data = cover_data
             picture.mime = "image/jpeg"
             metadata.add_picture(picture)
+
+        if comment:
+            metadata["COMMENT"] = comment
 
         metadata["TITLE"] = track.title + (
             " ({})".format(track.version) if track.version else ""
@@ -108,6 +112,7 @@ def addMetadata(
                 "album": track.album.title,
                 "date": str(track.streamStartDate) if track.streamStartDate else "",
                 "bpm": str(track.bpm or 0),
+                **({"comment": comment} if comment else {}),
             }
         )
 

@@ -27,6 +27,7 @@ from tiddl.utils import (
     convertFileExtension,
     savePlaylistM3U,
     findTrackFilename,
+    normalizeReviewText,
 )
 
 from tiddl.cli.ctx import Context, passContext
@@ -177,6 +178,7 @@ def DownloadCommand(
         cover_data=b"",
         credits: List[AlbumItemsCredits.ItemWithCredits.CreditsEntry] = [],
         album_artist="",
+        comment: str = "",
     ) -> Path:
         if isinstance(item, Track):
             track_stream = api.getTrackStream(item.id, quality=DOWNLOAD_QUALITY)
@@ -271,6 +273,7 @@ def DownloadCommand(
                     credits,
                     album_artist=album_artist,
                     lyrics=lyrics_subtitles,
+                    comment=comment,
                 )
             except Exception as e:
                 logger.error(f"Can not add metadata to: {path}, {e}")
@@ -306,6 +309,7 @@ def DownloadCommand(
         cover_data=b"",
         credits: List[AlbumItemsCredits.ItemWithCredits.CreditsEntry] = [],
         album_artist="",
+        comment: str = "",
     ) -> Future[Path] | None:
         if not item.allowStreaming:
             logger.warning(
@@ -356,6 +360,7 @@ def DownloadCommand(
             cover_data=cover_data,
             credits=credits,
             album_artist=album_artist,
+            comment=comment,
         )
 
         return future
@@ -394,6 +399,9 @@ def DownloadCommand(
                     cover.content if cover else b"",
                     item.credits,
                     album.artist.name,
+                    normalizeReviewText(album.review.text)
+                    if getattr(album, "review", None) and getattr(album.review, "text", None)
+                    else "",
                 )
 
             if album_items.limit + album_items.offset > album_items.totalNumberOfItems:
