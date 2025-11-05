@@ -179,6 +179,7 @@ def DownloadCommand(
         credits: List[AlbumItemsCredits.ItemWithCredits.CreditsEntry] = [],
         album_artist="",
         comment: str = "",
+        album_release: str | None = None,
     ) -> Path:
         if isinstance(item, Track):
             track_stream = api.getTrackStream(item.id, quality=DOWNLOAD_QUALITY)
@@ -274,6 +275,7 @@ def DownloadCommand(
                     album_artist=album_artist,
                     lyrics=lyrics_subtitles,
                     comment=comment,
+                    album_release=album_release,
                 )
             except Exception as e:
                 logger.error(f"Can not add metadata to: {path}, {e}")
@@ -310,6 +312,7 @@ def DownloadCommand(
         credits: List[AlbumItemsCredits.ItemWithCredits.CreditsEntry] = [],
         album_artist="",
         comment: str = "",
+        album_release: str | None = None,
     ) -> Future[Path] | None:
         if not item.allowStreaming:
             logger.warning(
@@ -361,6 +364,7 @@ def DownloadCommand(
             credits=credits,
             album_artist=album_artist,
             comment=comment,
+            album_release=album_release,
         )
 
         return future
@@ -393,6 +397,7 @@ def DownloadCommand(
                     template=TEMPLATE or ctx.obj.config.template.album,
                     resource=item.item,
                     album_artist=album.artist.name,
+                    album_release=album.releaseDate,
                 )
 
                 if cover and not is_cover_saved and ctx.obj.config.cover.save:
@@ -408,6 +413,7 @@ def DownloadCommand(
                     item.credits,
                     album.artist.name,
                     review_text,
+                    album.releaseDate,
                 )
 
             if album_items.limit + album_items.offset > album_items.totalNumberOfItems:
