@@ -13,6 +13,7 @@ from requests_cache import (
 
 from tiddl.models.api import (
     Album,
+    AlbumReview,
     AlbumItems,
     AlbumItemsCredits,
     Artist,
@@ -136,6 +137,15 @@ class TidalApi:
                 "countryCode": self.country_code,
                 "limit": ensureLimit(limit, self.LIMITS.ALBUM_ITEMS_MAX),
                 "offset": offset,
+            },
+        )
+
+    def getAlbumReview(self, album_id: str | int):
+        return self.fetch(
+            AlbumReview,
+            f"albums/{album_id}/review",
+            {
+                "countryCode": self.country_code,
             },
         )
 

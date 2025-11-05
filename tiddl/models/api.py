@@ -5,6 +5,7 @@ from tiddl.models.resource import Album, Artist, Playlist, Track, TrackQuality, 
 
 __all__ = [
     "SessionResponse",
+    "AlbumReview",
     "ArtistAlbumsItems",
     "ArtistVideosItems",
     "AlbumItems",
@@ -29,6 +30,12 @@ class SessionResponse(BaseModel):
     channelId: int
     partnerId: int
     client: Client
+
+
+class AlbumReview(BaseModel):
+    text: str
+    source: Optional[str] = None
+    lastUpdated: Optional[str] = None
 
 
 class Items(BaseModel):

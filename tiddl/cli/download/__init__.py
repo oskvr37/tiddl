@@ -375,6 +375,14 @@ def DownloadCommand(
         )
         is_cover_saved = False
 
+        review_text = ""
+        try:
+            review = api.getAlbumReview(album.id)
+            if review and review.text:
+                review_text = normalizeReviewText(review.text)
+        except Exception as e:
+            logger.debug(f"No album review for {album.id}: {e}")
+
         offset = 0
 
         while True:
@@ -399,9 +407,7 @@ def DownloadCommand(
                     cover.content if cover else b"",
                     item.credits,
                     album.artist.name,
-                    normalizeReviewText(album.review.text)
-                    if getattr(album, "review", None) and getattr(album.review, "text", None)
-                    else "",
+                    review_text,
                 )
 
             if album_items.limit + album_items.offset > album_items.totalNumberOfItems:
