@@ -13,7 +13,7 @@ TIDDL is the Python CLI application that allows downloading Tidal tracks and vid
 
 `tiddl` is available at [python package index](https://pypi.org/project/tiddl/)
 
-> [!NOTE]
+> [!IMPORTANT]
 > Also make sure you have installed `ffmpeg`, it is used to convert downloaded tracks to proper format.
 
 You can install `tiddl` using your favorite python package manager.
@@ -92,9 +92,43 @@ Run `tiddl download` to see available download options.
 |  HIGH   |     .flac      |   16-bit, 44.1 kHz    |
 |   MAX   |     .flac      | Up to 24-bit, 192 kHz |
 
-### Templating
+### Output
 
-More about file templating [on wiki](https://github.com/oskvr37/tiddl/wiki/Template-formatting).
+You can format filenames of your downloaded resources and put them in different directories.
+
+For example, setting output flag to `"{album.artist}/{album.title}/{item.number:02d}. {item.title}"`
+will download tracks like following:
+
+```
+Music
+└── Kanye West
+    └── Graduation
+        ├── 01. Good Morning.flac
+        ├── 02. Champion.flac
+        ├── 03. Stronger.flac
+        ├── 04. I Wonder.flac
+        ├── 05. Good Life.flac
+        ├── 06. Can't Tell Me Nothing.flac
+        ├── 07. Barry Bonds.flac
+        ├── 08. Drunk and Hot Girls.flac
+        ├── 09. Flashing Lights.flac
+        ├── 10. Everything I Am.flac
+        ├── 11. The Glory.flac
+        ├── 12. Homecoming.flac
+        ├── 13. Big Brother.flac
+        └── 14. Good Night.flac
+```
+
+> [!NOTE]
+> Learn more about [file templating at docs](/docs/templating.md).
+
+## Configuration files
+
+Files of the app are created in your home directory. By default, the app is located at `~/.tiddl`.
+
+You can (and should) create the `config.toml` file to configure the app how you want.
+
+You can copy default config from [/docs/config.example.toml](/docs/config.example.toml)
 
 ## Environment variables
 
