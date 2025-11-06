@@ -120,6 +120,7 @@ Clone the repository
 
 ```bash
 git clone https://github.com/oskvr37/tiddl
+cd tiddl
 ```
 
 You should create virtual environment and activate it
