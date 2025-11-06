@@ -14,7 +14,8 @@ TIDDL is the Python CLI application that allows downloading Tidal tracks and vid
 `tiddl` is available at [python package index](https://pypi.org/project/tiddl/)
 
 > [!IMPORTANT]
-> Also make sure you have installed `ffmpeg`, it is used to convert downloaded tracks to proper format.
+> Also make sure you have installed [ffmpeg (download)](https://ffmpeg.org/download.html).
+> It is used to convert downloaded tracks to proper format.
 
 You can install `tiddl` using your favorite python package manager.
 
