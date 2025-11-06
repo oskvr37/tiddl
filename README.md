@@ -1,134 +1,106 @@
 # Tidal Downloader
 
-![PyPI - Downloads](https://img.shields.io/pypi/dm/tiddl?style=for-the-badge&color=%2332af64)
-![PyPI - Version](https://img.shields.io/pypi/v/tiddl?style=for-the-badge)
-![GitHub commits since latest release](https://img.shields.io/github/commits-since/oskvr37/tiddl/latest?style=for-the-badge)
-[<img src="https://img.shields.io/badge/gitmoji-%20😜%20😍-FFDD67.svg?style=for-the-badge" />](https://gitmoji.dev)
-
 TIDDL is the Python CLI application that allows downloading Tidal tracks and videos!
 
-<img src="https://raw.githubusercontent.com/oskvr37/tiddl/refs/heads/main/docs/demo.gif" alt="tiddl album download in 6 seconds" />
-
-It's inspired by [Tidal-Media-Downloader](https://github.com/yaronzz/Tidal-Media-Downloader) - currently not mantained project.
-This repository will contain features requests from that project and will be the enhanced version.
+![PyPI - Downloads](https://img.shields.io/pypi/dm/tiddl?style=for-the-badge&color=%2332af64)
+![PyPI - Version](https://img.shields.io/pypi/v/tiddl?style=for-the-badge)
+[<img src="https://img.shields.io/badge/gitmoji-%20😜%20😍-FFDD67.svg?style=for-the-badge" />](https://gitmoji.dev)
 
 > [!WARNING]
 > This app is for personal use only and is not affiliated with Tidal. Users must ensure their use complies with Tidal's terms of service and local copyright laws. Downloaded tracks are for personal use and may not be shared or redistributed. The developer assumes no responsibility for misuse of this app.
 
 # Installation
 
-Install package using `pip`
+`tiddl` is available at [python package index](https://pypi.org/project/tiddl/)
+
+> [!NOTE]
+> Also make sure you have installed `ffmpeg`, it is used to convert downloaded tracks to proper format.
+
+You can install `tiddl` using your favorite python package manager.
+
+## uv
+
+We recommend using [uv](https://docs.astral.sh/uv/).
+
+```bash
+uv tool install tiddl
+```
+
+## pip
+
+You can also use [pip](https://packaging.python.org/en/latest/tutorials/installing-packages/).
 
 ```bash
 pip install tiddl
 ```
 
-Run the package cli with `tiddl`
+## docker
+
+**coming soon**
+
+# Usage
+
+Run the app with `tiddl`
 
 ```bash
 $ tiddl
-Usage: tiddl [OPTIONS] COMMAND [ARGS]...
+ Usage: tiddl [OPTIONS] COMMAND [ARGS]...
 
-  TIDDL - Tidal Downloader ♫
+ tiddl - download tidal tracks ♫
 
-Options:
-  -v, --verbose    Show debug logs.
-  -q, --quiet      Suppress logs.
-  -nc, --no-cache  Omit Tidal API requests caching.
-  --help           Show this message and exit.
-
-Commands:
-  auth    Manage Tidal token.
-  config  Print path to the configuration file.
-  fav     Get your Tidal favorites.
-  file    Parse txt or JSON file with urls.
-  search  Search on Tidal.
-  url     Get Tidal URL.
+╭─ Options ───────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --omit-cache            --no-omit-cache      [default: no-omit-cache]                                       │
+│ --debug                 --no-debug           [default: no-debug]                                            │
+│ --install-completion                         Install completion for the current shell.                      │
+│ --show-completion                            Show completion for the current shell, to copy it or customize │
+│                                              the installation.                                              │
+│ --help                                       Show this message and exit.                                    │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ──────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ auth       Manage Tidal authentication.                                                                     │
+│ download   Download Tidal resources.                                                                        │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
 
-> [!NOTE]
-> Also make sure you have installed `ffmpeg` if you want to convert track file extensions.
+## Authentication
 
-## Dockerised Version (no Python required)
-
-Based on python:alpine, slim build
-**Docker run example (quickest / easiest)**
-
-```
-docker run -rm -v /downloads/dir:/root/Music/Tiddl/ -v ./config/tiddl/:/root/ ghcr.io/oskvr37/tiddl:latest
-```
-
-**docker-compose.yml example (not required, though allows for advanced configs)**
-
-```
-services:
-  tiddl:
-    container_name: tiddl
-    image: ghcr.io/oskvr37/tiddl:latest
-    volumes:
-      - /downloads/dir:/root/Music/Tiddl/ #default dir
-      - ./config/tiddl/:/root/ # Default location of config file
-    command: tail -f /dev/null # Keep it running in background
-```
-
-**Access the container:**
-
-```
-docker exec -it tiddl sh
-```
-
-_all other instructions match python version_
-
-# Basic usage
-
-## Login with Tidal account
+Login to app with your Tidal account: run the command below and follow instructions.
 
 ```bash
 tiddl auth login
 ```
 
-## Download resource
+## Downloading
 
-You can download track / video / album / artist / playlist
+You can download tracks / videos / albums / artists / playlists / mixes.
 
 ```bash
-tiddl url https://listen.tidal.com/track/103805726 download
-tiddl url https://listen.tidal.com/video/25747442 download
-tiddl url https://listen.tidal.com/album/103805723 download
-tiddl url https://listen.tidal.com/artist/25022 download
-tiddl url https://listen.tidal.com/playlist/84974059-76af-406a-aede-ece2b78fa372 download
+$ tiddl download url <url>
 ```
 
 > [!TIP]
 > You don't have to paste full urls, track/103805726, album/103805723 etc. will also work
 
-## Download options
+Run `tiddl download` to see available download options.
 
-```bash
-tiddl url track/103805726 download -q master -o "{artist}/{title} ({album})"
-```
-
-This command will:
-
-- download with highest quality (master)
-- save track with title and album name in artist folder
-
-### Download quality
+### Quality
 
 | Quality | File extension |        Details        |
 | :-----: | :------------: | :-------------------: |
 |   LOW   |      .m4a      |        96 kbps        |
 | NORMAL  |      .m4a      |       320 kbps        |
 |  HIGH   |     .flac      |   16-bit, 44.1 kHz    |
-| MASTER  |     .flac      | Up to 24-bit, 192 kHz |
+|   MAX   |     .flac      | Up to 24-bit, 192 kHz |
 
-### Output format
+### Templating
 
 More about file templating [on wiki](https://github.com/oskvr37/tiddl/wiki/Template-formatting).
 
-## Custom tiddl home path
+# Environment variables
 
-You can set `TIDDL_PATH` environment variable to use custom home path for tiddl.
+## Custom app path
+
+You can set `TIDDL_PATH` environment variable to use custom path for `tiddl` app.
 
 Example CLI usage:
 
@@ -153,16 +125,18 @@ git clone https://github.com/oskvr37/tiddl
 You should create virtual environment and activate it
 
 ```bash
-python -m venv .venv
+uv venv
 source .venv/Scripts/activate
 ```
 
 Install package with `--editable` flag
 
 ```bash
-pip install -e .
+uv pip install -e .
 ```
 
 # Resources
 
-[Tidal API wiki](https://github.com/Fokka-Engineering/TIDAL)
+[Tidal API wiki (api endpoints)](https://github.com/Fokka-Engineering/TIDAL)
+
+[Tidal-Media-Downloader (inspiration)](https://github.com/yaronzz/Tidal-Media-Downloader)
