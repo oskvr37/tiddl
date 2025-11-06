@@ -1,27 +1,24 @@
 # Tidal Downloader
 
-TIDDL is the Python CLI application that allows downloading Tidal tracks and videos!
+Download tracks and videos from Tidal with max quality! `tiddl` is CLI app written in Python.
+
+> [!WARNING]
+> `This app is for personal use only and is not affiliated with Tidal. Users must ensure their use complies with Tidal's terms of service and local copyright laws. Downloaded tracks are for personal use and may not be shared or redistributed. The developer assumes no responsibility for misuse of this app.`
 
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/tiddl?style=for-the-badge&color=%2332af64)
 ![PyPI - Version](https://img.shields.io/pypi/v/tiddl?style=for-the-badge)
 [<img src="https://img.shields.io/badge/gitmoji-%20😜%20😍-FFDD67.svg?style=for-the-badge" />](https://gitmoji.dev)
 
-> [!WARNING]
-> This app is for personal use only and is not affiliated with Tidal. Users must ensure their use complies with Tidal's terms of service and local copyright laws. Downloaded tracks are for personal use and may not be shared or redistributed. The developer assumes no responsibility for misuse of this app.
-
 # Installation
 
-`tiddl` is available at [python package index](https://pypi.org/project/tiddl/)
+`tiddl` is available at [python package index](https://pypi.org/project/tiddl/) and you can install it with your favorite Python package manager.
 
 > [!IMPORTANT]
-> Also make sure you have installed [ffmpeg (download)](https://ffmpeg.org/download.html).
-> It is used to convert downloaded tracks to proper format.
-
-You can install `tiddl` using your favorite python package manager.
+> Also make sure you have installed  [`ffmpeg`](https://ffmpeg.org/download.html) - it is used to convert downloaded tracks to proper format.
 
 ## uv
 
-We recommend using [uv](https://docs.astral.sh/uv/).
+We recommend using [uv](https://docs.astral.sh/uv/)
 
 ```bash
 uv tool install tiddl
@@ -29,7 +26,7 @@ uv tool install tiddl
 
 ## pip
 
-You can also use [pip](https://packaging.python.org/en/latest/tutorials/installing-packages/).
+You can also use [pip](https://packaging.python.org/en/latest/tutorials/installing-packages/)
 
 ```bash
 pip install tiddl
