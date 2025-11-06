@@ -96,9 +96,9 @@ Run `tiddl download` to see available download options.
 
 More about file templating [on wiki](https://github.com/oskvr37/tiddl/wiki/Template-formatting).
 
-# Environment variables
+## Environment variables
 
-## Custom app path
+### Custom app path
 
 You can set `TIDDL_PATH` environment variable to use custom path for `tiddl` app.
 
@@ -108,7 +108,7 @@ Example CLI usage:
 TIDDL_PATH=~/custom/tiddl tiddl auth login
 ```
 
-## Auth stopped working?
+### Auth stopped working?
 
 Set `TIDDL_AUTH` environment variable to use another credentials.
 
