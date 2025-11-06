@@ -1,0 +1,141 @@
+# this is `config.toml` file, it is used to configure your tiddl app.
+# if you don't create one on your machine, then app will use default settings.
+# this file must be saved as `config.toml` at APP_PATH which by default is in your home directory.
+# APP_PATH will be created when you install and run `tiddl` for the first time.
+# Windows: C:/users/<your_username>/.tiddl
+# Linux: ~/.tiddl
+# you can set custom APP_PATH by setting environment variable: `TIDDL_PATH`.
+
+# cache API requests, used for improving speed of Tidal endpoints calls, recommended to leave it true.
+# most of endpoints are cached for 1 hour, then they are called again.
+# database for cached data is located at APP_PATH with filename `api_cache.sqlite`.
+# sometimes you can delete the database to purge the cache, when the database file size is too large
+# or something just broke.
+enable_cache = true
+
+# debug option is used to save the calls of Tidal API endpoints
+# to the `api_debug` directory at your APP_PATH.
+# they are saved as directories to these endpoints with json data.
+debug = false
+
+
+[templates]
+# read more about templates at: TODO add templating docs
+
+# if you don't specify the template for a resource
+# then default template will be used.
+default = "{album.artist}/{album.title}/{item.title}"
+
+# track = "tracks/{item.id}"
+# video = "videos/{item.title}"
+# album = "artists/{album.artist}/{album.title}/{item.title}"
+# playlist = "{playlist.title}/{playlist.index}. {item.artist} - {item.title}"
+# mix = "mixes/{mix_id}/{item.artist} - {item.title}"
+
+
+[download]
+# low - 96 kbps, m4a
+# normal - 320 kbps, m4a
+# high - 16 bit, 44.1 kHz, flac
+# max - up to 24 bit, 192 kHz, flac 
+track_quality = "high"
+
+# sd - 360p
+# hd - 720p
+# fhd - 1080p
+video_quality = "fhd"
+
+# will skip already downloaded files
+skip_existing = true
+
+# how many items will be downloaded at once, recommended to keep it low
+threads_count = 4
+
+# base download directory, by default it is set to your home directory / Music / tiddl
+# download_path = ""
+
+# if you moved the downloaded files to other directory,
+# then you should specify the destination directory there.
+# otherwise `tiddl` will not detect them and `skip_existing` will not skip
+# already downloaded files. by default scan path is set to your download path.
+# scan_path = ""
+
+# this option is used to determine if you want to include downloading singles from an artist.
+# "none" download only full albums
+# "only" download only singles
+# "include" download both singles and full albums
+singles_filter = "none"
+
+# "none" to disallow downloading videos (mostly from playlists)
+# "only" to download only videos - will get all vids from playlists and from artists.
+# "allow" to download tracks and videos
+videos_filter = "none"
+
+# update the modification time of an existing file when `skip_existing` is on.
+# this option is useful for user to automatically detect old local files
+# that have been removed from a Tidal collection.
+update_mtime = false
+
+# when enabled, it will write metadata to files that are already downloaded.
+# could be useful when data on Tidal has changed.
+rewrite_metadata = false
+
+
+[metadata]
+# embed metadata in files
+enable = true
+
+# embed lyrics in metadata
+embed_lyrics = false
+
+# embed track cover in the track file
+cover = false
+
+
+[cover]
+# please don't confuse the cover from metadata with cover as a distinct file.
+
+# save cover to distinct file, default false
+save = false
+
+# size of cover, default and max is 1280x1280
+size = 1280
+
+# you can allow saving covers for tracks, albums and playlists.
+# note that playlists max size is 1080x1080
+# (it will be set to proper size automatically)
+# by default allowed is set to empty []
+allowed = [
+  # "track",
+  # "album",
+  # "playlist"
+]
+
+
+[cover.templates]
+# you must set path templates if you want to save cover files.
+
+# you can access: {item}, {album}
+# track = "tracks/{item.id}"
+
+# you can access: {album}
+# album = "albums/{album.artist} - {album.title}"
+
+# you can access: {playlist}
+# playlist = "playlists/{title}"
+
+
+[m3u]
+# m3u is a text file that holds data about playlists.
+save = false
+
+# "album", "mix", "playlist"
+allowed = ["album", "mix", "playlist"]
+
+[m3u.templates]
+# additional template values:
+# {type} - album/playlist/mix
+
+album = "m3u/{type}/{album.artist} - {album.title}"
+playlist = "m3u/{type}/{playlist.title}"
+mix = "m3u/{type}/{now:%x}"
