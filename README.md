@@ -118,7 +118,7 @@ Music
 ```
 
 > [!NOTE]
-> Learn more about [file templating at docs](/docs/templating.md).
+> Learn more about [file templating](/docs/templating.md)
 
 ## Configuration files
 
@@ -126,7 +126,7 @@ Files of the app are created in your home directory. By default, the app is loca
 
 You can (and should) create the `config.toml` file to configure the app how you want.
 
-You can copy default config from [/docs/config.example.toml](/docs/config.example.toml)
+You can copy example config from docs [config.example.toml](/docs/config.example.toml)
 
 ## Environment variables
 
