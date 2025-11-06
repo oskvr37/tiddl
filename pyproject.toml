@@ -7,7 +7,7 @@ name = "tiddl"
 version = "3.0.0a1"
 description = "Download Tidal tracks with CLI downloader."
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 authors = [{ name = "oskvr37" }]
 classifiers = [
   "Environment :: Console",
