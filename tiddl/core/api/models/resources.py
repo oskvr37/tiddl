@@ -185,6 +185,7 @@ class Artist(BaseModel):
 
     id: int
     name: str
+    type: Literal["MAIN", "FEATURED"]
     artistTypes: Optional[List[Literal["ARTIST", "CONTRIBUTOR"]]] = None
     url: Optional[str] = None
     picture: Optional[str] = None
