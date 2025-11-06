@@ -1,18 +1,13 @@
-import logging
-
 from m3u8 import M3U8
 from requests import Session
 from pydantic import BaseModel
 from base64 import b64decode
 from xml.etree.ElementTree import fromstring
 
-from tiddl.models.api import TrackStream, VideoStream
+from tiddl.core.api.models import TrackStream, VideoStream
 
 
-logger = logging.getLogger(__name__)
-
-
-def parseManifestXML(xml_content: str):
+def parse_manifest_XML(xml_content: str):
     """
     Parses XML manifest file of the track.
     """
@@ -53,15 +48,23 @@ def parseManifestXML(xml_content: str):
     return urls, codecs
 
 
-class TrackManifest(BaseModel):
-    mimeType: str
-    codecs: str
-    encryptionType: str
-    urls: list[str]
+def parse_track_stream(track_stream: TrackStream) -> tuple[list[str], str]:
+    """
+    Parse URLs and file extension from `track_stream`
 
+    | Quality Level   | Codec Type | Manifest MIME Type        | MIME Type  |
+    | --------------- | ---------- | ------------------------- | ---------- |
+    | LOW             | m4a        | application/vnd.tidal.bts | audio/mp4  |
+    | HIGH            | m4a        | application/vnd.tidal.bts | audio/mp4  |
+    | LOSSLESS        | flac       | application/vnd.tidal.bts | audio/flac |
+    | HI_RES_LOSSLESS | m4a        | application/dash+xml      | audio/mp4  |
+    """
 
-def parseTrackStream(track_stream: TrackStream) -> tuple[list[str], str]:
-    """Parse URLs and file extension from `track_stream`"""
+    class TrackManifest(BaseModel):
+        mimeType: str
+        codecs: str
+        encryptionType: str
+        urls: list[str]
 
     decoded_manifest = b64decode(track_stream.manifest).decode()
 
@@ -71,7 +74,7 @@ def parseTrackStream(track_stream: TrackStream) -> tuple[list[str], str]:
             urls, codecs = track_manifest.urls, track_manifest.codecs
 
         case "application/dash+xml":
-            urls, codecs = parseManifestXML(decoded_manifest)
+            urls, codecs = parse_manifest_XML(decoded_manifest)
 
     if codecs == "flac":
         file_extension = ".flac"
@@ -85,27 +88,8 @@ def parseTrackStream(track_stream: TrackStream) -> tuple[list[str], str]:
     return urls, file_extension
 
 
-def downloadTrackStream(track_stream: TrackStream) -> tuple[bytes, str]:
-    """Download data from track stream and return it with file extension."""
-
-    urls, file_extension = parseTrackStream(track_stream)
-
-    with Session() as s:
-        stream_data = b""
-
-        for url in urls:
-            req = s.get(url)
-            stream_data += req.content
-
-    return stream_data, file_extension
-
-
-def parseVideoStream(video_stream: VideoStream) -> list[str]:
+def parse_video_stream(video_stream: VideoStream) -> list[str]:
     """Parse `video_stream` manifest and return video urls"""
-
-    # TODO: add video quality arg,
-    # for now we download the highest quality.
-    # -vq option in download command
 
     class VideoManifest(BaseModel):
         mimeType: str

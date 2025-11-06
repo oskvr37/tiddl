@@ -1,0 +1,247 @@
+from requests_cache import DO_NOT_CACHE, EXPIRE_IMMEDIATELY
+
+from typing import Literal, TypeAlias
+
+from .client import TidalClient
+from .models.resources import (
+    Album,
+    Artist,
+    Playlist,
+    Track,
+    Video,
+    TrackQuality,
+    VideoQuality,
+)
+from .models.base import (
+    AlbumItems,
+    AlbumItemsCredits,
+    ArtistAlbumsItems,
+    ArtistVideosItems,
+    Favorites,
+    TrackLyrics,
+    PlaylistItems,
+    MixItems,
+    Search,
+    SessionResponse,
+    TrackStream,
+    VideoStream,
+)
+
+
+ID: TypeAlias = str | int
+
+
+class Limits:
+    # TODO test every max limit
+
+    ARTIST_ALBUMS = 50
+    ARTIST_ALBUMS_MAX = 200
+
+    ARTIST_VIDEOS = 50
+    ARTIST_VIDEOS_MAX = 200
+
+    ALBUM_ITEMS = 100
+    ALBUM_ITEMS_MAX = 100
+
+    PLAYLIST_ITEMS = 50
+    PLAYLIST_ITEMS_MAX = 200
+
+    MIX_ITEMS = 100
+    MIX_ITEMS_MAX = 200
+
+
+class TidalAPI:
+    client: TidalClient
+    user_id: str
+    country_code: str
+
+    def __init__(self, client: TidalClient, user_id: str, country_code: str) -> None:
+        self.client = client
+        self.user_id = user_id
+        self.country_code = country_code
+
+    def get_album(self, album_id: ID):
+        return self.client.fetch(
+            Album,
+            f"albums/{album_id}",
+            {"countryCode": self.country_code},
+            expire_after=3600,
+        )
+
+    def get_album_items(
+        self, album_id: ID, limit: int = Limits.ALBUM_ITEMS, offset: int = 0
+    ):
+        return self.client.fetch(
+            AlbumItems,
+            f"albums/{album_id}/items",
+            {
+                "countryCode": self.country_code,
+                "limit": min(limit, Limits.ALBUM_ITEMS_MAX),
+                "offset": offset,
+            },
+            expire_after=3600,
+        )
+
+    def get_album_items_credits(
+        self, album_id: ID, limit: int = Limits.ALBUM_ITEMS, offset: int = 0
+    ):
+        return self.client.fetch(
+            AlbumItemsCredits,
+            f"albums/{album_id}/items/credits",
+            {
+                "countryCode": self.country_code,
+                "limit": min(limit, Limits.ALBUM_ITEMS_MAX),
+                "offset": offset,
+            },
+            expire_after=3600,
+        )
+
+    def get_artist(self, artist_id: ID):
+        return self.client.fetch(
+            Artist,
+            f"artists/{artist_id}",
+            {"countryCode": self.country_code},
+            expire_after=3600,
+        )
+
+    def get_artist_videos(
+        self,
+        artist_id: ID,
+        limit: int = Limits.ARTIST_VIDEOS,
+        offset: int = 0,
+    ):
+        return self.client.fetch(
+            ArtistVideosItems,
+            f"artists/{artist_id}/videos",
+            {
+                "countryCode": self.country_code,
+                "limit": limit,
+                "offset": offset,
+            },
+            expire_after=3600,
+        )
+
+    def get_artist_albums(
+        self,
+        artist_id: ID,
+        limit: int = Limits.ARTIST_ALBUMS,
+        offset: int = 0,
+        filter: Literal["ALBUMS", "EPSANDSINGLES"] = "ALBUMS",
+    ):
+        return self.client.fetch(
+            ArtistAlbumsItems,
+            f"artists/{artist_id}/albums",
+            {
+                "countryCode": self.country_code,
+                "limit": min(limit, Limits.ARTIST_ALBUMS_MAX),
+                "offset": offset,
+                "filter": filter,
+            },
+            expire_after=3600,
+        )
+
+    def get_mix_items(
+        self,
+        mix_id: str,
+        limit: int = Limits.MIX_ITEMS,
+        offset: int = 0,
+    ):
+        return self.client.fetch(
+            MixItems,
+            f"mixes/{mix_id}/items",
+            {
+                "countryCode": self.country_code,
+                "limit": min(limit, Limits.MIX_ITEMS_MAX),
+                "offset": offset,
+            },
+            expire_after=3600,
+        )
+
+    def get_favorites(self):
+        return self.client.fetch(
+            Favorites,
+            f"users/{self.user_id}/favorites/ids",
+            {"countryCode": self.country_code},
+            expire_after=EXPIRE_IMMEDIATELY,
+        )
+
+    def get_playlist(self, playlist_uuid: str):
+        return self.client.fetch(
+            Playlist,
+            f"playlists/{playlist_uuid}",
+            {"countryCode": self.country_code},
+            expire_after=EXPIRE_IMMEDIATELY,
+        )
+
+    def get_playlist_items(
+        self, playlist_uuid: str, limit: int = Limits.PLAYLIST_ITEMS, offset: int = 0
+    ):
+        return self.client.fetch(
+            PlaylistItems,
+            f"playlists/{playlist_uuid}/items",
+            {
+                "countryCode": self.country_code,
+                "limit": min(limit, Limits.PLAYLIST_ITEMS_MAX),
+                "offset": offset,
+            },
+            expire_after=EXPIRE_IMMEDIATELY,
+        )
+
+    def get_search(self, query: str):
+        return self.client.fetch(
+            Search,
+            "search",
+            {"countryCode": self.country_code, "query": query},
+            expire_after=DO_NOT_CACHE,
+        )
+
+    def get_session(self):
+        return self.client.fetch(SessionResponse, "sessions", expire_after=DO_NOT_CACHE)
+
+    def get_track_lyrics(self, track_id: ID):
+        return self.client.fetch(
+            TrackLyrics,
+            f"tracks/{track_id}/lyrics",
+            {"countryCode": self.country_code},
+            expire_after=3600,
+        )
+
+    def get_track(self, track_id: ID):
+        return self.client.fetch(
+            Track,
+            f"tracks/{track_id}",
+            {"countryCode": self.country_code},
+            expire_after=3600,
+        )
+
+    def get_track_stream(self, track_id: ID, quality: TrackQuality):
+        return self.client.fetch(
+            TrackStream,
+            f"tracks/{track_id}/playbackinfopostpaywall",
+            {
+                "audioquality": quality,
+                "playbackmode": "STREAM",
+                "assetpresentation": "FULL",
+            },
+            expire_after=DO_NOT_CACHE,
+        )
+
+    def get_video(self, video_id: ID):
+        return self.client.fetch(
+            Video,
+            f"videos/{video_id}",
+            {"countryCode": self.country_code},
+            expire_after=3600,
+        )
+
+    def get_video_stream(self, video_id: ID, quality: VideoQuality):
+        return self.client.fetch(
+            VideoStream,
+            f"videos/{video_id}/playbackinfopostpaywall",
+            {
+                "videoquality": quality,
+                "playbackmode": "STREAM",
+                "assetpresentation": "FULL",
+            },
+            expire_after=DO_NOT_CACHE,
+        )

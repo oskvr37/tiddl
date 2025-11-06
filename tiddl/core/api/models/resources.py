@@ -1,11 +1,11 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional, List, Literal, Dict
+from typing import Optional, List, Literal, Dict, Any
 
-from tiddl.models.constants import TrackQuality
+TrackQuality = Literal["LOW", "HIGH", "LOSSLESS", "HI_RES_LOSSLESS"]
 
-
-__all__ = ["Track", "Video", "Album", "Playlist", "Artist"]
+# audio_only is not stable
+VideoQuality = Literal["AUDIO_ONLY", "LOW", "MEDIUM", "HIGH"]
 
 
 class Track(BaseModel):
@@ -22,6 +22,9 @@ class Track(BaseModel):
         cover: Optional[str] = None
         vibrantColor: Optional[str] = None
         videoCover: Optional[str] = None
+
+    class MediaMetadata(BaseModel):
+        tags: list[str]
 
     id: int
     title: str
@@ -47,8 +50,7 @@ class Track(BaseModel):
     explicit: bool
     audioQuality: TrackQuality
     audioModes: List[str]
-    mediaMetadata: Dict[str, List[str]]
-    # for real, artist can be None?
+    mediaMetadata: MediaMetadata
     artist: Optional[Artist] = None
     artists: List[Artist]
     album: Album
@@ -120,7 +122,7 @@ class Album(BaseModel):
     numberOfTracks: int
     numberOfVideos: int
     numberOfVolumes: int
-    releaseDate: Optional[str] = None
+    releaseDate: datetime
     copyright: Optional[str] = None
     type: str
     version: Optional[str] = None
@@ -134,7 +136,8 @@ class Album(BaseModel):
     audioQuality: str
     audioModes: List[str]
     mediaMetadata: MediaMetadata
-    artist: Artist
+    # artist is none in search query
+    artist: Optional[Artist] = None
     artists: List[Artist]
 
 
@@ -147,7 +150,7 @@ class Playlist(BaseModel):
     title: str
     numberOfTracks: int
     numberOfVideos: int
-    creator: Creator | Dict
+    creator: Creator | Dict[Any, Any]
     description: Optional[str] = None
     duration: int
     lastUpdated: str
@@ -185,8 +188,7 @@ class Artist(BaseModel):
     artistTypes: Optional[List[Literal["ARTIST", "CONTRIBUTOR"]]] = None
     url: Optional[str] = None
     picture: Optional[str] = None
-    # only in search i guess
     selectedAlbumCoverFallback: Optional[str] = None
     popularity: Optional[int] = None
     artistRoles: Optional[List[Role]] = None
-    mixes: Optional[Mix | Dict] = None
+    mixes: Optional[Mix | Dict[Any, Any]] = None

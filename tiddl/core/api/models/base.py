@@ -1,19 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional, List, Literal, Union
 
-from tiddl.models.resource import Album, Artist, Playlist, Track, TrackQuality, Video
-
-__all__ = [
-    "SessionResponse",
-    "ArtistAlbumsItems",
-    "ArtistVideosItems",
-    "AlbumItems",
-    "PlaylistItems",
-    "Favorites",
-    "TrackStream",
-    "Search",
-    "Lyrics",
-]
+from .resources import Album, Artist, Playlist, Track, TrackQuality, Video, VideoQuality
 
 
 class SessionResponse(BaseModel):
@@ -97,6 +85,8 @@ class PlaylistItems(Items):
             dateAdded: str
             index: int
             itemUuid: str
+            # playlist tracks albums have releasedate,
+            # but tracks alone do not lol
 
         item: PlaylistTrack
         type: ItemType = "track"
@@ -111,6 +101,7 @@ class MixItems(Items):
         type: ItemType = "track"
 
     items: List[MixItem]
+
 
 class Favorites(BaseModel):
     PLAYLIST: List[str]
@@ -140,24 +131,20 @@ class VideoStream(BaseModel):
     videoId: int
     streamType: Literal["ON_DEMAND"]
     assetPresentation: Literal["FULL"]
-    videoQuality: Literal["HIGH", "MEDIUM"]
+    videoQuality: VideoQuality
     # streamingSessionId: str  # only in web?
-    manifestMimeType: Literal["application/vnd.tidal.emu"]
+    manifestMimeType: Literal["application/dash+xml", "application/vnd.tidal.emu"]
     manifestHash: str
     manifest: str
 
 
-class SearchAlbum(Album):
-    # TODO: remove the artist field instead of making it None
-    artist: None = None
-
-
 class Search(BaseModel):
+
     class Artists(Items):
         items: List[Artist]
 
     class Albums(Items):
-        items: List[SearchAlbum]
+        items: List[Album]
 
     class Playlists(Items):
         items: List[Playlist]
@@ -169,7 +156,7 @@ class Search(BaseModel):
         items: List[Video]
 
     class TopHit(BaseModel):
-        value: Union[Artist, Track, Playlist, SearchAlbum]
+        value: Union[Artist, Track, Playlist, Album]
         type: Literal["ARTISTS", "TRACKS", "PLAYLISTS", "ALBUMS"]
 
     artists: Artists
@@ -180,7 +167,7 @@ class Search(BaseModel):
     topHit: Optional[TopHit] = None
 
 
-class Lyrics(BaseModel):
+class TrackLyrics(BaseModel):
     isRightToLeft: bool
     lyrics: str
     lyricsProvider: str
