@@ -1,3 +1,4 @@
+import shutil
 import asyncio
 import aiohttp
 import aiofiles
@@ -5,6 +6,7 @@ import aiofiles
 from logging import getLogger
 
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 
 from tiddl.core.api.models import TrackQuality, VideoQuality, Track, Video
 from tiddl.core.api import TidalAPI
@@ -168,15 +170,20 @@ class Downloader:
             # TODO shouldnt session be reused instead of
             # creating new one on every download?
 
-            async with aiohttp.ClientSession() as session:
-                async with aiofiles.open(download_path, "wb") as f:
-                    for url in urls:
-                        async with session.get(url) as resp:
-                            async for chunk in resp.content.iter_chunked(CHUNK_SIZE):
-                                await f.write(chunk)
-                                self.rich_output.download_advance(
-                                    task_id, size=len(chunk)
-                                )
+            with NamedTemporaryFile("wb", delete=False) as tmp:
+                async with aiohttp.ClientSession() as session:
+                    async with aiofiles.open(tmp.name, "wb") as f:
+                        for url in urls:
+                            async with session.get(url) as resp:
+                                async for chunk in resp.content.iter_chunked(
+                                    CHUNK_SIZE
+                                ):
+                                    await f.write(chunk)
+                                    self.rich_output.download_advance(
+                                        task_id, size=len(chunk)
+                                    )
+
+            shutil.move(tmp.name, download_path)
 
             try:
                 if isinstance(item, Track) and should_extract_flac:
