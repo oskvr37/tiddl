@@ -1,54 +1,114 @@
-import click
+from logging import getLogger
+from pathlib import Path
+from pydantic import BaseModel
+from tomllib import loads as parse_toml
+from typing import Literal
 
-from tiddl.config import CONFIG_PATH
-from tiddl.cli.ctx import Context, passContext
+from tiddl.cli.const import APP_PATH
+
+CONFIG_FILENAME = "config.toml"
+
+TRACK_QUALITY_LITERAL = Literal["low", "normal", "high", "max"]
+VIDEO_QUALITY_LITERAL = Literal["sd", "hd", "fhd"]
+ARTIST_SINGLES_FILTER_LITERAL = Literal["none", "only", "include"]
+VALID_M3U_RESOURCE_LITERAL = Literal["album", "playlist", "mix"]
+VALID_RESOURCE_COVER_SAVE_LITERAL = Literal["track", "album", "playlist"]
+VIDEOS_FILTER_LITERAL = Literal["none", "only", "allow"]
+
+log = getLogger(__name__)
 
 
-@click.command("config")
-@click.option(
-    "--open",
-    "-o",
-    "OPEN_CONFIG",
-    is_flag=True,
-    help="Open the configuration file with the default editor.",
-)
-@click.option(
-    "--locate",
-    "-l",
-    "LOCATE_CONFIG",
-    is_flag=True,
-    help="Launch a file manager with the located configuration file.",
-)
-@click.option(
-    "--print",
-    "-p",
-    "PRINT_CONFIG",
-    is_flag=True,
-    help="Show current configuration.",
-)
-@passContext
-def ConfigCommand(
-    ctx: Context, OPEN_CONFIG: bool, LOCATE_CONFIG: bool, PRINT_CONFIG: bool
-):
-    """
-    Configuration file options.
+class Config(BaseModel):
+    enable_cache: bool = True
+    debug: bool = False
 
-    By default it prints location of tiddl config file.
+    class MetadataConfig(BaseModel):
+        enable: bool = True
+        lyrics: bool = False
+        cover: bool = False
 
-    This command can be used in variable like `vim $(tiddl config)`
-    - this will open your config with vim editor.
-    """
+    metadata: MetadataConfig = MetadataConfig()
 
-    if OPEN_CONFIG:
-        click.launch(str(CONFIG_PATH))
+    class CoverConfig(BaseModel):
+        save: bool = False
+        size: int = 1280
+        allowed: list[VALID_RESOURCE_COVER_SAVE_LITERAL] = []
 
-    elif LOCATE_CONFIG:
-        click.launch(str(CONFIG_PATH), locate=True)
+        class CoverTemplatesConfig(BaseModel):
+            track: str = ""
+            album: str = ""
+            playlist: str = ""
 
-    elif PRINT_CONFIG:
-        config_without_auth = ctx.obj.config.model_copy()
-        del config_without_auth.auth
-        ctx.obj.console.print(config_without_auth.model_dump_json(indent=2))
+        templates: CoverTemplatesConfig = CoverTemplatesConfig()
 
-    else:
-        click.echo(str(CONFIG_PATH))
+    cover: CoverConfig = CoverConfig()
+
+    class DownloadConfig(BaseModel):
+        track_quality: TRACK_QUALITY_LITERAL = "high"
+        video_quality: VIDEO_QUALITY_LITERAL = "fhd"
+        skip_existing: bool = True
+        threads_count: int = 4
+        download_path: Path = Path.home() / "Music" / "tiddl"
+        scan_path: Path = download_path
+        singles_filter: ARTIST_SINGLES_FILTER_LITERAL = "none"
+        videos_filter: VIDEOS_FILTER_LITERAL = "none"
+        update_mtime: bool = False
+        rewrite_metadata: bool = False
+
+        def model_post_init(self, __context):
+            # convert to absolute, expand ~, normalize
+            self.download_path = self.download_path.expanduser().resolve()
+            self.scan_path = self.scan_path.expanduser().resolve()
+
+    download: DownloadConfig = DownloadConfig()
+
+    class M3UConfig(BaseModel):
+        # m3u playlists
+        save: bool = False
+        allowed: list[VALID_M3U_RESOURCE_LITERAL] = []
+
+        class M3UTemplatesConfig(BaseModel):
+            album: str = ""
+            playlist: str = ""
+            mix: str = ""
+
+        templates: M3UTemplatesConfig = M3UTemplatesConfig()
+
+    m3u: M3UConfig = M3UConfig()
+
+    class TemplatesConfig(BaseModel):
+        default: str = "{album.artist}/{album.title}/{item.title}"
+        track: str = ""
+        video: str = ""
+        album: str = ""
+        playlist: str = ""
+        mix: str = ""
+
+        def model_post_init(self, __context):
+            assert self.default != "", "Default template cannot be empty."
+
+            # override templates to default
+            for field in ["track", "video", "album", "playlist", "mix"]:
+                if getattr(self, field) == "":
+                    setattr(self, field, self.default)
+
+    templates: TemplatesConfig = TemplatesConfig()
+
+
+def load_config_file(config_file: Path) -> Config:
+    log.debug(f"loading '{config_file}'")
+
+    if not config_file.exists():
+        log.debug("config file not found, loading default config")
+        return Config()
+
+    toml_dict = parse_toml(config_file.read_text())
+    config = Config.model_validate(toml_dict, strict=True)
+
+    log.debug("loaded config from file")
+
+    return config
+
+
+CONFIG = load_config_file(APP_PATH / CONFIG_FILENAME)
+log.debug(f"{CONFIG=}")

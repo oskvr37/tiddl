@@ -1,0 +1,33 @@
+import typer
+import logging
+from rich.console import Console
+
+from tiddl.cli.config import APP_PATH
+from tiddl.cli.ctx import ContextObject, Context
+from tiddl.cli.commands import register_commands
+
+log = logging.getLogger("tiddl")
+
+app = typer.Typer(name="tiddl", no_args_is_help=True, rich_markup_mode="rich")
+register_commands(app)
+
+
+@app.callback()
+def callback(ctx: Context, omit_cache: bool = False, debug: bool = False):
+    """
+    tiddl - download tidal tracks \u266b
+
+    [link=https://github.com/oskvr37/tiddl]github[/link]
+    [link=https://buymeacoffee.com/oskvr][yellow]buy me a coffee[/link] \u2764
+    """
+
+    log.debug(f"{ctx.params=}")
+
+    if debug:
+        debug_path = APP_PATH / "api_debug"
+    else:
+        debug_path = None
+
+    ctx.obj = ContextObject(
+        api_omit_cache=omit_cache, console=Console(), debug_path=debug_path
+    )

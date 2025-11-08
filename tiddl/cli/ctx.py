@@ -1,59 +1,52 @@
-import functools
-import click
+import typer
 
 from rich.console import Console
+from pathlib import Path
 
-from typing import Callable, TypeVar, cast
+from tiddl.core.api import TidalClient, TidalAPI
+from tiddl.cli.config import APP_PATH
+from tiddl.cli.utils.auth.core import load_auth_data
+from tiddl.cli.utils.resource import TidalResource
 
-from tiddl.api import TidalApi
-from tiddl.config import Config
-from tiddl.utils import TidalResource
 
-
-class ContextObj:
-    api: TidalApi | None
-    config: Config
-    resources: list[TidalResource]
+class ContextObject:
     console: Console
+    resources: list[TidalResource]
+    _api: TidalAPI | None
+    api_omit_cache: bool
+    debug_path: Path | None
 
-    def __init__(self) -> None:
-        self.config = Config.fromFile()
+    def __init__(
+        self, api_omit_cache: bool, debug_path: Path | None, console: Console
+    ) -> None:
+        self.console = console
         self.resources = []
-        self.api = None
-        self.console = Console()
+        self._api = None
+        self.api_omit_cache = api_omit_cache
+        self.debug_path = debug_path
 
-    def initApi(self, omit_cache=False):
-        auth = self.config.auth
+    @property
+    def api(self):
+        if self._api is not None:
+            return self._api
 
-        if auth.token and auth.user_id and auth.country_code:
-            self.api = TidalApi(
-                auth.token,
-                auth.user_id,
-                auth.country_code,
-                omit_cache=omit_cache or self.config.omit_cache,
-            )
+        auth_data = load_auth_data()
 
-    def getApi(self) -> TidalApi:
-        if self.api is None:
-            raise click.UsageError("You must login first")
+        assert auth_data.token, "Auth Token is missing. Use `tiddl auth login`"
+        assert auth_data.user_id, "User ID is missing. Use `tiddl auth login`"
+        assert auth_data.country_code, "Country Code is missing. Use `tiddl auth login`"
 
-        return self.api
+        client = TidalClient(
+            token=auth_data.token,
+            cache_name=APP_PATH / "api_cache",
+            omit_cache=self.api_omit_cache,
+            debug_path=self.debug_path,
+        )
 
+        self._api = TidalAPI(client, auth_data.user_id, auth_data.country_code)
 
-class Context(click.Context):
-    obj: ContextObj
-
-
-F = TypeVar("F", bound=Callable[..., None])
+        return self._api
 
 
-def passContext(func: F) -> F:
-    """Wrapper for @click.pass_context to use custom Context"""
-
-    @click.pass_context
-    @functools.wraps(func)
-    def wrapper(ctx: click.Context, *args, **kwargs):
-        custom_ctx = cast(Context, ctx)
-        return func(custom_ctx, *args, **kwargs)
-
-    return cast(F, wrapper)
+class Context(typer.Context):
+    obj: ContextObject
