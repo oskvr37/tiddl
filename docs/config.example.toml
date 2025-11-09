@@ -20,7 +20,7 @@ debug = false
 
 
 [templates]
-# read more about templates at: TODO add templating docs
+# read more about file templating at https://github.com/oskvr37/tiddl/blob/main/docs/templating.md
 
 # if you don't specify the template for a resource
 # then default template will be used.
