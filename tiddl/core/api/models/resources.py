@@ -124,7 +124,7 @@ class Album(BaseModel):
     numberOfVolumes: int
     releaseDate: datetime
     copyright: Optional[str] = None
-    type: str
+    type: Literal["ALBUM", "SINGLE", "EP"]
     version: Optional[str] = None
     url: str
     cover: Optional[str] = None
