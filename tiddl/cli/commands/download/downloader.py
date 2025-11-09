@@ -9,7 +9,7 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 from tiddl.core.api.models import TrackQuality, VideoQuality, Track, Video
-from tiddl.core.api import TidalAPI
+from tiddl.core.api import TidalAPI, ApiError
 from tiddl.core.utils import parse_track_stream, parse_video_stream
 from tiddl.core.utils.ffmpeg import convert_to_mp4, extract_flac
 from tiddl.cli.config import (
@@ -137,9 +137,16 @@ class Downloader:
 
         async with self.semaphore:
             if isinstance(item, Track):
-                stream = self.api.get_track_stream(
-                    track_id=item.id, quality=self.track_quality
-                )
+                try:
+                    stream = self.api.get_track_stream(
+                        track_id=item.id, quality=self.track_quality
+                    )
+                except ApiError as e:
+                    log.error(f"{item.id=} {e=}")
+                    self.rich_output.console.print(
+                        f"[red]Error [{vibrant_color}]{item.title}[/] - {e.user_message}"
+                    )
+                    return None, False
 
                 urls, _ = parse_track_stream(stream)
                 download_path = self.download_path / filename
