@@ -1,8 +1,9 @@
 import typer
 import logging
 from rich.console import Console
+from typing_extensions import Annotated
 
-from tiddl.cli.config import APP_PATH
+from tiddl.cli.config import APP_PATH, CONFIG
 from tiddl.cli.ctx import ContextObject, Context
 from tiddl.cli.commands import register_commands
 
@@ -13,7 +14,21 @@ register_commands(app)
 
 
 @app.callback()
-def callback(ctx: Context, omit_cache: bool = False, debug: bool = False):
+def callback(
+    ctx: Context,
+    OMIT_CACHE: Annotated[
+        bool,
+        typer.Option(
+            "--omit-cache",
+        ),
+    ] = not CONFIG.enable_cache,
+    DEBUG: Annotated[
+        bool,
+        typer.Option(
+            "--debug",
+        ),
+    ] = CONFIG.debug,
+):
     """
     tiddl - download tidal tracks \u266b
 
@@ -23,11 +38,11 @@ def callback(ctx: Context, omit_cache: bool = False, debug: bool = False):
 
     log.debug(f"{ctx.params=}")
 
-    if debug:
+    if DEBUG:
         debug_path = APP_PATH / "api_debug"
     else:
         debug_path = None
 
     ctx.obj = ContextObject(
-        api_omit_cache=omit_cache, console=Console(), debug_path=debug_path
+        api_omit_cache=OMIT_CACHE, console=Console(), debug_path=debug_path
     )
