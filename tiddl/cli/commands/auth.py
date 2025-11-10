@@ -6,6 +6,8 @@ from rich.console import Console
 from tiddl.cli.utils.auth.core import load_auth_data, save_auth_data, AuthData
 from tiddl.core.auth import AuthAPI, AuthClientError
 
+from typing_extensions import Annotated
+
 console = Console()
 
 auth_command = typer.Typer(
@@ -80,14 +82,21 @@ def logout():
 
 
 @auth_command.command(help="Refreshes your token in app.")
-def refresh():
+def refresh(
+    FORCE: Annotated[
+        bool,
+        typer.Option(
+            "--force", "-f", help="Refresh token even when it is still valid."
+        ),
+    ] = False,
+):
     loaded_auth_data = load_auth_data()
 
     if loaded_auth_data.refresh_token is None:
         console.print("[bold red]Not logged in.")
         raise typer.Exit()
 
-    if time() < loaded_auth_data.expires_at:
+    if time() < loaded_auth_data.expires_at and not FORCE:
         expiry_time = datetime.fromtimestamp(loaded_auth_data.expires_at)
         remaining = expiry_time - datetime.now()
         hours, remainder = divmod(remaining.seconds, 3600)
