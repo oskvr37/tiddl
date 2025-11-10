@@ -4,7 +4,6 @@ title: "🐛 "
 labels: ["bug"]
 assignees:
   - oskvr37
-type: bug
 body:
   - type: markdown
     attributes:
