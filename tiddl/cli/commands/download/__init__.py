@@ -9,6 +9,7 @@ from rich.live import Live
 from typing_extensions import Annotated
 
 from tiddl.core.metadata import add_track_metadata, add_video_metadata, Cover
+from tiddl.core.api import ApiError
 from tiddl.core.api.models import Album, Track, Video, AlbumItemsCredits
 from tiddl.core.utils.format import format_template
 from tiddl.core.utils.m3u import save_tracks_to_m3u
@@ -492,7 +493,16 @@ def download_callback(
             console=ctx.obj.console,
             transient=True,
         ):
-            await asyncio.gather(*(handle_resource(r) for r in ctx.obj.resources))
+
+            async def wrapper(r: TidalResource):
+                try:
+                    await handle_resource(r)
+                except ApiError as e:
+                    ctx.obj.console.print(f"[red]API Error:[/] {e} at {r}")
+                except Exception as e:
+                    ctx.obj.console.print(f"[red]Error:[/] {e} at {r}")
+
+            await asyncio.gather(*(wrapper(r) for r in ctx.obj.resources))
 
         rich_output.show_stats()
 
