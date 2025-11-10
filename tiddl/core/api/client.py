@@ -107,6 +107,7 @@ class TidalClient:
             )
 
         if res.status_code != 200:
+            log.error(f"{endpoint=}, {params=}, {data=}")
             raise ApiError(**data)
 
         return model.model_validate(data)
