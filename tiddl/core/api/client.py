@@ -1,7 +1,7 @@
 import json
 from logging import getLogger
 from pathlib import Path
-from typing import Any, Type, TypeVar
+from typing import Any, Type, TypeVar, Callable, Optional
 
 from pydantic import BaseModel
 from time import sleep
@@ -30,6 +30,7 @@ class TidalClient:
     _token: str
     debug_path: Path | None
     session: CachedSession
+    on_token_expiry: Optional[Callable[[], str | None]]
 
     def __init__(
         self,
@@ -37,7 +38,9 @@ class TidalClient:
         cache_name: StrOrPath,
         omit_cache: bool = False,
         debug_path: Path | None = None,
+        on_token_expiry: Optional[Callable[[], str | None]] = None,
     ) -> None:
+        self.on_token_expiry = on_token_expiry
         self.debug_path = debug_path
         self.session = CachedSession(
             cache_name=cache_name, always_revalidate=omit_cache
@@ -77,6 +80,20 @@ class TidalClient:
         res = self.session.get(
             f"{API_URL}/{endpoint}", params=params, expire_after=expire_after
         )
+
+        if res.status_code == 401 and self.on_token_expiry:
+            token = self.on_token_expiry()
+
+            if token:
+                self.token = token
+
+            return self.fetch(
+                model=model,
+                endpoint=endpoint,
+                params=params,
+                expire_after=expire_after,
+                _attempt=MAX_RETRIES - 1,
+            )
 
         log.debug(
             f"{endpoint} {params} '{'HIT' if res.from_cache else 'MISS'}' [{res.status_code}]",
