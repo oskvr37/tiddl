@@ -123,7 +123,7 @@ def download_callback(
     Download Tidal resources.
     """
 
-    ctx.invoke(refresh)
+    ctx.invoke(refresh, EARLY_EXPIRE_TIME=600)
 
     log.debug(f"{ctx.params=}")
 

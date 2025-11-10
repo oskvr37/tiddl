@@ -15,6 +15,7 @@ auth_command = typer.Typer(
 )
 
 
+# TODO add context and load auth data from ctx
 @auth_command.command(help="Login with your Tidal account.")
 def login():
     loaded_auth_data = load_auth_data()
@@ -89,6 +90,15 @@ def refresh(
             "--force", "-f", help="Refresh token even when it is still valid."
         ),
     ] = False,
+    EARLY_EXPIRE_TIME: Annotated[
+        int,
+        typer.Option(
+            "--early-expire",
+            "-e",
+            help="Time to expire the token earlier",
+            envvar="seconds",
+        ),
+    ] = 0,
 ):
     loaded_auth_data = load_auth_data()
 
@@ -96,7 +106,7 @@ def refresh(
         console.print("[bold red]Not logged in.")
         raise typer.Exit()
 
-    if time() < loaded_auth_data.expires_at and not FORCE:
+    if time() < (loaded_auth_data.expires_at - EARLY_EXPIRE_TIME) and not FORCE:
         expiry_time = datetime.fromtimestamp(loaded_auth_data.expires_at)
         remaining = expiry_time - datetime.now()
         hours, remainder = divmod(remaining.seconds, 3600)
