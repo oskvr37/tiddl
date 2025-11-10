@@ -24,8 +24,9 @@ RETRY_DELAY = 2
 log = getLogger(__name__)
 
 
+# TODO add token expiry check
 class TidalClient:
-    token: str
+    _token: str
     debug_path: Path | None
     session: CachedSession
 
@@ -36,9 +37,7 @@ class TidalClient:
         omit_cache: bool = False,
         debug_path: Path | None = None,
     ) -> None:
-        self.token = token
         self.debug_path = debug_path
-
         self.session = CachedSession(
             cache_name=cache_name, always_revalidate=omit_cache
         )
@@ -46,6 +45,20 @@ class TidalClient:
             "Authorization": f"Bearer {token}",
             "Accept": "application/json",
         }
+        self._token = token
+
+    @property
+    def token(self):
+        return self._token
+
+    @token.setter
+    def token(self, token: str):
+        self._token = token
+        self.session.headers.update(
+            {
+                "Authorization": f"Bearer {token}",
+            }
+        )
 
     def fetch(
         self,
