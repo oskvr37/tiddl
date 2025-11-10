@@ -122,8 +122,10 @@ class Downloader:
             result_message = "[cyan]Overwrited"
 
             if self.skip_existing:
-                self.rich_output.console.print(
-                    f"[yellow]Exists [{vibrant_color}][link={existing_file_path.as_uri()}]{item.title}[/link]"
+                self.rich_output.show_item_result(
+                    result_message="[yellow]Exists",
+                    item_description=f"[{vibrant_color}]{item.title}",
+                    item_path=existing_file_path,
                 )
                 return existing_file_path, False
 
@@ -200,10 +202,14 @@ class Downloader:
             except Exception as exc:
                 log.error(f"{should_extract_flac=}, {exc=}")
 
-            self.rich_output.download_finish(
+            task = self.rich_output.download_finish(
                 task_id=task_id,
-                item_link=download_path.as_uri(),
+            )
+
+            self.rich_output.show_item_result(
                 result_message=result_message,
+                item_description=task.description,
+                item_path=download_path,
             )
 
             return download_path, True

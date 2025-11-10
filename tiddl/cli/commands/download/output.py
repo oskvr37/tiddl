@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from rich.console import Console, Group
 from rich.progress import (
     Progress,
@@ -76,17 +78,26 @@ class RichOutput:
     def download_advance(self, task_id: TaskID, size: float):
         self.download_progress.update(task_id=task_id, advance=size, refresh=True)
 
-    def download_finish(self, task_id: TaskID, item_link: str, result_message: str):
+    def download_finish(self, task_id: TaskID) -> Task:
         task = self.download_progress._tasks.get(task_id)
 
         assert task is not None
 
         self.download_progress.remove_task(task_id=task_id)
         self.total_progress.advance(self.total_task, advance=1)
-        self.console.print(
-            f"{result_message} [link={item_link}]{task.description}[/link]"
-        )
         self.total_downloads += 1
+
+        return task
 
     def show_stats(self):
         self.console.print(f"[green]Total downloads: {self.total_downloads}")
+
+    def show_item_result(
+        self, result_message: str, item_description: str, item_path: Path | None
+    ):
+        if item_path:
+            description = f"[link={item_path.as_uri()}]{item_description}[/link] [link={item_path.parent.as_uri()}]{item_path.parent}[/link]"
+        else:
+            description = item_description
+
+        self.console.print(f"{result_message} {description}")
