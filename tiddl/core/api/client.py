@@ -25,6 +25,7 @@ log = getLogger(__name__)
 
 
 # TODO add token expiry check
+# maybe refactor to aiohttp.ClientSession
 class TidalClient:
     _token: str
     debug_path: Path | None
