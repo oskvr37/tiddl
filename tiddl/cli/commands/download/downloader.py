@@ -179,7 +179,9 @@ class Downloader:
             # TODO shouldnt session be reused instead of
             # creating new one on every download?
 
-            with NamedTemporaryFile("wb", delete=False) as tmp:
+            with NamedTemporaryFile(
+                "wb", delete=False, dir=download_path.parent
+            ) as tmp:
                 async with aiohttp.ClientSession() as session:
                     async with aiofiles.open(tmp.name, "wb") as f:
                         for url in urls:
