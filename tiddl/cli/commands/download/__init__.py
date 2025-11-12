@@ -172,11 +172,13 @@ def download_callback(
                 artist: str = "",
                 credits: list[AlbumItemsCredits.ItemWithCredits.CreditsEntry] = [],
                 cover_data: bytes | None = None,
+                album_review: str = "",
             ) -> None:
                 self.date = date
                 self.artist = artist
                 self.credits = credits
                 self.cover_data = cover_data
+                self.album_review = album_review
 
         async def handle_resource(resource: TidalResource):
             async def handle_item(
@@ -222,6 +224,7 @@ def download_callback(
                             cover_data=cover_data,
                             date=track_metadata.date,
                             credits=track_metadata.credits,
+                            comment=track_metadata.album_review,
                         )
 
                     elif isinstance(item, Video):
@@ -245,6 +248,16 @@ def download_callback(
                 if album.cover and (CONFIG.metadata.cover or save_cover):
                     cover = Cover(album.cover, size=CONFIG.cover.size)
 
+                album_review = ""
+
+                if CONFIG.metadata.album_review:
+                    try:
+                        album_review = ctx.obj.api.get_album_review(
+                            album_id=resource.id
+                        ).normalized_text()
+                    except Exception as e:
+                        log.error(e)
+
                 while True:
                     album_items = ctx.obj.api.get_album_items_credits(
                         album_id=album.id, offset=offset
@@ -264,6 +277,7 @@ def download_callback(
                                     date=str(album.releaseDate),
                                     artist=album.artist.name if album.artist else "",
                                     credits=album_item.credits,
+                                    album_review=album_review,
                                 ),
                             )
                         )
