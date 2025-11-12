@@ -15,6 +15,7 @@ from .models.resources import (
 from .models.base import (
     AlbumItems,
     AlbumItemsCredits,
+    AlbumReview,
     ArtistAlbumsItems,
     ArtistVideosItems,
     Favorites,
@@ -93,6 +94,14 @@ class TidalAPI:
                 "limit": min(limit, Limits.ALBUM_ITEMS_MAX),
                 "offset": offset,
             },
+            expire_after=3600,
+        )
+
+    def get_album_review(self, album_id: ID):
+        return self.client.fetch(
+            AlbumReview,
+            f"v1/albums/{album_id}/review",
+            {"countryCode": self.country_code},
             expire_after=3600,
         )
 
