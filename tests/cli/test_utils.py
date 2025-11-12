@@ -58,6 +58,19 @@ def test_from_string_invalid_digit_id(
         TidalResource.from_string(f"{resource_type}/{invalid_id}")
 
 
+urls_data = [
+    ("https://tidal.com/album/12345/u", "album", "12345"),
+    ("https://listen.tidal.com/track/12345/u", "track", "12345"),
+]
+
+
+@pytest.mark.parametrize("url, resource_type, resource_id", urls_data)
+def test_shared_url(url: str, resource_type: str, resource_id: str):
+    res = TidalResource.from_string(url)
+    assert res.type == resource_type
+    assert res.id == resource_id
+
+
 def test_url_property():
     res = TidalResource(type="track", id="12345")
     assert res.url == "https://listen.tidal.com/track/12345"
