@@ -96,7 +96,7 @@ def refresh(
             "--early-expire",
             "-e",
             help="Time to expire the token earlier",
-            envvar="seconds",
+            metavar="seconds",
         ),
     ] = 0,
 ):
