@@ -15,7 +15,6 @@ from .models.resources import (
 from .models.base import (
     AlbumItems,
     AlbumItemsCredits,
-    AlbumReview,
     ArtistAlbumsItems,
     ArtistVideosItems,
     Favorites,
@@ -27,6 +26,7 @@ from .models.base import (
     TrackStream,
     VideoStream,
 )
+from .models.review import AlbumReview
 
 
 ID: TypeAlias = str | int

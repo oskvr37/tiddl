@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 from typing import Optional, List, Literal, Union
-from datetime import datetime
 
 from .resources import Album, Artist, Playlist, Track, TrackQuality, Video, VideoQuality
 
@@ -70,12 +69,6 @@ class AlbumItemsCredits(Items):
         type: ItemType = "track"
 
     items: List[Union[TrackItem, VideoItem]]
-
-
-class AlbumReview(BaseModel):
-    source: str
-    lastUpdated: datetime
-    summary: str
 
 
 class PlaylistItems(Items):
