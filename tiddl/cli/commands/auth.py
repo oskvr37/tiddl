@@ -6,6 +6,8 @@ from rich.console import Console
 from tiddl.cli.utils.auth.core import load_auth_data, save_auth_data, AuthData
 from tiddl.core.auth import AuthAPI, AuthClientError
 
+from typing_extensions import Annotated
+
 console = Console()
 
 auth_command = typer.Typer(
@@ -13,6 +15,7 @@ auth_command = typer.Typer(
 )
 
 
+# TODO add context and load auth data from ctx
 @auth_command.command(help="Login with your Tidal account.")
 def login():
     loaded_auth_data = load_auth_data()
@@ -80,14 +83,30 @@ def logout():
 
 
 @auth_command.command(help="Refreshes your token in app.")
-def refresh():
+def refresh(
+    FORCE: Annotated[
+        bool,
+        typer.Option(
+            "--force", "-f", help="Refresh token even when it is still valid."
+        ),
+    ] = False,
+    EARLY_EXPIRE_TIME: Annotated[
+        int,
+        typer.Option(
+            "--early-expire",
+            "-e",
+            help="Time to expire the token earlier",
+            metavar="seconds",
+        ),
+    ] = 0,
+):
     loaded_auth_data = load_auth_data()
 
     if loaded_auth_data.refresh_token is None:
         console.print("[bold red]Not logged in.")
         raise typer.Exit()
 
-    if time() < loaded_auth_data.expires_at:
+    if time() < (loaded_auth_data.expires_at - EARLY_EXPIRE_TIME) and not FORCE:
         expiry_time = datetime.fromtimestamp(loaded_auth_data.expires_at)
         remaining = expiry_time - datetime.now()
         hours, remainder = divmod(remaining.seconds, 3600)
