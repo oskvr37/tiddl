@@ -8,6 +8,8 @@ def run(cmd: list[str]):
 
 
 def is_ffmpeg_installed() -> bool:
+    """Checks if `ffmpeg` is installed."""
+
     try:
         run(["ffmpeg", "-version"])
         return True

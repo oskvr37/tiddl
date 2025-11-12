@@ -6,6 +6,7 @@ from typing_extensions import Annotated
 from tiddl.cli.config import APP_PATH, CONFIG
 from tiddl.cli.ctx import ContextObject, Context
 from tiddl.cli.commands import register_commands
+from tiddl.core.utils.ffmpeg import is_ffmpeg_installed as ifs
 
 log = logging.getLogger("tiddl")
 
@@ -38,6 +39,9 @@ def callback(
 
     log.debug(f"{ctx.params=}")
 
+    is_ffmpeg_installed = ifs()
+    log.debug(f"{is_ffmpeg_installed=}")
+
     if DEBUG:
         debug_path = APP_PATH / "api_debug"
     else:
@@ -46,3 +50,9 @@ def callback(
     ctx.obj = ContextObject(
         api_omit_cache=OMIT_CACHE, console=Console(), debug_path=debug_path
     )
+
+    if not is_ffmpeg_installed:
+        ctx.obj.console.print(
+            "[yellow]WARNING ffmpeg is not installed, tiddl might not work properly, "
+            + "[link=https://github.com/oskvr37/tiddl/blob/main/README.md#installation]read README.md[/]"
+        )
