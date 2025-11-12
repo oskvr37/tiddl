@@ -27,6 +27,7 @@ class Config(BaseModel):
         enable: bool = True
         lyrics: bool = False
         cover: bool = False
+        album_review: bool = False
 
     metadata: MetadataConfig = MetadataConfig()
 

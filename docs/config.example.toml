@@ -91,6 +91,9 @@ embed_lyrics = false
 # embed track cover in the track file
 cover = false
 
+# embed album review text to track COMMENT metadata field
+album_review = false
+
 
 [cover]
 # please don't confuse the cover from metadata with cover as a distinct file.
