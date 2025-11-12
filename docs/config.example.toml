@@ -91,7 +91,8 @@ embed_lyrics = false
 # embed track cover in the track file
 cover = false
 
-# embed album review text to track COMMENT metadata field
+# embed album review text to track COMMENT metadata field.
+# only works when downloading album
 album_review = false
 
 
