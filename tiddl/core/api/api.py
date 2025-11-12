@@ -100,7 +100,7 @@ class TidalAPI:
     def get_album_review(self, album_id: ID):
         return self.client.fetch(
             AlbumReview,
-            f"v1/albums/{album_id}/review",
+            f"albums/{album_id}/review",
             {"countryCode": self.country_code},
             expire_after=3600,
         )
