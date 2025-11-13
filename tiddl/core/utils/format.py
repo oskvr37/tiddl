@@ -63,6 +63,8 @@ def generate_template_data(
             copyright_ = item.copyright or ""
             bpm = item.bpm or 0
             isrc = item.isrc or ""
+            # FIX audio quality should be returned from `get_existing_track_filename`.
+            # `item.audioQuality` tells highest quality of track - not quality we downloaded
             quality = item.audioQuality or ""
         else:  # Video
             version = ""
