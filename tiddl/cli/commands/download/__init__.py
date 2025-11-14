@@ -214,7 +214,7 @@ def download_callback(
 
                         cover_data = track_metadata.cover_data
                         if not cover_data and item.album.cover:
-                            cover_data = Cover(item.album.cover).data
+                            cover_data = Cover(item.album.cover)._get_data()
 
                         add_track_metadata(
                             path=download_path,
@@ -273,7 +273,7 @@ def download_callback(
                                     album=album,
                                 ),
                                 track_metadata=Metadata(
-                                    cover_data=cover.data if cover else None,
+                                    cover_data=cover._get_data() if cover else None,
                                     date=str(album.releaseDate),
                                     artist=album.artist.name if album.artist else "",
                                     credits=album_item.credits,
