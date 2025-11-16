@@ -45,6 +45,7 @@ Each object type exposes fields you can use inside templates.
 | `item.features`              | Featured artists                | `Pharrell Williams`             |
 | `item.artists_with_features` | Main + featured artists         | `Daft Punk, Pharrell Williams`  |
 | `item.explicit`              | Explicit content                | `E`                             |
+| `item.dolby:(Dolby Atmos)`   | Dolby Atmos (track only)        | `(Dolby Atmos)`                 |
 
 ---
 
@@ -81,12 +82,15 @@ Each object type exposes fields you can use inside templates.
 | `.explicit:long` | explicit   |             |
 | `.explicit:full` | explicit   | clean       |
 
-You can also use `upper` like this:
+### Dolby Atmos
 
-| Format                 | True Value | False Value |
-| ---------------------- | ---------- | ----------- |
-| `.explicit:long,upper` | EXPLICIT   |             |
-| `.explicit:full,upper` | EXPLICIT   | CLEAN       |
+Dolby Atmos is only available in tracks. Format it like this: `item.dolby:<value>`.
+
+| Format             | True Value | False Value |
+| ------------------ | ---------- | ----------- |
+| `item.dolby:D`     | D          |             |
+| `item.dolby:DOLBY` | DOLBY      |             |
+| `item.dolby:dolby` | dolby      |             |
 
 ### `extra` and `custom` fields
 
