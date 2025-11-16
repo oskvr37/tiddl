@@ -5,12 +5,11 @@ from tomllib import loads as parse_toml
 from typing import Literal
 
 from tiddl.cli.const import APP_PATH
+from tiddl.core.utils.const import TRACK_QUALITY_LITERAL, VIDEO_QUALITY_LITERAL
 
 CONFIG_FILENAME = "config.toml"
 DEFAULT_DOWNLOAD_PATH = Path.home() / "Music" / "tiddl"
 
-TRACK_QUALITY_LITERAL = Literal["low", "normal", "high", "max"]
-VIDEO_QUALITY_LITERAL = Literal["sd", "hd", "fhd"]
 ARTIST_SINGLES_FILTER_LITERAL = Literal["none", "only", "include"]
 VALID_M3U_RESOURCE_LITERAL = Literal["album", "playlist", "mix"]
 VALID_RESOURCE_COVER_SAVE_LITERAL = Literal["track", "album", "playlist"]
