@@ -35,6 +35,14 @@ class Explicit:
         return base
 
 
+class DolbyAtmos:
+    def __init__(self, value: bool) -> None:
+        self.value = value
+
+    def __format__(self, format_spec: str) -> str:
+        return format_spec if self.value is True else ""
+
+
 @dataclass(slots=True)
 class AlbumTemplate:
     id: int
@@ -62,6 +70,7 @@ class ItemTemplate:
     features: str
     artists_with_features: str
     explicit: Explicit
+    dolby: DolbyAtmos
 
 
 @dataclass(slots=True)
@@ -96,12 +105,14 @@ def generate_template_data(
             bpm = item.bpm or 0
             isrc = item.isrc or ""
             quality = item.audioQuality or ""
+            dolby = DolbyAtmos("DOLBY_ATMOS" in item.mediaMetadata.tags)
         else:  # Video
             version = ""
             copyright_ = ""
             bpm = 0
             isrc = ""
             quality = item.quality or ""
+            dolby = DolbyAtmos(False)
 
         item_template = ItemTemplate(
             id=item.id,
@@ -119,6 +130,7 @@ def generate_template_data(
             features=", ".join(featured_artists),
             artists_with_features=", ".join(main_artists + featured_artists),
             explicit=Explicit(getattr(item, "explicit", None)),
+            dolby=dolby,
         )
 
     album_template = None
