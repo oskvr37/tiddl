@@ -10,6 +10,9 @@ class Explicit:
         self.value = value
 
     def __format__(self, format_spec: str):
+        if self.value is None:
+            return ""
+
         features = format_spec.split(",")
 
         def get_base():
@@ -126,7 +129,7 @@ def generate_template_data(
                 a.name for a in (album.artists or []) if a.type == "MAIN"
             ),
             date=album.releaseDate,
-            explicit=Explicit(getattr(album, "explicit", False)),
+            explicit=Explicit(getattr(album, "explicit", None)),
         )
 
     playlist_template = None
