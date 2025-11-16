@@ -6,7 +6,7 @@ from tiddl.core.utils.sanitize import sanitize_string
 
 
 class Explicit:
-    def __init__(self, value: bool):
+    def __init__(self, value: bool | None):
         self.value = value
 
     def __format__(self, format_spec: str):
@@ -61,6 +61,7 @@ class ItemTemplate:
     artists: str
     features: str
     artists_with_features: str
+    explicit: Explicit
 
 
 @dataclass(slots=True)
@@ -117,6 +118,7 @@ def generate_template_data(
             artists=", ".join(main_artists),
             features=", ".join(featured_artists),
             artists_with_features=", ".join(main_artists + featured_artists),
+            explicit=Explicit(getattr(item, "explicit", None)),
         )
 
     album_template = None
