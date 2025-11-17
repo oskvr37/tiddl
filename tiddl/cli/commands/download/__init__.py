@@ -150,6 +150,30 @@ def download_callback(
             tracks_with_path=tracks_with_existing_paths, path=DOWNLOAD_PATH / filename
         )
 
+    def get_item_quality(item: Track | Video):
+        def predict_item_quality() -> TRACK_QUALITY_LITERAL | VIDEO_QUALITY_LITERAL:
+            if isinstance(item, Track):
+                if TRACK_QUALITY in ["low", "normal"]:
+                    return TRACK_QUALITY
+
+                if TRACK_QUALITY == "max" and item.audioQuality != "HI_RES_LOSSLESS":
+                    return "high"
+
+                return TRACK_QUALITY
+
+            elif isinstance(item, Video):
+                if item.quality == "LOW":
+                    return "sd"
+
+                if item.quality == "MEDIUM":
+                    if VIDEO_QUALITY == "hd":
+                        return "hd"
+                    return "fhd"
+
+            raise TypeError("Unsupported item type")
+
+        return predict_item_quality().upper()
+
     async def download_resources():
         rich_output = RichOutput(ctx.obj.console)
 
@@ -172,11 +196,13 @@ def download_callback(
                 artist: str = "",
                 credits: list[AlbumItemsCredits.ItemWithCredits.CreditsEntry] = [],
                 cover_data: bytes | None = None,
+                album_review: str = "",
             ) -> None:
                 self.date = date
                 self.artist = artist
                 self.credits = credits
                 self.cover_data = cover_data
+                self.album_review = album_review
 
         async def handle_resource(resource: TidalResource):
             async def handle_item(
@@ -212,7 +238,7 @@ def download_callback(
 
                         cover_data = track_metadata.cover_data
                         if not cover_data and item.album.cover:
-                            cover_data = Cover(item.album.cover).data
+                            cover_data = Cover(item.album.cover)._get_data()
 
                         add_track_metadata(
                             path=download_path,
@@ -222,6 +248,7 @@ def download_callback(
                             cover_data=cover_data,
                             date=track_metadata.date,
                             credits=track_metadata.credits,
+                            comment=track_metadata.album_review,
                         )
 
                     elif isinstance(item, Video):
@@ -245,6 +272,16 @@ def download_callback(
                 if album.cover and (CONFIG.metadata.cover or save_cover):
                     cover = Cover(album.cover, size=CONFIG.cover.size)
 
+                album_review = ""
+
+                if CONFIG.metadata.album_review:
+                    try:
+                        album_review = ctx.obj.api.get_album_review(
+                            album_id=resource.id
+                        ).normalized_text()
+                    except Exception as e:
+                        log.error(e)
+
                 while True:
                     album_items = ctx.obj.api.get_album_items_credits(
                         album_id=album.id, offset=offset
@@ -258,12 +295,14 @@ def download_callback(
                                     template=TEMPLATE or CONFIG.templates.album,
                                     item=album_item.item,
                                     album=album,
+                                    quality=get_item_quality(album_item.item),
                                 ),
                                 track_metadata=Metadata(
-                                    cover_data=cover.data if cover else None,
+                                    cover_data=cover._get_data() if cover else None,
                                     date=str(album.releaseDate),
                                     artist=album.artist.name if album.artist else "",
                                     credits=album_item.credits,
+                                    album_review=album_review,
                                 ),
                             )
                         )
@@ -308,6 +347,7 @@ def download_callback(
                             template=TEMPLATE or CONFIG.templates.track,
                             item=track,
                             album=album,
+                            quality=get_item_quality(track),
                         ),
                     )
 
@@ -333,6 +373,7 @@ def download_callback(
                         file_path=format_template(
                             template=TEMPLATE or CONFIG.templates.video,
                             item=video,
+                            quality=get_item_quality(video),
                         ),
                     )
 
@@ -351,6 +392,7 @@ def download_callback(
                                         template=TEMPLATE or CONFIG.templates.mix,
                                         item=mix_item.item,
                                         mix_id=resource.id,
+                                        quality=get_item_quality(mix_item.item),
                                     ),
                                 )
                             )
@@ -409,6 +451,7 @@ def download_callback(
                                         file_path=format_template(
                                             template=TEMPLATE or CONFIG.templates.video,
                                             item=video,
+                                            quality=get_item_quality(video),
                                         ),
                                     )
                                 )
@@ -452,6 +495,7 @@ def download_callback(
                                         item=playlist_item.item,
                                         playlist=playlist,
                                         playlist_index=playlist_index,
+                                        quality=get_item_quality(playlist_item.item),
                                     ),
                                 )
                             )

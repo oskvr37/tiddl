@@ -87,6 +87,7 @@ def generate_template_data(
     album: Album | None = None,
     playlist: Playlist | None = None,
     playlist_index: int = 0,
+    quality: str = "",
 ) -> dict[str, ItemTemplate | AlbumTemplate | PlaylistTemplate | None]:
     """Normalize Tidal API Track/Video + Album data into safe templates."""
 
@@ -171,6 +172,7 @@ def format_template(
     album: Album | None = None,
     playlist: Playlist | None = None,
     playlist_index: int = 0,
+    quality: str = "",
     with_asterisk_ext=True,
     **extra,
 ) -> str:
@@ -182,6 +184,7 @@ def format_template(
             album=album,
             playlist=playlist,
             playlist_index=playlist_index,
+            quality=quality,
         )
         | extra
         | custom_fields
