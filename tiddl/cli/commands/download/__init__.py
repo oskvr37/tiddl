@@ -24,14 +24,14 @@ from tiddl.cli.config import (
 from tiddl.cli.utils.resource import TidalResource
 from tiddl.cli.ctx import Context
 from tiddl.cli.commands.auth import refresh
-from tiddl.cli.commands.subcommands import url_subcommand
+from tiddl.cli.commands.subcommands import register_subcommands
 
 
 from .downloader import Downloader
 from .output import RichOutput
 
 download_command = typer.Typer(name="download")
-download_command.add_typer(url_subcommand)
+register_subcommands(download_command)
 
 log = getLogger(__name__)
 
@@ -489,7 +489,9 @@ def download_callback(
                             template = TEMPLATE or CONFIG.templates.playlist
 
                             if "{album" in template:
-                                album = ctx.obj.api.get_album(playlist_item.item.album.id)
+                                album = ctx.obj.api.get_album(
+                                    playlist_item.item.album.id
+                                )
                             else:
                                 album = None
 
