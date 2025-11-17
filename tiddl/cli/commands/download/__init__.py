@@ -150,6 +150,30 @@ def download_callback(
             tracks_with_path=tracks_with_existing_paths, path=DOWNLOAD_PATH / filename
         )
 
+    def get_item_quality(item: Track | Video):
+        def predict_item_quality() -> TRACK_QUALITY_LITERAL | VIDEO_QUALITY_LITERAL:
+            if isinstance(item, Track):
+                if TRACK_QUALITY in ["low", "normal"]:
+                    return TRACK_QUALITY
+
+                if TRACK_QUALITY == "max" and item.audioQuality != "HI_RES_LOSSLESS":
+                    return "high"
+
+                return TRACK_QUALITY
+
+            elif isinstance(item, Video):
+                if item.quality == "LOW":
+                    return "sd"
+
+                if item.quality == "MEDIUM":
+                    if VIDEO_QUALITY == "hd":
+                        return "hd"
+                    return "fhd"
+
+            raise TypeError("Unsupported item type")
+
+        return predict_item_quality().upper()
+
     async def download_resources():
         rich_output = RichOutput(ctx.obj.console)
 
@@ -271,6 +295,7 @@ def download_callback(
                                     template=TEMPLATE or CONFIG.templates.album,
                                     item=album_item.item,
                                     album=album,
+                                    quality=get_item_quality(album_item.item),
                                 ),
                                 track_metadata=Metadata(
                                     cover_data=cover._get_data() if cover else None,
@@ -322,6 +347,7 @@ def download_callback(
                             template=TEMPLATE or CONFIG.templates.track,
                             item=track,
                             album=album,
+                            quality=get_item_quality(track),
                         ),
                     )
 
@@ -347,6 +373,7 @@ def download_callback(
                         file_path=format_template(
                             template=TEMPLATE or CONFIG.templates.video,
                             item=video,
+                            quality=get_item_quality(video),
                         ),
                     )
 
@@ -365,6 +392,7 @@ def download_callback(
                                         template=TEMPLATE or CONFIG.templates.mix,
                                         item=mix_item.item,
                                         mix_id=resource.id,
+                                        quality=get_item_quality(mix_item.item),
                                     ),
                                 )
                             )
@@ -423,6 +451,7 @@ def download_callback(
                                         file_path=format_template(
                                             template=TEMPLATE or CONFIG.templates.video,
                                             item=video,
+                                            quality=get_item_quality(video),
                                         ),
                                     )
                                 )
@@ -466,6 +495,7 @@ def download_callback(
                                         item=playlist_item.item,
                                         playlist=playlist,
                                         playlist_index=playlist_index,
+                                        quality=get_item_quality(playlist_item.item),
                                     ),
                                 )
                             )
