@@ -5,11 +5,11 @@ from tomllib import loads as parse_toml
 from typing import Literal
 
 from tiddl.cli.const import APP_PATH
-from tiddl.core.utils.const import TRACK_QUALITY_LITERAL, VIDEO_QUALITY_LITERAL
 
 CONFIG_FILENAME = "config.toml"
-DEFAULT_DOWNLOAD_PATH = Path.home() / "Music" / "tiddl"
 
+TRACK_QUALITY_LITERAL = Literal["low", "normal", "high", "max"]
+VIDEO_QUALITY_LITERAL = Literal["sd", "hd", "fhd"]
 ARTIST_SINGLES_FILTER_LITERAL = Literal["none", "only", "include"]
 VALID_M3U_RESOURCE_LITERAL = Literal["album", "playlist", "mix"]
 VALID_RESOURCE_COVER_SAVE_LITERAL = Literal["track", "album", "playlist"]
@@ -26,7 +26,6 @@ class Config(BaseModel):
         enable: bool = True
         lyrics: bool = False
         cover: bool = False
-        album_review: bool = False
 
     metadata: MetadataConfig = MetadataConfig()
 
@@ -49,22 +48,21 @@ class Config(BaseModel):
         video_quality: VIDEO_QUALITY_LITERAL = "fhd"
         skip_existing: bool = True
         threads_count: int = 4
-        download_path: Path = DEFAULT_DOWNLOAD_PATH
-        scan_path: Path = DEFAULT_DOWNLOAD_PATH
+        download_path: Path = Path.home() / "Music" / "tiddl"
+        scan_path: Path = download_path
         singles_filter: ARTIST_SINGLES_FILTER_LITERAL = "none"
         videos_filter: VIDEOS_FILTER_LITERAL = "none"
         update_mtime: bool = False
         rewrite_metadata: bool = False
 
         def model_post_init(self, __context):
-            # set scan path to download path when download path is non default
-            if self.scan_path == DEFAULT_DOWNLOAD_PATH and self.download_path != DEFAULT_DOWNLOAD_PATH:
-                self.scan_path = self.download_path
+            # convert to absolute, expand ~, normalize
+            self.download_path = self.download_path.expanduser().resolve()
+            self.scan_path = self.scan_path.expanduser().resolve()
 
         @field_validator("download_path", "scan_path", mode="before")
         def str_to_path(cls, v):
-            # convert to absolute, expand ~, normalize
-            return Path(v).expanduser().resolve() if isinstance(v, str) else v
+            return Path(v) if isinstance(v, str) else v
 
     download: DownloadConfig = DownloadConfig()
 

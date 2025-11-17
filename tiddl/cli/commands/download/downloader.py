@@ -12,13 +12,11 @@ from tiddl.core.api.models import TrackQuality, VideoQuality, Track, Video
 from tiddl.core.api import TidalAPI, ApiError
 from tiddl.core.utils import parse_track_stream, parse_video_stream
 from tiddl.core.utils.ffmpeg import convert_to_mp4, extract_flac
-from tiddl.core.utils.const import (
+from tiddl.cli.config import (
     TRACK_QUALITY_LITERAL,
     VIDEO_QUALITY_LITERAL,
-    track_qualities,
-    video_qualities,
+    VIDEOS_FILTER_LITERAL,
 )
-from tiddl.cli.config import VIDEOS_FILTER_LITERAL
 from tiddl.cli.utils.download import get_existing_track_filename
 
 from .output import RichOutput
@@ -27,11 +25,24 @@ log = getLogger(__name__)
 
 CHUNK_SIZE = 1024**2
 
+track_qualities: dict[TRACK_QUALITY_LITERAL, TrackQuality] = {
+    "low": "LOW",
+    "normal": "HIGH",
+    "high": "LOSSLESS",
+    "max": "HI_RES_LOSSLESS",
+}
+
 track_qualities_color: dict[TrackQuality, str] = {
     "LOW": "[gray]96 kbps",
     "HIGH": "[gray]320 kbps",
     "LOSSLESS": "[cyan]",
     "HI_RES_LOSSLESS": "[yellow]",
+}
+
+video_qualities: dict[VIDEO_QUALITY_LITERAL, VideoQuality] = {
+    "sd": "LOW",
+    "hd": "MEDIUM",
+    "fhd": "HIGH",
 }
 
 video_qualities_color: dict[VideoQuality, str] = {

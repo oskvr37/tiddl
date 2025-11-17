@@ -26,7 +26,6 @@ from .models.base import (
     TrackStream,
     VideoStream,
 )
-from .models.review import AlbumReview
 
 
 ID: TypeAlias = str | int
@@ -94,14 +93,6 @@ class TidalAPI:
                 "limit": min(limit, Limits.ALBUM_ITEMS_MAX),
                 "offset": offset,
             },
-            expire_after=3600,
-        )
-
-    def get_album_review(self, album_id: ID):
-        return self.client.fetch(
-            AlbumReview,
-            f"albums/{album_id}/review",
-            {"countryCode": self.country_code},
             expire_after=3600,
         )
 
