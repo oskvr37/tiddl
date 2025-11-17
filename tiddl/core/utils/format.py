@@ -5,6 +5,44 @@ from tiddl.core.api.models import Track, Video, Album, Playlist
 from tiddl.core.utils.sanitize import sanitize_string
 
 
+class Explicit:
+    def __init__(self, value: bool | None):
+        self.value = value
+
+    def __format__(self, format_spec: str):
+        if self.value is None:
+            return ""
+
+        features = format_spec.split(",")
+
+        def get_base():
+            for feature in features:
+                match feature:
+                    case "long":
+                        return "explicit" if self.value else ""
+                    case "full":
+                        return "explicit" if self.value else "clean"
+
+            return "E" if self.value else ""
+
+        base = get_base()
+
+        for feature in features:
+            match feature:
+                case "upper":
+                    return base.upper()
+
+        return base
+
+
+class DolbyAtmos:
+    def __init__(self, value: bool) -> None:
+        self.value = value
+
+    def __format__(self, format_spec: str) -> str:
+        return format_spec if self.value is True else ""
+
+
 @dataclass(slots=True)
 class AlbumTemplate:
     id: int
@@ -12,6 +50,7 @@ class AlbumTemplate:
     artist: str
     artists: str
     date: datetime
+    explicit: Explicit
 
 
 @dataclass(slots=True)
@@ -30,6 +69,8 @@ class ItemTemplate:
     artists: str
     features: str
     artists_with_features: str
+    explicit: Explicit
+    dolby: DolbyAtmos
 
 
 @dataclass(slots=True)
@@ -64,13 +105,13 @@ def generate_template_data(
             copyright_ = item.copyright or ""
             bpm = item.bpm or 0
             isrc = item.isrc or ""
-            # FIX audio quality should be returned from `get_existing_track_filename`.
-            # `item.audioQuality` tells highest quality of track - not quality we downloaded
+            dolby = DolbyAtmos("DOLBY_ATMOS" in item.mediaMetadata.tags)
         else:  # Video
             version = ""
             copyright_ = ""
             bpm = 0
             isrc = ""
+            dolby = DolbyAtmos(False)
 
         item_template = ItemTemplate(
             id=item.id,
@@ -87,6 +128,8 @@ def generate_template_data(
             artists=", ".join(main_artists),
             features=", ".join(featured_artists),
             artists_with_features=", ".join(main_artists + featured_artists),
+            explicit=Explicit(getattr(item, "explicit", None)),
+            dolby=dolby,
         )
 
     album_template = None
@@ -99,6 +142,7 @@ def generate_template_data(
                 a.name for a in (album.artists or []) if a.type == "MAIN"
             ),
             date=album.releaseDate,
+            explicit=Explicit(getattr(album, "explicit", None)),
         )
 
     playlist_template = None
@@ -145,7 +189,10 @@ def format_template(
     )
 
     path: str = "/".join(
-        [sanitize_string(segment.format(**data)) for segment in template.split("/")]
+        [
+            sanitize_string(segment.format(**data)).strip()
+            for segment in template.split("/")
+        ]
     )
 
     if with_asterisk_ext:

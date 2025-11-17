@@ -10,7 +10,7 @@ if __name__ == "__main__":
     album = api.get_album(ALBUM_ID)
     album_items = api.get_album_items(ALBUM_ID)
 
-    TEMPLATE = "{album.artists}/{album.title}, {album.date:%Y}/{item.number:02d}. {item.artists} - {item.title} ({custom_field})"
+    TEMPLATE = "{album.artists}/{album.title}, {album.date:%Y}, {album.explicit}/{item.number:02d}. {item.artists} - {item.title} ({custom_field}) {item.explicit:full}"
 
     for album_item in album_items.items:
         track = album_item.item

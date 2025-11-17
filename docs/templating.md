@@ -44,18 +44,21 @@ Each object type exposes fields you can use inside templates.
 | `item.artists`               | All main artists                | `Daft Punk, Pharrell Williams`  |
 | `item.features`              | Featured artists                | `Pharrell Williams`             |
 | `item.artists_with_features` | Main + featured artists         | `Daft Punk, Pharrell Williams`  |
+| `item.explicit`              | Explicit content                | `E`                             |
+| `item.dolby:(Dolby Atmos)`   | Dolby Atmos (track only)        | `(Dolby Atmos)`                 |
 
 ---
 
 ### `album`
 
-| Field           | Description               | Example      |
-| --------------- | ------------------------- | ------------ |
-| `album.id`      | Album ID                  | `98765`      |
-| `album.title`   | Album title               | `Discovery`  |
-| `album.artist`  | Primary artist            | `Daft Punk`  |
-| `album.artists` | All main artists          | `Daft Punk`  |
-| `album.date`    | Release date (`datetime`) | `2001-03-13` |
+| Field            | Description               | Example      |
+| ---------------- | ------------------------- | ------------ |
+| `album.id`       | Album ID                  | `98765`      |
+| `album.title`    | Album title               | `Discovery`  |
+| `album.artist`   | Primary artist            | `Daft Punk`  |
+| `album.artists`  | All main artists          | `Daft Punk`  |
+| `album.date`     | Release date (`datetime`) | `2001-03-13` |
+| `album.explicit` | Explicit content          | `clean`      |
 
 ---
 
@@ -70,6 +73,24 @@ Each object type exposes fields you can use inside templates.
 | `playlist.updated` | Last updated date (`datetime`) | `2024-03-02 09:00:00` |
 
 ---
+
+### Explicit
+
+| Format           | True Value | False Value |
+| ---------------- | ---------- | ----------- |
+| `.explicit`      | E          |             |
+| `.explicit:long` | explicit   |             |
+| `.explicit:full` | explicit   | clean       |
+
+### Dolby Atmos
+
+Dolby Atmos is only available in tracks. Format it like this: `item.dolby:<value>`.
+
+| Format             | True Value | False Value |
+| ------------------ | ---------- | ----------- |
+| `item.dolby:D`     | D          |             |
+| `item.dolby:DOLBY` | DOLBY      |             |
+| `item.dolby:dolby` | dolby      |             |
 
 ### `extra` and `custom` fields
 
