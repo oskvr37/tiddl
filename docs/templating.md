@@ -73,6 +73,14 @@ Each object type exposes fields you can use inside templates.
 | `playlist.created` | Creation date (`datetime`)     | `2024-01-15 10:42:00` |
 | `playlist.updated` | Last updated date (`datetime`) | `2024-03-02 09:00:00` |
 
+> [!NOTE]
+> Tidal API does not provide full album data for playlist tracks,
+> if you are downloading a playlist with template that contains `{album...}`,
+> then `tiddl` is making additional request to the API to fetch album data for a track.
+> The download may take a little longer but it's not a big deal - just one more request for every playlist track.
+> If there are multiple tracks from the same album, then the album data is cached locally,
+> and there is only one request per album. Related issue: #217
+
 ---
 
 ### Explicit
