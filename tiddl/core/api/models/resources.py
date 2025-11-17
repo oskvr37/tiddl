@@ -7,6 +7,8 @@ TrackQuality = Literal["LOW", "HIGH", "LOSSLESS", "HI_RES_LOSSLESS"]
 # audio_only is not stable
 VideoQuality = Literal["AUDIO_ONLY", "LOW", "MEDIUM", "HIGH"]
 
+MediaMetadataTags = Literal["LOSSLESS", "HIRES_LOSSLESS", "DOLBY_ATMOS"]
+
 
 class Track(BaseModel):
 
@@ -24,7 +26,7 @@ class Track(BaseModel):
         videoCover: Optional[str] = None
 
     class MediaMetadata(BaseModel):
-        tags: list[str]
+        tags: list[MediaMetadataTags]
 
     id: int
     title: str
@@ -107,7 +109,7 @@ class Album(BaseModel):
         picture: Optional[str] = None
 
     class MediaMetadata(BaseModel):
-        tags: List[Literal["LOSSLESS", "HIRES_LOSSLESS", "DOLBY_ATMOS"]]
+        tags: List[MediaMetadataTags]
 
     id: int
     title: str
