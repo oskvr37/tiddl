@@ -87,6 +87,7 @@ def generate_template_data(
     album: Album | None = None,
     playlist: Playlist | None = None,
     playlist_index: int = 0,
+    quality: str = "",
 ) -> dict[str, ItemTemplate | AlbumTemplate | PlaylistTemplate | None]:
     """Normalize Tidal API Track/Video + Album data into safe templates."""
 
@@ -104,14 +105,12 @@ def generate_template_data(
             copyright_ = item.copyright or ""
             bpm = item.bpm or 0
             isrc = item.isrc or ""
-            quality = item.audioQuality or ""
             dolby = DolbyAtmos("DOLBY_ATMOS" in item.mediaMetadata.tags)
         else:  # Video
             version = ""
             copyright_ = ""
             bpm = 0
             isrc = ""
-            quality = item.quality or ""
             dolby = DolbyAtmos(False)
 
         item_template = ItemTemplate(
@@ -171,6 +170,7 @@ def format_template(
     album: Album | None = None,
     playlist: Playlist | None = None,
     playlist_index: int = 0,
+    quality: str = "",
     with_asterisk_ext=True,
     **extra,
 ) -> str:
@@ -182,6 +182,7 @@ def format_template(
             album=album,
             playlist=playlist,
             playlist_index=playlist_index,
+            quality=quality,
         )
         | extra
         | custom_fields

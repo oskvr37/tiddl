@@ -28,8 +28,10 @@ class Items(BaseModel):
 class ArtistAlbumsItems(Items):
     items: List[Album]
 
+
 class ArtistVideosItems(Items):
     items: List[Video]
+
 
 ItemType = Literal["track", "video"]
 
