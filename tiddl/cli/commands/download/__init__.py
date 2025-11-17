@@ -486,13 +486,20 @@ def download_callback(
 
                         for playlist_item in playlist_items.items:
                             playlist_index += 1
+                            template = TEMPLATE or CONFIG.templates.playlist
+
+                            if "{album" in template:
+                                album = ctx.obj.api.get_album(playlist_item.item.album.id)
+                            else:
+                                album = None
 
                             futures.append(
                                 handle_item(
                                     item=playlist_item.item,
                                     file_path=format_template(
-                                        template=TEMPLATE or CONFIG.templates.playlist,
+                                        template=template,
                                         item=playlist_item.item,
+                                        album=album,
                                         playlist=playlist,
                                         playlist_index=playlist_index,
                                         quality=get_item_quality(playlist_item.item),
