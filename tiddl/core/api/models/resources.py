@@ -81,7 +81,7 @@ class Video(BaseModel):
     imageId: str
     vibrantColor: Optional[str] = None
     duration: int
-    quality: str
+    quality: VideoQuality
     streamReady: bool
     adSupportedStreamReady: bool
     djReady: bool

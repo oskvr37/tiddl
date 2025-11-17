@@ -46,6 +46,7 @@ def generate_template_data(
     album: Album | None = None,
     playlist: Playlist | None = None,
     playlist_index: int = 0,
+    quality: str = "",
 ) -> dict[str, ItemTemplate | AlbumTemplate | PlaylistTemplate | None]:
     """Normalize Tidal API Track/Video + Album data into safe templates."""
 
@@ -65,13 +66,11 @@ def generate_template_data(
             isrc = item.isrc or ""
             # FIX audio quality should be returned from `get_existing_track_filename`.
             # `item.audioQuality` tells highest quality of track - not quality we downloaded
-            quality = item.audioQuality or ""
         else:  # Video
             version = ""
             copyright_ = ""
             bpm = 0
             isrc = ""
-            quality = item.quality or ""
 
         item_template = ItemTemplate(
             id=item.id,
@@ -127,6 +126,7 @@ def format_template(
     album: Album | None = None,
     playlist: Playlist | None = None,
     playlist_index: int = 0,
+    quality: str = "",
     with_asterisk_ext=True,
     **extra,
 ) -> str:
@@ -138,6 +138,7 @@ def format_template(
             album=album,
             playlist=playlist,
             playlist_index=playlist_index,
+            quality=quality,
         )
         | extra
         | custom_fields
