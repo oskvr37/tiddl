@@ -28,37 +28,38 @@ Each object type exposes fields you can use inside templates.
 
 ### `item` (Track or Video)
 
-| Field                        | Description                     | Example                         |
-| ---------------------------- | ------------------------------- | ------------------------------- |
-| `item.id`                    | Track/Video ID                  | `123456`                        |
-| `item.title`                 | Title                           | `Harder Better Faster Stronger` |
-| `item.title_version`         | Title + version (if present)    | `One More Time (Radio Edit)`    |
-| `item.number`                | Track number                    | `3`                             |
-| `item.volume`                | Disc/volume number              | `1`                             |
-| `item.version`               | Version string (track only)     | `Remastered`                    |
-| `item.copyright`             | Copyright info (track only)     | `© 2023 Sony Music`             |
-| `item.bpm`                   | Beats per minute (if available) | `120`                           |
-| `item.isrc`                  | ISRC code (track only)          | `USQX91501234`                  |
-| `item.quality`               | Audio/video quality             | `HIGH`                          |
-| `item.artist`                | Primary artist name             | `Daft Punk`                     |
-| `item.artists`               | All main artists                | `Daft Punk, Pharrell Williams`  |
-| `item.features`              | Featured artists                | `Pharrell Williams`             |
-| `item.artists_with_features` | Main + featured artists         | `Daft Punk, Pharrell Williams`  |
-| `item.explicit`              | Explicit content                | `E`                             |
-| `item.dolby:(Dolby Atmos)`   | Dolby Atmos (track only)        | `(Dolby Atmos)`                 |
+| Field                        | Description                            | Example                         |
+| ---------------------------- | -------------------------------------- | ------------------------------- |
+| `item.id`                    | Track/Video ID                         | `123456`                        |
+| `item.title`                 | Title                                  | `Harder Better Faster Stronger` |
+| `item.title_version`         | Title + version (if present)           | `One More Time (Radio Edit)`    |
+| `item.number`                | Track number                           | `3`                             |
+| `item.volume`                | Disc/volume number                     | `1`                             |
+| `item.version`               | Version string (track only)            | `Remastered`                    |
+| `item.copyright`             | Copyright info (track only)            | `© 2023 Sony Music`             |
+| `item.bpm`                   | Beats per minute (if available)        | `120`                           |
+| `item.isrc`                  | ISRC code (track only)                 | `USQX91501234`                  |
+| `item.quality`               | Audio/video quality                    | `HIGH`                          |
+| `item.artist`                | Primary artist name                    | `Daft Punk`                     |
+| `item.artists`               | All main artists                       | `Daft Punk, Pharrell Williams`  |
+| `item.features`              | Featured artists                       | `Pharrell Williams`             |
+| `item.artists_with_features` | Main + featured artists                | `Daft Punk, Pharrell Williams`  |
+| `item.explicit`              | Explicit content                       | `E`                             |
+| `item.dolby:(Dolby Atmos)`   | Dolby Atmos (track only, `UserFormat`) | `(Dolby Atmos)`                 |
 
 ---
 
 ### `album`
 
-| Field            | Description               | Example      |
-| ---------------- | ------------------------- | ------------ |
-| `album.id`       | Album ID                  | `98765`      |
-| `album.title`    | Album title               | `Discovery`  |
-| `album.artist`   | Primary artist            | `Daft Punk`  |
-| `album.artists`  | All main artists          | `Daft Punk`  |
-| `album.date`     | Release date (`datetime`) | `2001-03-13` |
-| `album.explicit` | Explicit content          | `clean`      |
+| Field                | Description                         | Example      |
+| -------------------- | ----------------------------------- | ------------ |
+| `album.id`           | Album ID                            | `98765`      |
+| `album.title`        | Album title                         | `Discovery`  |
+| `album.artist`       | Primary artist                      | `Daft Punk`  |
+| `album.artists`      | All main artists                    | `Daft Punk`  |
+| `album.date`         | Release date (`datetime`)           | `2001-03-13` |
+| `album.explicit`     | Explicit content                    | `clean`      |
+| `album.master:[MAX]` | Is album max quality (`UserFormat`) | `[MAX]`      |
 
 ---
 
@@ -82,15 +83,16 @@ Each object type exposes fields you can use inside templates.
 | `.explicit:long` | explicit   |             |
 | `.explicit:full` | explicit   | clean       |
 
-### Dolby Atmos
+### User Format
 
-Dolby Atmos is only available in tracks. Format it like this: `item.dolby:<value>`.
+You can format `UserFormat` fields how you want:
 
-| Format             | True Value | False Value |
-| ------------------ | ---------- | ----------- |
-| `item.dolby:D`     | D          |             |
-| `item.dolby:DOLBY` | DOLBY      |             |
-| `item.dolby:dolby` | dolby      |             |
+| Format                       | True Value    | False Value |
+| ---------------------------- | ------------- | ----------- |
+| `item.dolby:D`               | D             |             |
+| `item.dolby:DOLBY`           | DOLBY         |             |
+| `item.dolby:dolby`           | dolby         |             |
+| `album.master:(Max Quality)` | [Max Quality] |             |
 
 ### `extra` and `custom` fields
 
