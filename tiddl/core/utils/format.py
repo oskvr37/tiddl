@@ -35,7 +35,7 @@ class Explicit:
         return base
 
 
-class DolbyAtmos:
+class UserFormat:
     def __init__(self, value: bool) -> None:
         self.value = value
 
@@ -51,6 +51,7 @@ class AlbumTemplate:
     artists: str
     date: datetime
     explicit: Explicit
+    master: UserFormat
 
 
 @dataclass(slots=True)
@@ -70,7 +71,7 @@ class ItemTemplate:
     features: str
     artists_with_features: str
     explicit: Explicit
-    dolby: DolbyAtmos
+    dolby: UserFormat
 
 
 @dataclass(slots=True)
@@ -105,13 +106,13 @@ def generate_template_data(
             copyright_ = item.copyright or ""
             bpm = item.bpm or 0
             isrc = item.isrc or ""
-            dolby = DolbyAtmos("DOLBY_ATMOS" in item.mediaMetadata.tags)
+            dolby = UserFormat("DOLBY_ATMOS" in item.mediaMetadata.tags)
         else:  # Video
             version = ""
             copyright_ = ""
             bpm = 0
             isrc = ""
-            dolby = DolbyAtmos(False)
+            dolby = UserFormat(False)
 
         item_template = ItemTemplate(
             id=item.id,
@@ -143,6 +144,7 @@ def generate_template_data(
             ),
             date=album.releaseDate,
             explicit=Explicit(getattr(album, "explicit", None)),
+            master=UserFormat("HIRES_LOSSLESS" in album.mediaMetadata.tags),
         )
 
     playlist_template = None
