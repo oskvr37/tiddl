@@ -1,7 +1,6 @@
 from typing import Literal
 
-from tiddl.core.api.models import TrackQuality, VideoQuality
-
+from tiddl.core.api.models import StreamVideoQuality, TrackQuality
 
 TRACK_QUALITY_LITERAL = Literal["low", "normal", "high", "max"]
 VIDEO_QUALITY_LITERAL = Literal["sd", "hd", "fhd"]
@@ -13,7 +12,7 @@ track_qualities: dict[TRACK_QUALITY_LITERAL, TrackQuality] = {
     "max": "HI_RES_LOSSLESS",
 }
 
-video_qualities: dict[VIDEO_QUALITY_LITERAL, VideoQuality] = {
+video_qualities: dict[VIDEO_QUALITY_LITERAL, StreamVideoQuality] = {
     "sd": "LOW",
     "hd": "MEDIUM",
     "fhd": "HIGH",

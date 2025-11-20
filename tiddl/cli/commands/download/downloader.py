@@ -1,25 +1,24 @@
-import shutil
 import asyncio
-import aiohttp
-import aiofiles
-
+import shutil
 from logging import getLogger
-
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
-from tiddl.core.api.models import TrackQuality, VideoQuality, Track, Video
-from tiddl.core.api import TidalAPI, ApiError
+import aiofiles
+import aiohttp
+
+from tiddl.cli.config import VIDEOS_FILTER_LITERAL
+from tiddl.cli.utils.download import get_existing_track_filename
+from tiddl.core.api import ApiError, TidalAPI
+from tiddl.core.api.models import StreamVideoQuality, Track, TrackQuality, Video
 from tiddl.core.utils import parse_track_stream, parse_video_stream
-from tiddl.core.utils.ffmpeg import convert_to_mp4, extract_flac
 from tiddl.core.utils.const import (
     TRACK_QUALITY_LITERAL,
     VIDEO_QUALITY_LITERAL,
     track_qualities,
     video_qualities,
 )
-from tiddl.cli.config import VIDEOS_FILTER_LITERAL
-from tiddl.cli.utils.download import get_existing_track_filename
+from tiddl.core.utils.ffmpeg import convert_to_mp4, extract_flac
 
 from .output import RichOutput
 
@@ -34,7 +33,7 @@ track_qualities_color: dict[TrackQuality, str] = {
     "HI_RES_LOSSLESS": "[yellow]",
 }
 
-video_qualities_color: dict[VideoQuality, str] = {
+video_qualities_color: dict[StreamVideoQuality, str] = {
     "LOW": "[gray]360p",
     "MEDIUM": "[cyan]720p",
     "HIGH": "[yellow]1080p",
@@ -46,7 +45,7 @@ class Downloader:
     rich_output: RichOutput
     semaphore: asyncio.Semaphore
     track_quality: TrackQuality
-    video_quality: VideoQuality
+    video_quality: StreamVideoQuality
     videos_filter: VIDEOS_FILTER_LITERAL
     skip_existing: bool
     download_path: Path
@@ -121,7 +120,10 @@ class Downloader:
         elif (isinstance(item, Video) and self.videos_filter == "none") or (
             isinstance(item, Track) and self.videos_filter == "only"
         ):
-            log.info(f"skipping {item.id} due to {self.videos_filter=}")
+            log.debug(f"skipping {item.id} due to {self.videos_filter=}")
+            self.rich_output.console.print(
+                f"Skipping '{item.title}' due to video filter set to '{self.videos_filter}'"
+            )
             return None, False
 
         should_extract_flac = False

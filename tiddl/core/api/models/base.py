@@ -1,7 +1,16 @@
-from pydantic import BaseModel
-from typing import Optional, List, Literal, Union
+from typing import List, Literal, Optional, Union
 
-from .resources import Album, Artist, Playlist, Track, TrackQuality, Video, VideoQuality
+from pydantic import BaseModel
+
+from .resources import (
+    Album,
+    Artist,
+    Playlist,
+    StreamVideoQuality,
+    Track,
+    TrackQuality,
+    Video,
+)
 
 
 class SessionResponse(BaseModel):
@@ -133,7 +142,7 @@ class VideoStream(BaseModel):
     videoId: int
     streamType: Literal["ON_DEMAND"]
     assetPresentation: Literal["FULL"]
-    videoQuality: VideoQuality
+    videoQuality: StreamVideoQuality
     # streamingSessionId: str  # only in web?
     manifestMimeType: Literal["application/dash+xml", "application/vnd.tidal.emu"]
     manifestHash: str

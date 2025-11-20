@@ -1,11 +1,12 @@
-from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional, List, Literal, Dict, Any
+from typing import Any, Dict, List, Literal, Optional
+
+from pydantic import BaseModel
 
 TrackQuality = Literal["LOW", "HIGH", "LOSSLESS", "HI_RES_LOSSLESS"]
 
 # audio_only is not stable
-VideoQuality = Literal["AUDIO_ONLY", "LOW", "MEDIUM", "HIGH"]
+StreamVideoQuality = Literal["AUDIO_ONLY", "LOW", "MEDIUM", "HIGH"]
 
 MediaMetadataTags = Literal["LOSSLESS", "HIRES_LOSSLESS", "DOLBY_ATMOS"]
 
@@ -83,7 +84,7 @@ class Video(BaseModel):
     imageId: str
     vibrantColor: Optional[str] = None
     duration: int
-    quality: VideoQuality
+    quality: Literal["MP4_1080P"] | str
     streamReady: bool
     adSupportedStreamReady: bool
     djReady: bool
