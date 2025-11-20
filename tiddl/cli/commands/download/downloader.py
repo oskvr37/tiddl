@@ -120,7 +120,10 @@ class Downloader:
         elif (isinstance(item, Video) and self.videos_filter == "none") or (
             isinstance(item, Track) and self.videos_filter == "only"
         ):
-            log.info(f"skipping {item.id} due to {self.videos_filter=}")
+            log.debug(f"skipping {item.id} due to {self.videos_filter=}")
+            self.rich_output.console.print(
+                f"Skipping '{item.title}' due to video filter set to '{self.videos_filter}'"
+            )
             return None, False
 
         should_extract_flac = False
