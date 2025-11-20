@@ -162,13 +162,8 @@ def download_callback(
                 return TRACK_QUALITY
 
             elif isinstance(item, Video):
-                if item.quality == "LOW":
-                    return "sd"
-
-                if item.quality == "MEDIUM":
-                    if VIDEO_QUALITY == "hd":
-                        return "hd"
-                    return "fhd"
+                # TODO add missing Video.quality literals so this function can work properly
+                return VIDEO_QUALITY
 
             raise TypeError("Unsupported item type")
 
