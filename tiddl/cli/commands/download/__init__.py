@@ -156,7 +156,10 @@ def download_callback(
                 if TRACK_QUALITY in ["low", "normal"]:
                     return TRACK_QUALITY
 
-                if TRACK_QUALITY == "max" and item.audioQuality != "HI_RES_LOSSLESS":
+                if (
+                    TRACK_QUALITY == "max"
+                    and "HIRES_LOSSLESS" not in item.mediaMetadata.tags
+                ):
                     return "high"
 
                 return TRACK_QUALITY
@@ -266,6 +269,7 @@ def download_callback(
 
                 if album.cover and (CONFIG.metadata.cover or save_cover):
                     cover = Cover(album.cover, size=CONFIG.cover.size)
+                    cover._get_data()
 
                 album_review = ""
 
@@ -293,7 +297,7 @@ def download_callback(
                                     quality=get_item_quality(album_item.item),
                                 ),
                                 track_metadata=Metadata(
-                                    cover_data=cover._get_data() if cover else None,
+                                    cover_data=cover.data if cover else b"",
                                     date=str(album.releaseDate),
                                     artist=album.artist.name if album.artist else "",
                                     credits=album_item.credits,

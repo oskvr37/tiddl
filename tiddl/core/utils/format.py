@@ -144,7 +144,9 @@ def generate_template_data(
             ),
             date=album.releaseDate,
             explicit=Explicit(getattr(album, "explicit", None)),
-            master=UserFormat("HIRES_LOSSLESS" in album.mediaMetadata.tags),
+            master=UserFormat(
+                "HIRES_LOSSLESS" in album.mediaMetadata.tags and quality == "MAX"
+            ),
         )
 
     playlist_template = None
