@@ -1,16 +1,24 @@
-from .resources import Album, Artist, Playlist, Track, Video, TrackQuality, VideoQuality
 from .base import (
     AlbumItems,
     AlbumItemsCredits,
     ArtistAlbumsItems,
     Favorites,
-    TrackLyrics,
-    PlaylistItems,
     MixItems,
+    PlaylistItems,
     Search,
     SessionResponse,
+    TrackLyrics,
     TrackStream,
     VideoStream,
+)
+from .resources import (
+    Album,
+    Artist,
+    Playlist,
+    StreamVideoQuality,
+    Track,
+    TrackQuality,
+    Video,
 )
 
 __all__ = [
@@ -20,7 +28,7 @@ __all__ = [
     "Track",
     "Video",
     "TrackQuality",
-    "VideoQuality",
+    "StreamVideoQuality",
     "AlbumItems",
     "AlbumItemsCredits",
     "ArtistAlbumsItems",

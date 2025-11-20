@@ -1,33 +1,32 @@
-from requests_cache import DO_NOT_CACHE, EXPIRE_IMMEDIATELY
-
 from typing import Literal, TypeAlias
 
+from requests_cache import DO_NOT_CACHE, EXPIRE_IMMEDIATELY
+
 from .client import TidalClient
-from .models.resources import (
-    Album,
-    Artist,
-    Playlist,
-    Track,
-    Video,
-    TrackQuality,
-    VideoQuality,
-)
 from .models.base import (
     AlbumItems,
     AlbumItemsCredits,
     ArtistAlbumsItems,
     ArtistVideosItems,
     Favorites,
-    TrackLyrics,
-    PlaylistItems,
     MixItems,
+    PlaylistItems,
     Search,
     SessionResponse,
+    TrackLyrics,
     TrackStream,
     VideoStream,
 )
+from .models.resources import (
+    Album,
+    Artist,
+    Playlist,
+    StreamVideoQuality,
+    Track,
+    TrackQuality,
+    Video,
+)
 from .models.review import AlbumReview
-
 
 ID: TypeAlias = str | int
 
@@ -243,7 +242,7 @@ class TidalAPI:
             expire_after=3600,
         )
 
-    def get_video_stream(self, video_id: ID, quality: VideoQuality):
+    def get_video_stream(self, video_id: ID, quality: StreamVideoQuality):
         return self.client.fetch(
             VideoStream,
             f"videos/{video_id}/playbackinfopostpaywall",

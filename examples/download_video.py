@@ -1,7 +1,7 @@
 from pathlib import Path
 
+from tiddl.core.api.models.base import StreamVideoQuality
 from tiddl.core.metadata import add_video_metadata
-from tiddl.core.api.models.base import VideoQuality
 from tiddl.core.utils import get_video_stream_data
 from tiddl.core.utils.ffmpeg import convert_to_mp4, is_ffmpeg_installed
 
@@ -10,7 +10,7 @@ from .fetch_api import api
 
 # Old Town Road by Lil Nas X
 VIDEO_ID = 113483426
-QUALITY: VideoQuality = "HIGH"
+QUALITY: StreamVideoQuality = "HIGH"
 
 if __name__ == "__main__":
     print("fetching video_stream")
