@@ -234,16 +234,21 @@ def download_callback(
                             except Exception as e:
                                 log.error(e)
 
-                        cover_data = track_metadata.cover_data
-                        if not cover_data and item.album.cover:
-                            cover_data = Cover(item.album.cover)._get_data()
+                        if (
+                            not track_metadata.cover_data
+                            and item.album.cover
+                            and CONFIG.metadata.cover
+                        ):
+                            track_metadata.cover_data = Cover(
+                                item.album.cover
+                            )._get_data()
 
                         add_track_metadata(
                             path=download_path,
                             track=item,
                             lyrics=lyrics_subtitles,
                             album_artist=track_metadata.artist,
-                            cover_data=cover_data,
+                            cover_data=track_metadata.cover_data,
                             date=track_metadata.date,
                             credits=track_metadata.credits,
                             comment=track_metadata.album_review,
