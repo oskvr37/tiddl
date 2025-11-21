@@ -28,50 +28,50 @@ Each object type exposes fields you can use inside templates.
 
 ### `item` (Track or Video)
 
-| Field                        | Description                            | Example                         |
-| ---------------------------- | -------------------------------------- | ------------------------------- |
-| `item.id`                    | Track/Video ID                         | `123456`                        |
-| `item.title`                 | Title                                  | `Harder Better Faster Stronger` |
-| `item.title_version`         | Title + version (if present)           | `One More Time (Radio Edit)`    |
-| `item.number`                | Track number                           | `3`                             |
-| `item.volume`                | Disc/volume number                     | `1`                             |
-| `item.version`               | Version string (track only)            | `Remastered`                    |
-| `item.copyright`             | Copyright info (track only)            | `© 2023 Sony Music`             |
-| `item.bpm`                   | Beats per minute (if available)        | `120`                           |
-| `item.isrc`                  | ISRC code (track only)                 | `USQX91501234`                  |
-| `item.quality`               | Audio/video quality                    | `HIGH`                          |
-| `item.artist`                | Primary artist name                    | `Daft Punk`                     |
-| `item.artists`               | All main artists                       | `Daft Punk, Pharrell Williams`  |
-| `item.features`              | Featured artists                       | `Pharrell Williams`             |
-| `item.artists_with_features` | Main + featured artists                | `Daft Punk, Pharrell Williams`  |
-| `item.explicit`              | Explicit content                       | `E`                             |
-| `item.dolby:(Dolby Atmos)`   | Dolby Atmos (track only, `UserFormat`) | `(Dolby Atmos)`                 |
+| Field                        | Description                            | Example                         | Type |
+| ---------------------------- | -------------------------------------- | ------------------------------- | ---- |
+| `item.id`                    | Track/Video ID                         | `123456`                        | int  |
+| `item.title`                 | Title                                  | `Harder Better Faster Stronger` | str  |
+| `item.title_version`         | Title + version (if present)           | `One More Time (Radio Edit)`    | str  |
+| `item.number`                | Track number                           | `3`                             | int  |
+| `item.volume`                | Disc/volume number                     | `1`                             | int  |
+| `item.version`               | Version string (track only)            | `Remastered`                    | str  |
+| `item.copyright`             | Copyright info (track only)            | `© 2023 Sony Music`             | str  |
+| `item.bpm`                   | Beats per minute (if available)        | `120`                           | int  |
+| `item.isrc`                  | ISRC code (track only)                 | `USQX91501234`                  | str  |
+| `item.quality`               | Audio/video quality                    | `HIGH`                          | str  |
+| `item.artist`                | Primary artist name                    | `Daft Punk`                     | str  |
+| `item.artists`               | All main artists                       | `Daft Punk, Pharrell Williams`  | str  |
+| `item.features`              | Featured artists                       | `Pharrell Williams`             | str  |
+| `item.artists_with_features` | Main + featured artists                | `Daft Punk, Pharrell Williams`  | str  |
+| `item.explicit`              | Explicit content                       | `E`                             | str  |
+| `item.dolby:(Dolby Atmos)`   | Dolby Atmos (track only, `UserFormat`) | `(Dolby Atmos)`                 | str  |
 
 ---
 
 ### `album`
 
-| Field                | Description                         | Example      |
-| -------------------- | ----------------------------------- | ------------ |
-| `album.id`           | Album ID                            | `98765`      |
-| `album.title`        | Album title                         | `Discovery`  |
-| `album.artist`       | Primary artist                      | `Daft Punk`  |
-| `album.artists`      | All main artists                    | `Daft Punk`  |
-| `album.date`         | Release date (`datetime`)           | `2001-03-13` |
-| `album.explicit`     | Explicit content                    | `clean`      |
-| `album.master:[MAX]` | Is album max quality (`UserFormat`) | `[MAX]`      |
+| Field                | Description                         | Example      | Type     |
+| -------------------- | ----------------------------------- | ------------ | -------- |
+| `album.id`           | Album ID                            | `98765`      | int      |
+| `album.title`        | Album title                         | `Discovery`  | str      |
+| `album.artist`       | Primary artist                      | `Daft Punk`  | str      |
+| `album.artists`      | All main artists                    | `Daft Punk`  | str      |
+| `album.date`         | Release date                        | `2001-03-13` | datetime |
+| `album.explicit`     | Explicit content                    | `clean`      | str      |
+| `album.master:[MAX]` | Is album max quality (`UserFormat`) | `[MAX]`      | str      |
 
 ---
 
 ### `playlist`
 
-| Field              | Description                    | Example               |
-| ------------------ | ------------------------------ | --------------------- |
-| `playlist.uuid`    | Playlist unique ID             | `b8f1d9f8-...`        |
-| `playlist.title`   | Playlist name                  | `My Favorites`        |
-| `playlist.index`   | Track index within playlist    | `5`                   |
-| `playlist.created` | Creation date (`datetime`)     | `2024-01-15 10:42:00` |
-| `playlist.updated` | Last updated date (`datetime`) | `2024-03-02 09:00:00` |
+| Field              | Description                    | Example               | Type     |
+| ------------------ | ------------------------------ | --------------------- | -------- |
+| `playlist.uuid`    | Playlist unique ID             | `b8f1d9f8-...`        | str      |
+| `playlist.title`   | Playlist name                  | `My Favorites`        | str      |
+| `playlist.index`   | Track index within playlist    | `5`                   | int      |
+| `playlist.created` | Creation date (`datetime`)     | `2024-01-15 10:42:00` | datetime |
+| `playlist.updated` | Last updated date (`datetime`) | `2024-03-02 09:00:00` | datetime |
 
 > [!NOTE]
 > Tidal API does not provide full album data for playlist tracks,
@@ -143,6 +143,7 @@ If no specific template is set, the `default` one is used.
 
 - You can format datetime fields, e.g. `{album.date:%Y-%m-%d}`.
 - You can build nested folders safely using `/` separators.
+- You can format string and integer fields, [learn more](https://www.pythonmorsels.com/string-formatting/#floating-point-numbers-and-integers)
 
 ## 🖥️ Source Code
 
