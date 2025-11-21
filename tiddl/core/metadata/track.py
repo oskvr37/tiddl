@@ -119,7 +119,7 @@ def add_track_metadata(
     """Add FLAC or M4A metadata based on file extension."""
 
     metadata = Metadata(
-        title=track.title,
+        title=f"{track.title} ({track.version})" if track.version else track.title,
         track_number=str(track.trackNumber),
         disc_number=str(track.volumeNumber),
         copyright=track.copyright,
