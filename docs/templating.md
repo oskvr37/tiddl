@@ -51,15 +51,16 @@ Each object type exposes fields you can use inside templates.
 
 ### `album`
 
-| Field                | Description                         | Example      | Type     |
-| -------------------- | ----------------------------------- | ------------ | -------- |
-| `album.id`           | Album ID                            | `98765`      | int      |
-| `album.title`        | Album title                         | `Discovery`  | str      |
-| `album.artist`       | Primary artist                      | `Daft Punk`  | str      |
-| `album.artists`      | All main artists                    | `Daft Punk`  | str      |
-| `album.date`         | Release date                        | `2001-03-13` | datetime |
-| `album.explicit`     | Explicit content                    | `clean`      | str      |
-| `album.master:[MAX]` | Is album max quality (`UserFormat`) | `[MAX]`      | str      |
+| Field                | Description                         | Example           | Type     |
+| -------------------- | ----------------------------------- | ----------------- | -------- |
+| `album.id`           | Album ID                            | `98765`           | int      |
+| `album.title`        | Album title                         | `Discovery`       | str      |
+| `album.artist`       | Primary artist                      | `Daft Punk`       | str      |
+| `album.artists`      | All main artists                    | `Daft Punk`       | str      |
+| `album.date`         | Release date                        | `2001-03-13`      | datetime |
+| `album.explicit`     | Explicit content                    | `clean`           | str      |
+| `album.master:[MAX]` | Is album max quality (`UserFormat`) | `[MAX]`           | str      |
+| `album.release`      | Release type                        | `ALBUM/EP/SINGLE` | str      |
 
 ---
 

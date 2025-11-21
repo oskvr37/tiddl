@@ -52,6 +52,7 @@ class AlbumTemplate:
     date: datetime
     explicit: Explicit
     master: UserFormat
+    release: str
 
 
 @dataclass(slots=True)
@@ -147,6 +148,7 @@ def generate_template_data(
             master=UserFormat(
                 "HIRES_LOSSLESS" in album.mediaMetadata.tags and quality == "MAX"
             ),
+            release=album.type,
         )
 
     playlist_template = None
