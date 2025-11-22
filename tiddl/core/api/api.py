@@ -1,6 +1,7 @@
 from typing import Literal, TypeAlias
 
 from requests_cache import DO_NOT_CACHE, EXPIRE_IMMEDIATELY
+from pathlib import Path
 
 from .client import TidalClient
 from .models.base import (
@@ -103,6 +104,79 @@ class TidalAPI:
             {"countryCode": self.country_code},
             expire_after=3600,
         )
+    
+    def get_album_lyrics(
+        self, 
+        album_id: str | int, 
+        song_dir: Path, 
+        skip_existing: bool = True
+    ) -> bool:
+        """
+        Download lyrics for all tracks in an album as .lrc files
+        Returns True if any lyrics were downloaded
+        """
+        from pathlib import Path
+        import re
+        
+        lyrics_downloaded = False
+        offset = 0
+        
+        while True:
+            album_items = self.get_album_items(album_id=album_id, offset=offset)
+            
+            for item in album_items.items:
+                # Get the track from the item
+                track = item.item if hasattr(item, 'item') else item
+                
+                # Skip if not a track
+                if not hasattr(track, 'trackNumber'):
+                    continue
+                
+                # Build filename
+                safe_title = re.sub(r'[<>:"/\\|?*]', '_', track.title)
+                filename = f"{track.trackNumber:02d} - {safe_title}.lrc"
+                lrc_path = song_dir / filename
+                
+                # Skip if exists
+                if skip_existing and lrc_path.exists():
+                    continue
+                
+                try:
+                    lyrics = self.get_track_lyrics(track.id)
+                    
+                    if not lyrics.subtitles and not lyrics.lyrics:
+                        continue
+                    
+                    # Use subtitles if available, otherwise plain lyrics
+                    content = lyrics.subtitles if lyrics.subtitles else lyrics.lyrics
+                    
+                    if not content:
+                        continue
+                    
+                    # Convert plain lyrics to basic LRC format
+                    if not lyrics.subtitles and lyrics.lyrics:
+                        lines = []
+                        for line in lyrics.lyrics.splitlines():
+                            if line.strip():
+                                lines.append(f"[00:00.00]{line}")
+                        content = "\n".join(lines)
+                    
+                    # Save file
+                    lrc_path.parent.mkdir(parents=True, exist_ok=True)
+                    with lrc_path.open('w', encoding='utf-8') as f:
+                        f.write(content)
+                    
+                    lyrics_downloaded = True
+                    
+                except Exception:
+                    continue
+            
+            # Check if we got all items
+            offset += album_items.limit
+            if offset >= album_items.totalNumberOfItems:
+                break
+        
+        return lyrics_downloaded
 
     def get_artist(self, artist_id: ID):
         return self.client.fetch(

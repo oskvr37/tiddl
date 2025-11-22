@@ -118,6 +118,14 @@ def download_callback(
             help="Videos handling: 'none' to exclude, 'allow' to include, 'only' to download videos only.",
         ),
     ] = CONFIG.download.videos_filter,
+    DOWNLOAD_LYRICS: Annotated[
+        bool,
+        typer.Option(
+            "--lyrics",
+            "-l",
+            help="Download lyrics as .lrc files for albums.",
+        ),
+    ] = False,
 ):
     """
     Download Tidal resources.
@@ -334,6 +342,33 @@ def download_callback(
                             template=CONFIG.cover.templates.album, album=album
                         )
                     )
+                
+                 # Download lyrics if enabled
+                if DOWNLOAD_LYRICS:
+                    try:
+                        from pathlib import Path
+                        log.info(f"Downloading lyrics for: {album.title}")
+                        
+                        # Determin the path of the folder
+                        first_item = album_items.items[0].item if album_items.items else None
+                        if first_item:
+                            album_path = Path(format_template(
+                                template=CONFIG.templates.album,
+                                item=first_item,
+                                album=album,
+                                quality=""
+                            )).parent
+                            
+                            full_album_path = DOWNLOAD_PATH / album_path
+                            
+                            ctx.obj.api.get_album_lyrics(
+                                album_id=album.id,
+                                song_dir=full_album_path,
+                                skip_existing=not SKIP_EXISTING
+                            )
+                            log.info("✓ Lyrics downloaded successfully")
+                    except Exception as e:
+                        log.warning(f"Could not download lyrics: {e}")
 
             # resources should be collected from a distinct function
             # that would yield the resources.
