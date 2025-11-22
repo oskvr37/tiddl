@@ -347,7 +347,7 @@ def download_callback(
                     )
                 
                  # Download lyrics if enabled
-                if DOWNLOAD_LYRICS:
+                if DOWNLOAD_LYRICS or CONFIG.lyrics.save:
                     try:
                         from pathlib import Path
                         log.info(f"Downloading lyrics for: {album.title}")
