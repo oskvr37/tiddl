@@ -115,14 +115,22 @@ class TidalAPI:
         Download lyrics for all tracks in an album as .lrc files
         Returns True if any lyrics were downloaded
         """
-        from pathlib import Path
         import re
+        from logging import getLogger
+        
+        log = getLogger(__name__)
+        log.info("="*50)
+        log.info(f"STARTING LYRICS DOWNLOAD - Album ID: {album_id}")
+        log.info(f"Target directory: {song_dir}")
+        log.info(f"Skip existing: {skip_existing}")
+        log.info("="*50)
         
         lyrics_downloaded = False
         offset = 0
         
         while True:
             album_items = self.get_album_items(album_id=album_id, offset=offset)
+            log.info(f"Got {len(album_items.items)} items at offset {offset}")
             
             for item in album_items.items:
                 # Get the track from the item
@@ -130,31 +138,41 @@ class TidalAPI:
                 
                 # Skip if not a track
                 if not hasattr(track, 'trackNumber'):
+                    log.info(f"Skipping item {track.id} - not a track")
                     continue
+                
+                log.info(f"Processing: {track.trackNumber:02d} - {track.title}")
                 
                 # Build filename
                 safe_title = re.sub(r'[<>:"/\\|?*]', '_', track.title)
                 filename = f"{track.trackNumber:02d} - {safe_title}.lrc"
                 lrc_path = song_dir / filename
                 
+                log.info(f"Lyrics file path: {lrc_path}")
+                
                 # Skip if exists
                 if skip_existing and lrc_path.exists():
+                    log.info(f"File already exists, skipping")
                     continue
                 
                 try:
+                    log.info(f"Fetching lyrics for track {track.id}...")
                     lyrics = self.get_track_lyrics(track.id)
                     
                     if not lyrics.subtitles and not lyrics.lyrics:
+                        log.info("No lyrics available for this track")
                         continue
                     
                     # Use subtitles if available, otherwise plain lyrics
                     content = lyrics.subtitles if lyrics.subtitles else lyrics.lyrics
                     
                     if not content:
+                        log.info("Lyrics content is empty")
                         continue
                     
                     # Convert plain lyrics to basic LRC format
                     if not lyrics.subtitles and lyrics.lyrics:
+                        log.info("Converting plain lyrics to LRC format")
                         lines = []
                         for line in lyrics.lyrics.splitlines():
                             if line.strip():
@@ -166,9 +184,13 @@ class TidalAPI:
                     with lrc_path.open('w', encoding='utf-8') as f:
                         f.write(content)
                     
+                    log.info(f"✓ Successfully saved lyrics to {lrc_path}")
                     lyrics_downloaded = True
                     
-                except Exception:
+                except Exception as e:
+                    log.error(f"Error downloading lyrics for {track.title}: {e}")
+                    import traceback
+                    log.error(traceback.format_exc())
                     continue
             
             # Check if we got all items
@@ -176,8 +198,11 @@ class TidalAPI:
             if offset >= album_items.totalNumberOfItems:
                 break
         
+        log.info("="*50)
+        log.info(f"LYRICS DOWNLOAD COMPLETE - Downloaded any: {lyrics_downloaded}")
+        log.info("="*50)
         return lyrics_downloaded
-
+    
     def get_artist(self, artist_id: ID):
         return self.client.fetch(
             Artist,

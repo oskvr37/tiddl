@@ -181,6 +181,9 @@ def download_callback(
         return predict_item_quality().upper()
 
     async def download_resources():
+        log.info("="*60)
+        log.info(f"DOWNLOAD_LYRICS FLAG VALUE: {DOWNLOAD_LYRICS}")
+        log.info("="*60)
         rich_output = RichOutput(ctx.obj.console)
 
         downloader = Downloader(
