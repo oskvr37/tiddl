@@ -206,10 +206,13 @@ def download_callback(
             async def handle_item(
                 item: Track | Video,
                 file_path: str,
-                track_metadata: Metadata = Metadata(),
+                track_metadata: Metadata | None = None,
             ) -> tuple[Path | None, Track | Video]:
                 log.debug(f"{item.id=}, {file_path=}")
                 rich_output.total_increment()
+
+                if not track_metadata:
+                    track_metadata = Metadata()
 
                 download_path, was_downloaded = await downloader.download(
                     item=item, file_path=Path(file_path)
@@ -510,6 +513,7 @@ def download_callback(
                                         playlist_index=playlist_index,
                                         quality=get_item_quality(playlist_item.item),
                                     ),
+                                    track_metadata=Metadata(),
                                 )
                             )
 
