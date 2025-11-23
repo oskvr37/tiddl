@@ -25,6 +25,7 @@ from tiddl.cli.utils.resource import TidalResource
 from tiddl.cli.ctx import Context
 from tiddl.cli.commands.auth import refresh
 from tiddl.cli.commands.subcommands import register_subcommands
+from tiddl.core.utils.lyrics import download_album_lyrics
 
 
 from .downloader import Downloader
@@ -125,7 +126,7 @@ def download_callback(
             "-l",
             help="Download lyrics as .lrc files for albums.",
         ),
-    ] = False,
+    ] =  CONFIG.lyrics.save,
 ):
     """
     Download Tidal resources.
@@ -181,9 +182,6 @@ def download_callback(
         return predict_item_quality().upper()
 
     async def download_resources():
-        log.info("="*60)
-        log.info(f"DOWNLOAD_LYRICS FLAG VALUE: {DOWNLOAD_LYRICS}")
-        log.info("="*60)
         rich_output = RichOutput(ctx.obj.console)
 
         downloader = Downloader(
@@ -349,7 +347,6 @@ def download_callback(
                  # Download lyrics if enabled
                 if DOWNLOAD_LYRICS or CONFIG.lyrics.save:
                     try:
-                        from pathlib import Path
                         log.info(f"Downloading lyrics for: {album.title}")
                         
                         # Determin the path of the folder
@@ -364,10 +361,12 @@ def download_callback(
                             
                             full_album_path = DOWNLOAD_PATH / album_path
                             
-                            ctx.obj.api.get_album_lyrics(
+                            result = download_album_lyrics(
+                                api=ctx.obj.api,
                                 album_id=album.id,
                                 song_dir=full_album_path,
-                                skip_existing=not SKIP_EXISTING
+                                skip_existing=not SKIP_EXISTING,
+                                lyrics_template=CONFIG.lyrics.templates.album
                             )
                             log.info("✓ Lyrics downloaded successfully")
                     except Exception as e:

@@ -24,7 +24,7 @@ debug = false
 
 # if you don't specify the template for a resource
 # then default template will be used.
-default = "{album.artist}/{album.title}/{item.number:02d} - {item.title}"
+default = "{album.artist}/{album.title}/{item.title}"
 
 # track = "tracks/{item.id}"
 # video = "videos/{item.title}"
@@ -38,7 +38,7 @@ default = "{album.artist}/{album.title}/{item.number:02d} - {item.title}"
 # normal - 320 kbps, m4a
 # high - 16 bit, 44.1 kHz, flac
 # max - up to 24 bit, 192 kHz, flac 
-track_quality = "max"
+track_quality = "high"
 
 # sd - 360p
 # hd - 720p
@@ -78,7 +78,7 @@ update_mtime = false
 
 # when enabled, it will write metadata to files that are already downloaded.
 # could be useful when data on Tidal has changed.
-rewrite_metadata = true
+rewrite_metadata = false
 
 
 [metadata]
@@ -86,10 +86,10 @@ rewrite_metadata = true
 enable = true
 
 # embed lyrics in metadata
-embed_lyrics = true
+embed_lyrics = false
 
 # embed track cover in the track file
-cover = true
+cover = false
 
 # embed album review text to track COMMENT metadata field.
 # only works when downloading album
@@ -101,13 +101,12 @@ save = true           # dowload file .lrc
 
 [lyrics.templates]
 album = "{item.number:02d} - {item.title}"
-playlist = "{playlist.index:02d} - {item.title}"
 
 [cover]
 # please don't confuse the cover from metadata with cover as a distinct file.
 
 # save cover to distinct file, default false
-save = true
+save = false
 
 # size of cover, default and max is 1280x1280
 size = 1280
@@ -116,7 +115,11 @@ size = 1280
 # note that playlists max size is 1080x1080
 # (it will be set to proper size automatically)
 # by default allowed is set to empty []
-allowed = ["track","album","playlist"]
+allowed = [
+  # "track",
+  # "album",
+  # "playlist"
+]
 
 
 [cover.templates]
@@ -126,7 +129,7 @@ allowed = ["track","album","playlist"]
 # track = "tracks/{item.id}"
 
 # you can access: {album}
-album = "{album.artist}/{album.title}/{album.title}_cover"
+# album = "albums/{album.artist} - {album.title}"
 
 # you can access: {playlist}
 # playlist = "playlists/{title}"
