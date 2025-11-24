@@ -277,6 +277,7 @@ def download_callback(
             async def download_album(album: Album):
                 offset = 0
                 futures = []
+                album_items_copy = None
 
                 cover: Cover | None = None
                 save_cover = ("album" in CONFIG.cover.allowed) and CONFIG.cover.save
@@ -299,6 +300,7 @@ def download_callback(
                     album_items = ctx.obj.api.get_album_items_credits(
                         album_id=album.id, offset=offset
                     )
+                    album_items_copy = album_items
 
                     for album_item in album_items.items:
                         futures.append(
@@ -342,15 +344,12 @@ def download_callback(
                         / format_template(
                             template=CONFIG.cover.templates.album, album=album
                         )
-                    )
-                
-                 # Download lyrics if enabled
-                if DOWNLOAD_LYRICS or CONFIG.lyrics.save:
+                    )  
+
+                 # Download lyrics using last fetched album_items
+                if DOWNLOAD_LYRICS and album_items_copy:
                     try:
-                        log.info(f"Downloading lyrics for: {album.title}")
-                        
-                        # Determin the path of the folder
-                        first_item = album_items.items[0].item if album_items.items else None
+                        first_item = album_items_copy.items[0].item if album_items_copy.items else None
                         if first_item:
                             album_path = Path(format_template(
                                 template=CONFIG.templates.album,
@@ -361,16 +360,16 @@ def download_callback(
                             
                             full_album_path = DOWNLOAD_PATH / album_path
                             
-                            result = download_album_lyrics(
-                                api=ctx.obj.api,
-                                album_id=album.id,
+                            download_album_lyrics(
+                                get_track_lyrics=ctx.obj.api.get_track_lyrics,
+                                album_items=album_items_copy,
                                 song_dir=full_album_path,
                                 skip_existing=not SKIP_EXISTING,
                                 lyrics_template=CONFIG.lyrics.templates.album
                             )
-                            log.info("✓ Lyrics downloaded successfully")
+                            log.info("✓ Lyrics downloaded")
                     except Exception as e:
-                        log.warning(f"Could not download lyrics: {e}")
+                        log.error(f"Could not download lyrics: {e}")              
 
             # resources should be collected from a distinct function
             # that would yield the resources.

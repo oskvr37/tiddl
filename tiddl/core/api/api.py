@@ -1,7 +1,6 @@
 from typing import Literal, TypeAlias
 
 from requests_cache import DO_NOT_CACHE, EXPIRE_IMMEDIATELY
-from pathlib import Path
 
 from .client import TidalClient
 from .models.base import (
