@@ -44,6 +44,17 @@ class Config(BaseModel):
 
     cover: CoverConfig = CoverConfig()
 
+    class LyricsConfig(BaseModel):
+        save: bool = False  # save file .lrc separete
+        
+        class LyricsTemplatesConfig(BaseModel):
+            album: str = "{item.number:02d} - {item.title}"
+            playlist: str = "{playlist.index:02d} - {item.title}"
+        
+        templates: LyricsTemplatesConfig = LyricsTemplatesConfig()
+
+    lyrics: LyricsConfig = LyricsConfig()
+
     class DownloadConfig(BaseModel):
         track_quality: TRACK_QUALITY_LITERAL = "high"
         video_quality: VIDEO_QUALITY_LITERAL = "fhd"
