@@ -3,6 +3,7 @@ from pathlib import Path
 from logging import getLogger
 
 from tiddl.core.api.models import AlbumItems
+from tiddl.core.api import ApiError
 from tiddl.core.utils.format import format_template
 
 log = getLogger(__name__)
@@ -48,20 +49,25 @@ def download_album_lyrics(
         filename = re.sub(r'[<>:"/\\|?*]', "_", filename)
         lrc_path = song_dir / f"{filename}.lrc"
         
+        # Skip if file exists - BEFORE making any API call
         if skip_existing and lrc_path.exists():
+            log.debug(f"Lyrics file already exists, skipping: {lrc_path.name}")
             continue
         
         try:
             lyrics = get_track_lyrics(track.id)
             
             if not lyrics.subtitles and not lyrics.lyrics:
+                log.debug(f"No lyrics available for track: {track.title}")
                 continue
             
             content = lyrics.subtitles if lyrics.subtitles else lyrics.lyrics
             
             if not content:
+                log.debug(f"Empty lyrics content for track: {track.title}")
                 continue
             
+            # Convert plain lyrics to LRC format if needed
             if not lyrics.subtitles and lyrics.lyrics:
                 lines = []
                 for line in lyrics.lyrics.splitlines():
@@ -73,8 +79,16 @@ def download_album_lyrics(
             with lrc_path.open("w", encoding="utf-8") as f:
                 f.write(content)
             
+            log.debug(f"Downloaded lyrics for: {track.title}")
             lyrics_downloaded = True
             
+        except ApiError as e:
+            # Handle API errors gracefully (404 = no lyrics available)
+            if hasattr(e, 'status') and e.status == 404:
+                log.debug(f"No lyrics available for track: {track.title}")
+            else:
+                log.debug(f"API error downloading lyrics for {track.title}: {e}")
+            continue
         except Exception as e:
             log.debug(f"Could not download lyrics for {track.title}: {e}")
             continue
