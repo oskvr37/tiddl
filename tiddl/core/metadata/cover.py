@@ -35,6 +35,8 @@ class Cover:
 
         log.debug(f"got cover {self.url}")
 
+        self.data = req.content
+
         return req.content
 
     def save_to_directory(self, path: Path):
