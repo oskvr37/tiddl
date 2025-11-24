@@ -95,12 +95,6 @@ cover = false
 # only works when downloading album
 album_review = false
 
-[lyrics]
-#please don't confuse de metadata lyrics with .lrc file that is a stand alone file
-save = true           # dowload file .lrc 
-
-[lyrics.templates]
-album = "{item.number:02d} - {item.title}"
 
 [cover]
 # please don't confuse the cover from metadata with cover as a distinct file.
