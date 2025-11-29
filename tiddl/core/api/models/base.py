@@ -130,10 +130,10 @@ class TrackStream(BaseModel):
     manifestMimeType: Literal["application/dash+xml", "application/vnd.tidal.bts"]
     manifestHash: str
     manifest: str
-    albumReplayGain: float
-    albumPeakAmplitude: float
-    trackReplayGain: float
-    trackPeakAmplitude: float
+    albumReplayGain: Optional[float] = None
+    albumPeakAmplitude: Optional[float] = None
+    trackReplayGain: Optional[float] = None
+    trackPeakAmplitude: Optional[float] = None
     bitDepth: Optional[int] = None
     sampleRate: Optional[int] = None
 
