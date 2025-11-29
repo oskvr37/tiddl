@@ -1,8 +1,30 @@
+import re
 from dataclasses import dataclass
 from datetime import datetime
 
 from tiddl.core.api.models import Track, Video, Album, Playlist
 from tiddl.core.utils.sanitize import sanitize_string
+
+
+def _clean_segment(text: str) -> str:
+    """
+    Clean a single path segment using sanitize_string plus extra rules
+    to keep it safe for Windows / NAS filesystems.
+
+    - Uses sanitize_string for base cleanup.
+    - Collapses multiple dots ("..", "...") into a single dot.
+    - Removes trailing dots and spaces (Windows forbids them).
+    - Collapses multiple spaces into one.
+    - Ensures the segment is never empty (uses "_" as fallback).
+    """
+
+    s = sanitize_string(text)
+    s = re.sub(r"\.{2,}", ".", s)
+    s = s.rstrip(" .")
+    s = re.sub(r"\s{2,}", " ", s)
+    s = s.strip()
+
+    return s or "_"
 
 
 class Explicit:
@@ -177,7 +199,7 @@ def format_template(
     playlist: Playlist | None = None,
     playlist_index: int = 0,
     quality: str = "",
-    with_asterisk_ext=True,
+    with_asterisk_ext: bool = True,
     **extra,
 ) -> str:
     custom_fields = {"now": datetime.now()}
@@ -194,12 +216,14 @@ def format_template(
         | custom_fields
     )
 
-    path: str = "/".join(
-        [
-            sanitize_string(segment.format(**data)).strip()
-            for segment in template.split("/")
-        ]
-    )
+    segments: list[str] = []
+
+    for raw_segment in template.split("/"):
+        formatted = raw_segment.format(**data)
+        cleaned = _clean_segment(formatted)
+        segments.append(cleaned)
+
+    path = "/".join(segments)
 
     if with_asterisk_ext:
         path += ".*"
