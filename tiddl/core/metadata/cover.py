@@ -31,9 +31,10 @@ class Cover:
 
         if req.status_code != 200:
             log.error(f"could not download cover. ({req.status_code}) {self.url}")
+            self.data = b""
             return b""
 
-        log.debug(f"got cover {self.url}")
+        log.debug(f"got cover data of {self.url}")
 
         self.data = req.content
 

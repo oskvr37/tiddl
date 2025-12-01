@@ -193,13 +193,13 @@ def download_callback(
                 date: str = "",
                 artist: str = "",
                 credits: list[AlbumItemsCredits.ItemWithCredits.CreditsEntry] = [],
-                cover_data: bytes | None = None,
+                cover: Cover | None = None,
                 album_review: str = "",
             ) -> None:
                 self.date = date
                 self.artist = artist
                 self.credits = credits
-                self.cover_data = cover_data
+                self.cover = cover
                 self.album_review = album_review
 
         async def handle_resource(resource: TidalResource):
@@ -238,20 +238,21 @@ def download_callback(
                                 log.error(e)
 
                         if (
-                            not track_metadata.cover_data
+                            not track_metadata.cover
                             and item.album.cover
                             and CONFIG.metadata.cover
                         ):
-                            track_metadata.cover_data = Cover(
-                                item.album.cover
-                            )._get_data()
+                            track_metadata.cover = Cover(item.album.cover)
+
+                        if track_metadata.cover and track_metadata.cover.data is None:
+                            track_metadata.cover._get_data()
 
                         add_track_metadata(
                             path=download_path,
                             track=item,
                             lyrics=lyrics_subtitles,
                             album_artist=track_metadata.artist,
-                            cover_data=track_metadata.cover_data,
+                            cover_data=getattr(track_metadata.cover, "data"),
                             date=track_metadata.date,
                             credits_contributors=track_metadata.credits,
                             comment=track_metadata.album_review,
@@ -277,7 +278,6 @@ def download_callback(
 
                 if album.cover and (CONFIG.metadata.cover or save_cover):
                     cover = Cover(album.cover, size=CONFIG.cover.size)
-                    cover._get_data()
 
                 album_review = ""
 
@@ -305,7 +305,7 @@ def download_callback(
                                     quality=get_item_quality(album_item.item),
                                 ),
                                 track_metadata=Metadata(
-                                    cover_data=cover.data if cover else b"",
+                                    cover=cover,
                                     date=str(album.releaseDate),
                                     artist=album.artist.name if album.artist else "",
                                     credits=album_item.credits,
