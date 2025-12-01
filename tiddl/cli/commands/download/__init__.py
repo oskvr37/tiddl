@@ -245,7 +245,7 @@ def download_callback(
                             track_metadata.cover = Cover(item.album.cover)
 
                         if track_metadata.cover and track_metadata.cover.data is None:
-                            track_metadata.cover._get_data()
+                            track_metadata.cover.fetch_data()
 
                         add_track_metadata(
                             path=download_path,
