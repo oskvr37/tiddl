@@ -106,6 +106,25 @@ def add_m4a_metadata(track_path: Path, metadata: Metadata) -> None:
     mutagen.save()
 
 
+def sort_credits_contributors(
+    entries: list[AlbumItemsCredits.ItemWithCredits.CreditsEntry],
+):
+    """
+    Sorts the contributors within each CreditsEntry alphabetically by surname.
+
+    It assumes the surname is the last word in the contributor's name.
+    """
+
+    def get_surname(name: str) -> str:
+        parts = name.split()
+        return parts[-1] if parts else ""
+
+    for entry in entries:
+        entry.contributors.sort(
+            key=lambda contributor: get_surname(contributor.name).lower()
+        )
+
+
 def add_track_metadata(
     path: Path,
     track: Track,
@@ -113,10 +132,17 @@ def add_track_metadata(
     album_artist: str = "",
     lyrics: str = "",
     cover_data: bytes | None = None,
-    credits: list[AlbumItemsCredits.ItemWithCredits.CreditsEntry] | None = None,
+    credits_contributors: (
+        list[AlbumItemsCredits.ItemWithCredits.CreditsEntry] | None
+    ) = None,
     comment: str = "",
 ) -> None:
     """Add FLAC or M4A metadata based on file extension."""
+
+    if credits_contributors is None:
+        credits_contributors = []
+
+    sort_credits_contributors(credits_contributors)
 
     metadata = Metadata(
         title=f"{track.title} ({track.version})" if track.version else track.title,
@@ -131,7 +157,7 @@ def add_track_metadata(
         bpm=str(track.bpm or ""),
         lyrics=lyrics or None,
         cover_data=cover_data,
-        credits=credits or [],
+        credits=credits_contributors,
         comment=comment,
     )
 

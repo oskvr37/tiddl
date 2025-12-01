@@ -253,7 +253,7 @@ def download_callback(
                             album_artist=track_metadata.artist,
                             cover_data=track_metadata.cover_data,
                             date=track_metadata.date,
-                            credits=track_metadata.credits,
+                            credits_contributors=track_metadata.credits,
                             comment=track_metadata.album_review,
                         )
 
