@@ -26,14 +26,15 @@ class Cover:
 
         self.data = None
 
-    def _get_data(self) -> bytes:
+    def fetch_data(self) -> bytes:
         req = requests.get(self.url)
 
         if req.status_code != 200:
             log.error(f"could not download cover. ({req.status_code}) {self.url}")
+            self.data = b""
             return b""
 
-        log.debug(f"got cover {self.url}")
+        log.debug(f"got cover data of {self.url}")
 
         self.data = req.content
 
@@ -47,7 +48,7 @@ class Cover:
             return
 
         if not self.data:
-            self.data = self._get_data()
+            self.data = self.fetch_data()
 
         file.parent.mkdir(parents=True, exist_ok=True)
 
