@@ -252,7 +252,11 @@ def download_callback(
                             track=item,
                             lyrics=lyrics_subtitles,
                             album_artist=track_metadata.artist,
-                            cover_data=getattr(track_metadata.cover, "data"),
+                            cover_data=(
+                                track_metadata.cover.data
+                                if track_metadata.cover
+                                else None
+                            ),
                             date=track_metadata.date,
                             credits_contributors=track_metadata.credits,
                             comment=track_metadata.album_review,
