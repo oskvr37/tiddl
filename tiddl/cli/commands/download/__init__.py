@@ -299,15 +299,26 @@ def download_callback(
                     )
 
                     for album_item in album_items.items:
+                        try:
+                            template = TEMPLATE or CONFIG.templates.album
+                            file_path = format_template(
+                                template=template,
+                                item=album_item.item,
+                                album=album,
+                                quality=get_item_quality(album_item.item),
+                            )
+
+                        except AttributeError as exc:
+                            log.error(f"{exc=}")
+                            ctx.obj.console.print(
+                                f"[red]Wrong Album Template:[/] {exc} ({template=}, {album.id=}, {album_item.item.id=})"
+                            )
+                            continue
+
                         futures.append(
                             handle_item(
                                 item=album_item.item,
-                                file_path=format_template(
-                                    template=TEMPLATE or CONFIG.templates.album,
-                                    item=album_item.item,
-                                    album=album,
-                                    quality=get_item_quality(album_item.item),
-                                ),
+                                file_path=file_path,
                                 track_metadata=Metadata(
                                     cover=cover,
                                     date=str(album.releaseDate),
@@ -563,9 +574,9 @@ def download_callback(
                 try:
                     await handle_resource(r)
                 except ApiError as e:
-                    ctx.obj.console.print(f"[red]API Error:[/] {e} at {r}")
+                    ctx.obj.console.print(f"[red]API Error:[/] {e} ({r})")
                 except Exception as e:
-                    ctx.obj.console.print(f"[red]Error:[/] {e} at {r}")
+                    ctx.obj.console.print(f"[red]Error:[/] {e} ({r})")
 
             await asyncio.gather(*(wrapper(r) for r in ctx.obj.resources))
 

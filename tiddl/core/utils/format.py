@@ -18,13 +18,13 @@ def _clean_segment(text: str) -> str:
     - Ensures the segment is never empty (uses "_" as fallback).
     """
 
-    s = sanitize_string(text)
-    s = re.sub(r"\.{2,}", ".", s)
-    s = s.rstrip(" .")
-    s = re.sub(r"\s{2,}", " ", s)
-    s = s.strip()
+    text = sanitize_string(text)
+    text = re.sub(r"\.{2,}", ".", text)
+    text = text.rstrip(" .")
+    text = re.sub(r"\s{2,}", " ", text)
+    text = text.strip()
 
-    return s or "_"
+    return text or "_"
 
 
 class Explicit:
@@ -202,6 +202,10 @@ def format_template(
     with_asterisk_ext: bool = True,
     **extra,
 ) -> str:
+    """
+    Raises `AttributeError` on invalid template.
+    """
+
     custom_fields = {"now": datetime.now()}
 
     data = (
