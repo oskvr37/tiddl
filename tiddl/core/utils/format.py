@@ -202,6 +202,10 @@ def format_template(
     with_asterisk_ext: bool = True,
     **extra,
 ) -> str:
+    """
+    Raises `AttributeError` on invalid template.
+    """
+
     custom_fields = {"now": datetime.now()}
 
     data = (
