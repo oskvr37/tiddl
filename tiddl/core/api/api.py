@@ -103,7 +103,7 @@ class TidalAPI:
             {"countryCode": self.country_code},
             expire_after=3600,
         )
-
+    
     def get_artist(self, artist_id: ID):
         return self.client.fetch(
             Artist,

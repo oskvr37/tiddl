@@ -25,6 +25,7 @@ from tiddl.cli.utils.resource import TidalResource
 from tiddl.cli.ctx import Context
 from tiddl.cli.commands.auth import refresh
 from tiddl.cli.commands.subcommands import register_subcommands
+from tiddl.core.utils.lyrics import download_album_lyrics
 
 
 from .downloader import Downloader
@@ -118,6 +119,14 @@ def download_callback(
             help="Videos handling: 'none' to exclude, 'allow' to include, 'only' to download videos only.",
         ),
     ] = CONFIG.download.videos_filter,
+    DOWNLOAD_LYRICS: Annotated[
+        bool,
+        typer.Option(
+            "--lyrics",
+            "-l",
+            help="Download lyrics as .lrc files for albums.",
+        ),
+    ] =  CONFIG.lyrics.save,
 ):
     """
     Download Tidal resources.
@@ -276,6 +285,7 @@ def download_callback(
             async def download_album(album: Album):
                 offset = 0
                 futures = []
+                album_items_copy = None
 
                 cover: Cover | None = None
                 save_cover = ("album" in CONFIG.cover.allowed) and CONFIG.cover.save
@@ -297,6 +307,7 @@ def download_callback(
                     album_items = ctx.obj.api.get_album_items_credits(
                         album_id=album.id, offset=offset
                     )
+                    album_items_copy = album_items
 
                     for album_item in album_items.items:
                         try:
@@ -351,7 +362,32 @@ def download_callback(
                         / format_template(
                             template=CONFIG.cover.templates.album, album=album
                         )
-                    )
+                    )  
+
+                 # Download lyrics using last fetched album_items
+                if DOWNLOAD_LYRICS and album_items_copy:
+                    try:
+                        first_item = album_items_copy.items[0].item if album_items_copy.items else None
+                        if first_item:
+                            album_path = Path(format_template(
+                                template=CONFIG.templates.album,
+                                item=first_item,
+                                album=album,
+                                quality=""
+                            )).parent
+                            
+                            full_album_path = DOWNLOAD_PATH / album_path
+                            
+                            download_album_lyrics(
+                                get_track_lyrics=ctx.obj.api.get_track_lyrics,
+                                album_items=album_items_copy,
+                                song_dir=full_album_path,
+                                skip_existing=not SKIP_EXISTING,
+                                lyrics_template=CONFIG.lyrics.templates.album
+                            )
+                            log.info("✓ Lyrics downloaded")
+                    except Exception as e:
+                        log.error(f"Could not download lyrics: {e}")              
 
             # resources should be collected from a distinct function
             # that would yield the resources.
