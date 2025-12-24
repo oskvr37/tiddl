@@ -35,7 +35,7 @@ class Explicit:
         if self.value is None:
             return ""
 
-        features = format_spec.split(",")
+        features = format_spec.split("; ")
 
         def get_base():
             for feature in features:

@@ -9,7 +9,7 @@ def add_video_metadata(path: Path, video: Video):
     mutagen.update(
         {
             "title": video.title,
-            "artist": ";".join([artist.name.strip() for artist in video.artists]),
+            "artist": "; ".join([artist.name.strip() for artist in video.artists]),
         }
     )
 
