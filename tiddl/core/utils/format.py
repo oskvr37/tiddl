@@ -149,9 +149,9 @@ def generate_template_data(
             isrc=isrc,
             quality=quality,
             artist=item.artist.name if item.artist else "",
-            artists=", ".join(main_artists),
-            features=", ".join(featured_artists),
-            artists_with_features=", ".join(main_artists + featured_artists),
+            artists="; ".join(main_artists),
+            features="; ".join(featured_artists),
+            artists_with_features="; ".join(main_artists + featured_artists),
             explicit=Explicit(getattr(item, "explicit", None)),
             dolby=dolby,
         )
