@@ -150,7 +150,7 @@ def add_track_metadata(
         disc_number=str(track.volumeNumber),
         copyright=track.copyright,
         album_artist=album_artist,
-        artists=", ".join(sorted(a.name.strip() for a in track.artists)),
+        artists="; ".join(sorted(a.name.strip() for a in track.artists)),
         album_title=track.album.title,
         date=date,
         isrc=track.isrc,
