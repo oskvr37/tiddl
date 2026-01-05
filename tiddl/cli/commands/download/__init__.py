@@ -118,6 +118,14 @@ def download_callback(
             help="Videos handling: 'none' to exclude, 'allow' to include, 'only' to download videos only.",
         ),
     ] = CONFIG.download.videos_filter,
+    SKIP_ERRORS: Annotated[
+        bool,
+        typer.Option(
+            "--skip-errors",
+            "-se",
+            help="Skip unavailable items and continue downloading the rest.",
+        ),
+    ] = False,
 ):
     """
     Download Tidal resources.
@@ -510,27 +518,42 @@ def download_callback(
                             playlist_index += 1
                             template = TEMPLATE or CONFIG.templates.playlist
 
-                            if "{album" in template:
-                                album = ctx.obj.api.get_album(
-                                    playlist_item.item.album.id
-                                )
-                            else:
-                                album = None
+                            try:
+                                if "{album" in template:
+                                    album = ctx.obj.api.get_album(
+                                        playlist_item.item.album.id
+                                    )
+                                else:
+                                    album = None
 
-                            futures.append(
-                                handle_item(
-                                    item=playlist_item.item,
-                                    file_path=format_template(
-                                        template=template,
+                                futures.append(
+                                    handle_item(
                                         item=playlist_item.item,
-                                        album=album,
-                                        playlist=playlist,
-                                        playlist_index=playlist_index,
-                                        quality=get_item_quality(playlist_item.item),
-                                    ),
-                                    track_metadata=Metadata(),
+                                        file_path=format_template(
+                                            template=template,
+                                            item=playlist_item.item,
+                                            album=album,
+                                            playlist=playlist,
+                                            playlist_index=playlist_index,
+                                            quality=get_item_quality(playlist_item.item),
+                                        ),
+                                        track_metadata=Metadata(),
+                                    )
                                 )
-                            )
+                            except ApiError as e:
+                                item = playlist_item.item
+                                track_info = f"Track: {getattr(item, 'title', 'Unknown')} (ID: {item.id})"
+                                if hasattr(item, 'album') and item.album:
+                                    track_info += f", Album ID: {item.album.id}"
+                                ctx.obj.console.print(f"[red]API Error:[/] {e} ({track_info})")
+                                if not SKIP_ERRORS:
+                                    raise
+                            except Exception as e:
+                                item = playlist_item.item
+                                track_info = f"Track: {getattr(item, 'title', 'Unknown')} (ID: {item.id})"
+                                ctx.obj.console.print(f"[red]Error:[/] {e} ({track_info})")
+                                if not SKIP_ERRORS:
+                                    raise
 
                         offset += playlist_items.limit
                         if offset >= playlist_items.totalNumberOfItems:
@@ -575,8 +598,12 @@ def download_callback(
                     await handle_resource(r)
                 except ApiError as e:
                     ctx.obj.console.print(f"[red]API Error:[/] {e} ({r})")
+                    if not SKIP_ERRORS:
+                        raise
                 except Exception as e:
                     ctx.obj.console.print(f"[red]Error:[/] {e} ({r})")
+                    if not SKIP_ERRORS:
+                        raise
 
             await asyncio.gather(*(wrapper(r) for r in ctx.obj.resources))
 
