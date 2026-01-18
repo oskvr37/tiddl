@@ -83,13 +83,15 @@ Run `tiddl download` to see available download options.
 
 ### Error Handling
 
-When downloading playlists or large collections, some items may be unavailable (e.g., removed from Tidal, region-locked). Use the `--skip-errors` flag to automatically skip unavailable items and continue downloading the rest:
+By default, tiddl stops when encountering unavailable items in collections such as playlists, albums, artists, or mixes (e.g., removed or region-locked tracks).
+
+Use `--skip-errors` to automatically skip these items and continue downloading:
 
 ```bash
 tiddl download url <url> --skip-errors
 ```
 
-Without this flag, tiddl will stop on the first error. With `--skip-errors`, unavailable items are logged with detailed information (track name, IDs) and skipped.
+Skipped items are logged with track/album name and IDs for reference.
 
 ### Quality
 
