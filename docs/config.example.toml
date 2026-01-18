@@ -86,7 +86,7 @@ rewrite_metadata = false
 enable = true
 
 # embed lyrics in metadata
-embed_lyrics = false
+lyrics = false
 
 # embed track cover in the track file
 cover = false
