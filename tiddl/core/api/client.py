@@ -1,16 +1,15 @@
 import json
 from logging import getLogger
 from pathlib import Path
-from typing import Any, Type, TypeVar, Callable, Optional
+from time import sleep
+from typing import Any, Callable, Optional, Type, TypeVar
 
 from pydantic import BaseModel
-from time import sleep
-
 from requests.exceptions import JSONDecodeError
 from requests_cache import (
+    NEVER_EXPIRE,
     CachedSession,
     StrOrPath,
-    NEVER_EXPIRE,
 )
 
 from .exceptions import ApiError
@@ -71,6 +70,7 @@ class TidalClient:
         params: dict[str, Any] = {},
         expire_after: int = NEVER_EXPIRE,
         _attempt: int = 1,
+        pre_validate: Optional[Callable[[dict], dict]] = None,
     ) -> T:
         """
         Fetch data from the API endpoint
@@ -103,7 +103,9 @@ class TidalClient:
             data = res.json()
         except JSONDecodeError as e:
             if _attempt >= MAX_RETRIES:
-                log.error(f"JSON decode failed after {MAX_RETRIES} attempts: {e}")
+                log.error(
+                    f"JSON decode failed after {MAX_RETRIES} attempts: {e}"
+                )
                 raise ApiError(
                     status=res.status_code,
                     subStatus="0",
@@ -119,6 +121,7 @@ class TidalClient:
                 params=params,
                 expire_after=expire_after,
                 _attempt=_attempt + 1,
+                pre_validate=pre_validate,
             )
 
         if self.debug_path:
@@ -140,5 +143,8 @@ class TidalClient:
         if res.status_code != 200:
             log.error(f"{endpoint=}, {params=}, {data=}")
             raise ApiError(**data)
+
+        if pre_validate:
+            data = pre_validate(data)
 
         return model.model_validate(data)

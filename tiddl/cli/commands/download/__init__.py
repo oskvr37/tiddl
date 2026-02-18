@@ -125,7 +125,23 @@ def download_callback(
             "-se",
             help="Skip unavailable items and continue downloading the rest.",
         ),
-    ] = False,
+    ] = CONFIG.download.skip_errors,
+    DISABLE_LIVE: Annotated[
+        bool,
+        typer.Option(
+            "--disable-live",
+            "-dl",
+            help="Disable Rich Live display, useful for debugging with breakpoint().",
+        ),
+    ] = CONFIG.download.disable_live,
+    SKIP_UNAVAILABLE_TRACKS: Annotated[
+        bool,
+        typer.Option(
+            "--skip-unavailable-tracks",
+            "-sut",
+            help="Skip tracks that are unavailable (no ISRC) instead of attempting to download them.",
+        ),
+    ] = CONFIG.download.skip_unavailable_tracks,
 ):
     """
     Download Tidal resources.
@@ -434,7 +450,7 @@ def download_callback(
                     futures = []
 
                     while True:
-                        mix_items = ctx.obj.api.get_mix_items(resource.id, offset=0)
+                        mix_items = ctx.obj.api.get_mix_items(resource.id, offset=0, skip_unavailable_tracks=SKIP_UNAVAILABLE_TRACKS)
 
                         for mix_item in mix_items.items:
                             template = TEMPLATE or CONFIG.templates.mix
@@ -586,7 +602,7 @@ def download_callback(
 
                     while True:
                         playlist_items = ctx.obj.api.get_playlist_items(
-                            playlist_uuid=resource.id, offset=offset
+                            playlist_uuid=resource.id, offset=offset, skip_unavailable_tracks=SKIP_UNAVAILABLE_TRACKS
                         )
 
                         for playlist_item in playlist_items.items:

@@ -1,6 +1,9 @@
+from logging import getLogger
 from typing import Literal, TypeAlias
 
 from requests_cache import DO_NOT_CACHE, EXPIRE_IMMEDIATELY
+
+log = getLogger(__name__)
 
 from .client import TidalClient
 from .models.base import (
@@ -59,6 +62,28 @@ class TidalAPI:
         self.client = client
         self.user_id = user_id
         self.country_code = country_code
+
+    @staticmethod
+    def _filter_unavailable_items(data: dict) -> dict:
+        """Remove items whose track has no ISRC (unavailable/region-locked tracks).
+
+        Short-circuits if nothing is filtered to avoid unnecessary allocation.
+        """
+        items = data["items"]
+        available = []
+        for i in items:
+            track = i.get("item")
+            if track and track.get("isrc") is not None:
+                available.append(i)
+            else:
+                log.warning(
+                    f"Skipping unavailable track: '{track['title']}' (ID: {track['id']})"
+                    if track
+                    else "Skipping item with missing track data"
+                )
+        if len(available) == len(items):
+            return data
+        return {**data, "items": available}
 
     def get_album(self, album_id: ID):
         return self.client.fetch(
@@ -153,6 +178,7 @@ class TidalAPI:
         mix_id: str,
         limit: int = Limits.MIX_ITEMS,
         offset: int = 0,
+        skip_unavailable_tracks: bool = False,
     ):
         return self.client.fetch(
             MixItems,
@@ -163,6 +189,7 @@ class TidalAPI:
                 "offset": offset,
             },
             expire_after=3600,
+            pre_validate=self._filter_unavailable_items if skip_unavailable_tracks else None,
         )
 
     def get_favorites(self):
@@ -182,7 +209,11 @@ class TidalAPI:
         )
 
     def get_playlist_items(
-        self, playlist_uuid: str, limit: int = Limits.PLAYLIST_ITEMS, offset: int = 0
+        self,
+        playlist_uuid: str,
+        limit: int = Limits.PLAYLIST_ITEMS,
+        offset: int = 0,
+        skip_unavailable_tracks: bool = False,
     ):
         return self.client.fetch(
             PlaylistItems,
@@ -193,6 +224,7 @@ class TidalAPI:
                 "offset": offset,
             },
             expire_after=EXPIRE_IMMEDIATELY,
+            pre_validate=self._filter_unavailable_items if skip_unavailable_tracks else None,
         )
 
     def get_search(self, query: str):
