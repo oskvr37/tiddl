@@ -55,6 +55,7 @@ class Config(BaseModel):
         videos_filter: VIDEOS_FILTER_LITERAL = "none"
         update_mtime: bool = False
         rewrite_metadata: bool = False
+        disable_live: bool = False
 
         def model_post_init(self, __context):
             # set scan path to download path when download path is non default

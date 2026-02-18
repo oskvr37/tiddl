@@ -2,6 +2,7 @@ import os
 import typer
 import asyncio
 
+from contextlib import nullcontext
 from pathlib import Path
 from logging import getLogger
 from rich.live import Live
@@ -126,6 +127,14 @@ def download_callback(
             help="Skip unavailable items and continue downloading the rest.",
         ),
     ] = False,
+    DISABLE_LIVE: Annotated[
+        bool,
+        typer.Option(
+            "--disable-live",
+            "-dl",
+            help="Disable Rich Live display, useful for debugging with breakpoint().",
+        ),
+    ] = CONFIG.download.disable_live,
 ):
     """
     Download Tidal resources.
@@ -661,12 +670,18 @@ def download_callback(
                             )
                         )
 
-        with Live(
-            rich_output.group,
-            refresh_per_second=10,
-            console=ctx.obj.console,
-            transient=True,
-        ):
+        live_context = (
+            nullcontext()
+            if DISABLE_LIVE
+            else Live(
+                rich_output.group,
+                refresh_per_second=10,
+                console=ctx.obj.console,
+                transient=True,
+            )
+        )
+
+        with live_context:
 
             async def wrapper(r: TidalResource):
                 try:
