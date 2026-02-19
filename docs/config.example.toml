@@ -89,15 +89,16 @@ disable_live = false
 # skipped items are logged with their name and ID for reference.
 skip_errors = false
 
-# skip tracks that are entirely unavailable on Tidal (no ISRC assigned).
+# skip tracks that are entirely unavailable on Tidal (no ISRC assigned or not stream-ready).
 # these tracks appear in playlists/mixes as placeholders and can never be downloaded.
-# when disabled and such a track is encountered, tiddl will stop with a validation error.
+# note: tracks with streamReady=false are always skipped with a warning regardless of this flag.
+# enabling this flag filters them out earlier, at fetch time, which is more efficient.
 # note: this works at fetch time, before skip_errors can act, so both flags serve different purposes.
 skip_unavailable_tracks = false
 
 # tip: enabling both skip_errors and skip_unavailable_tracks together is the recommended setup
 # for downloading playlists or large collections. it makes tiddl download everything it can
-# and skip anything it can't, covering all known failure points.
+# and skip anything it can't.
 
 
 [metadata]

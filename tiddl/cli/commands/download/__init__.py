@@ -455,34 +455,39 @@ def download_callback(
                         for mix_item in mix_items.items:
                             template = TEMPLATE or CONFIG.templates.mix
 
+                            item = mix_item.item
+                            if not getattr(item, "streamReady", True):
+                                ctx.obj.console.print(
+                                    f"[yellow]Skipping unavailable track:[/] {getattr(item, 'title', 'Unknown')} (ID: {item.id})"
+                                )
+                                continue
+
                             try:
                                 if "{album" in template:
                                     album = ctx.obj.api.get_album(
-                                        mix_item.item.album.id
+                                        item.album.id
                                     )
                                 else:
                                     album = None
 
                                 futures.append(
                                     handle_item(
-                                        item=mix_item.item,
+                                        item=item,
                                         file_path=format_template(
                                             template=template,
-                                            item=mix_item.item,
+                                            item=item,
                                             album=album,
                                             mix_id=resource.id,
-                                            quality=get_item_quality(mix_item.item),
+                                            quality=get_item_quality(item),
                                         ),
                                     )
                                 )
                             except ApiError as e:
-                                item = mix_item.item
                                 track_info = f"Track: {getattr(item, 'title', 'Unknown')} (ID: {item.id})"
                                 ctx.obj.console.print(f"[red]API Error:[/] {e} ({track_info})")
                                 if not SKIP_ERRORS:
                                     raise
                             except Exception as e:
-                                item = mix_item.item
                                 track_info = f"Track: {getattr(item, 'title', 'Unknown')} (ID: {item.id})"
                                 ctx.obj.console.print(f"[red]Error:[/] {e} ({track_info})")
                                 if not SKIP_ERRORS:
@@ -609,30 +614,36 @@ def download_callback(
                             playlist_index += 1
                             template = TEMPLATE or CONFIG.templates.playlist
 
+                            item = playlist_item.item
+                            if not getattr(item, "streamReady", True):
+                                ctx.obj.console.print(
+                                    f"[yellow]Skipping unavailable track:[/] {getattr(item, 'title', 'Unknown')} (ID: {item.id})"
+                                )
+                                continue
+
                             try:
                                 if "{album" in template:
                                     album = ctx.obj.api.get_album(
-                                        playlist_item.item.album.id
+                                        item.album.id
                                     )
                                 else:
                                     album = None
 
                                 futures.append(
                                     handle_item(
-                                        item=playlist_item.item,
+                                        item=item,
                                         file_path=format_template(
                                             template=template,
-                                            item=playlist_item.item,
+                                            item=item,
                                             album=album,
                                             playlist=playlist,
                                             playlist_index=playlist_index,
-                                            quality=get_item_quality(playlist_item.item),
+                                            quality=get_item_quality(item),
                                         ),
                                         track_metadata=Metadata(),
                                     )
                                 )
                             except ApiError as e:
-                                item = playlist_item.item
                                 track_info = f"Track: {getattr(item, 'title', 'Unknown')} (ID: {item.id})"
                                 if hasattr(item, 'album') and item.album:
                                     track_info += f", Album ID: {item.album.id}"
@@ -640,7 +651,6 @@ def download_callback(
                                 if not SKIP_ERRORS:
                                     raise
                             except Exception as e:
-                                item = playlist_item.item
                                 track_info = f"Track: {getattr(item, 'title', 'Unknown')} (ID: {item.id})"
                                 ctx.obj.console.print(f"[red]Error:[/] {e} ({track_info})")
                                 if not SKIP_ERRORS:

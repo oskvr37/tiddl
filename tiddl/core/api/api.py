@@ -65,7 +65,7 @@ class TidalAPI:
 
     @staticmethod
     def _filter_unavailable_items(data: dict) -> dict:
-        """Remove items whose track has no ISRC (unavailable/region-locked tracks).
+        """Remove items whose track has no ISRC or is not stream-ready.
 
         Short-circuits if nothing is filtered to avoid unnecessary allocation.
         """
@@ -73,7 +73,7 @@ class TidalAPI:
         available = []
         for i in items:
             track = i.get("item")
-            if track and track.get("isrc") is not None:
+            if track and track.get("isrc") is not None and track.get("streamReady", True):
                 available.append(i)
             else:
                 log.warning(
