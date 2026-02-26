@@ -414,7 +414,7 @@ def download_callback(
                     video = ctx.obj.api.get_video(resource.id)
                     template = TEMPLATE or CONFIG.templates.video
 
-                    if "{album" in template and video.album:
+                    if "{album" in template and video.album and video.album.id is not None:
                         album = ctx.obj.api.get_album(video.album.id)
                     else:
                         album = None
