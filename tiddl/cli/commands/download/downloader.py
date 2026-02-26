@@ -173,7 +173,7 @@ class Downloader:
             with NamedTemporaryFile(
                 "wb", delete=False, dir=download_path.parent
             ) as tmp:
-                async with aiohttp.ClientSession() as session:
+                async with aiohttp.ClientSession(trust_env=True) as session:
                     async with aiofiles.open(tmp.name, "wb") as f:
                         for url in urls:
                             async with session.get(url) as resp:
