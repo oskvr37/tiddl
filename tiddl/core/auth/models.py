@@ -17,12 +17,12 @@ class AuthResponse(BaseModel):
         postalcode: Optional[str]
         usState: Optional[str]
         phoneNumber: Optional[str]
-        birthday: Optional[int]
+        birthday: Optional[int | str]
         channelId: int
         parentId: int
         acceptedEULA: bool
-        created: int
-        updated: int
+        created: int | str
+        updated: int | str
         facebookUid: int
         appleUid: Optional[str]
         googleUid: Optional[str]
