@@ -160,25 +160,7 @@ TIDDL_AUTH=<CLIENT_ID>;<CLIENT_SECRET>
 
 # Development
 
-Clone the repository
-
-```bash
-git clone https://github.com/oskvr37/tiddl
-cd tiddl
-```
-
-You should create virtual environment and activate it
-
-```bash
-uv venv
-source .venv/Scripts/activate
-```
-
-Install package with `--editable` flag
-
-```bash
-uv pip install -e .
-```
+See [CONTRIBUTING.md](/CONTRIBUTING.md) for development setup and debugging tips.
 
 # Resources
 

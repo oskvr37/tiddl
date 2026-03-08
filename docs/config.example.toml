@@ -80,6 +80,10 @@ update_mtime = false
 # could be useful when data on Tidal has changed.
 rewrite_metadata = false
 
+# disable Rich Live display during downloads.
+# useful for debugging with breakpoint() as Live overlaps with debugger output.
+disable_live = false
+
 
 [metadata]
 # embed metadata in files
