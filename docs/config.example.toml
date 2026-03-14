@@ -80,6 +80,10 @@ update_mtime = false
 # could be useful when data on Tidal has changed.
 rewrite_metadata = false
 
+# if this option is set to true, an .lrc file will be created alongside the 
+# track file with the same name
+write_lrc_file = false
+
 
 [metadata]
 # embed metadata in files
