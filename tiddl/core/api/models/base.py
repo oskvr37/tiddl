@@ -151,8 +151,18 @@ class VideoStream(BaseModel):
 
 class Search(BaseModel):
 
+    # It seemed like the search API doesn't return `artist.type`, so this is used instead of resources.Artist for search results to avoid validation errors.
+    # FIXME: This can be discarded if we are okay with making the `type` field optional in resources.Artist, but I don't think it's my decision to make lol
+    class Artist(BaseModel):  # search-specific, fewer required fields
+        id: int
+        name: str
+        type: Optional[Literal["MAIN", "FEATURED"]] = None
+        url: Optional[str] = None
+        picture: Optional[str] = None
+        popularity: Optional[int] = None
+
     class Artists(Items):
-        items: List[Artist]
+        items: List[Search.Artist]  # ← uses the inner model, not resources.Artist
 
     class Albums(Items):
         items: List[Album]
@@ -167,7 +177,7 @@ class Search(BaseModel):
         items: List[Video]
 
     class TopHit(BaseModel):
-        value: Union[Artist, Track, Playlist, Album]
+        value: Union[Search.Artist, Track, Playlist, Album]
         type: Literal["ARTISTS", "TRACKS", "PLAYLISTS", "ALBUMS"]
 
     artists: Artists
