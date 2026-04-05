@@ -16,7 +16,7 @@ class Metadata:
     disc_number: str
     copyright: str | None
     album_artist: str
-    artists: str
+    artists: list[str]
     album_title: str
     date: str
     isrc: str
@@ -93,7 +93,7 @@ def add_m4a_metadata(track_path: Path, metadata: Metadata) -> None:
             "discnumber": metadata.disc_number,
             "album": metadata.album_title,
             "albumartist": metadata.album_artist,
-            "artist": metadata.artists,
+            "artist": ["; ".join(metadata.artists)],
             "date": metadata.date,
             "copyright": metadata.copyright or "",
             "comment": metadata.comment,
@@ -150,7 +150,7 @@ def add_track_metadata(
         disc_number=str(track.volumeNumber),
         copyright=track.copyright,
         album_artist=album_artist,
-        artists="; ".join(sorted(a.name.strip() for a in track.artists)),
+        artists=sorted(a.name.strip() for a in track.artists),
         album_title=track.album.title,
         date=date,
         isrc=track.isrc,
