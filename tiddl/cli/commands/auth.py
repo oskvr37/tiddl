@@ -36,11 +36,10 @@ def login(
 
     uri = f"https://{device_auth.verificationUriComplete}"
 
-    if NO_BROWSER:
-        console.print(f"Please go to the following URL to authenticate:\n[cyan]{uri}")
-    else:
+    if not NO_BROWSER:
         typer.launch(uri)
-        console.print(f"Go to '{uri}' and complete authentication!")
+    
+    console.print(f"Go to '{uri}' and complete authentication!")
 
     auth_end_at = time() + device_auth.expiresIn
 
