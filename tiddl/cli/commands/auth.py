@@ -17,7 +17,14 @@ auth_command = typer.Typer(
 
 # TODO add context and load auth data from ctx
 @auth_command.command(help="Login with your Tidal account.")
-def login():
+def login(
+    NO_BROWSER: Annotated[
+        bool,
+        typer.Option(
+            "--no-browser", "-n", help="Do not open browser."
+        ),
+    ] = False,
+):
     loaded_auth_data = load_auth_data()
 
     if loaded_auth_data.token:
@@ -28,8 +35,10 @@ def login():
     device_auth = auth_api.get_device_auth()
 
     uri = f"https://{device_auth.verificationUriComplete}"
-    typer.launch(uri)
 
+    if not NO_BROWSER:
+        typer.launch(uri)
+    
     console.print(f"Go to '{uri}' and complete authentication!")
 
     auth_end_at = time() + device_auth.expiresIn
