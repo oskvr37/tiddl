@@ -33,8 +33,8 @@ def callback(
     """
     tiddl - download tidal tracks \u266b
 
-    [link=https://github.com/oskvr37/tiddl]github[/link]
-    [link=https://buymeacoffee.com/oskvr][yellow]buy me a coffee[/link] \u2764
+    [link=https://github.com/oskvr37/tiddl]github (https://github.com/oskvr37/tiddl)[/link]
+    [link=https://buymeacoffee.com/oskvr][yellow]buy me a coffee (https://buymeacoffee.com/oskvr)[/link]
     """
 
     log.debug(f"{ctx.params=}")
@@ -54,5 +54,5 @@ def callback(
     if not is_ffmpeg_installed:
         ctx.obj.console.print(
             "[yellow]WARNING ffmpeg is not installed, tiddl might not work properly, "
-            + "[link=https://github.com/oskvr37/tiddl/blob/main/README.md#installation]read README.md[/]"
+            + "[link=https://github.com/oskvr37/tiddl/blob/main/README.md#installation]read README.md (https://github.com/oskvr37/tiddl/blob/main/README.md#installation)[/]"
         )
