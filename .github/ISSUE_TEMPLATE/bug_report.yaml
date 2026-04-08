@@ -44,6 +44,12 @@ body:
         - Linux
         - MacOS
   - type: textarea
+    id: tiddl
+    attributes:
+      label: tiddl version
+      description: tiddl version you have installed
+      render: shell
+  - type: textarea
     id: logs
     attributes:
       label: Relevant log output
