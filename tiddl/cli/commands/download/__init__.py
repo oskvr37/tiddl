@@ -386,6 +386,12 @@ def download_callback(
                     track = ctx.obj.api.get_track(resource.id)
                     album = ctx.obj.api.get_album(track.album.id)
 
+                    cover: Cover | None = None
+                    save_cover = ("track" in CONFIG.cover.allowed) and CONFIG.cover.save
+
+                    if album.cover and (CONFIG.metadata.cover or save_cover):
+                        cover = Cover(album.cover, size=CONFIG.cover.size)
+
                     await handle_item(
                         item=track,
                         file_path=format_template(
@@ -393,6 +399,12 @@ def download_callback(
                             item=track,
                             album=album,
                             quality=get_item_quality(track),
+                        ),
+                        track_metadata=Metadata(
+                            cover=cover,
+                            date=str(album.releaseDate),
+                            artist=album.artist.name if album.artist else "",
+                            # credits are missing
                         ),
                     )
 
