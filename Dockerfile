@@ -17,4 +17,4 @@ RUN python -c "import tomllib; f=open('pyproject.toml','rb'); print('\n'.join(to
 # -- Layer 3 - Uncached layer (regenerates anytime a new build is released) --
 COPY . .
 RUN pip install --no-deps .
-RUN rm -rf *
+RUN rm -rf -- ..?* .[!.]* *
