@@ -46,7 +46,7 @@ def search(
         top_hit_type = top_hit.type.rstrip("S").lower()  # "ARTISTS" -> "artist"
         if top_hit_type in resource_types:
             if pick_top_hit:
-                ctx.obj.resources.append(TidalResource.from_string(f"{top_hit.type}/{_display_id(top_hit.value)}"))
+                ctx.obj.resources.append(TidalResource.from_string(f"{top_hit_type}/{_display_id(top_hit.value)}"))
                 ctx.obj.console.print(f"[green]Automatically added top hit: {top_hit.type.title()} '{_display_name(top_hit.value)}'")
                 return
             else:
