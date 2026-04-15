@@ -3,7 +3,7 @@ from typing_extensions import Annotated
 
 from tiddl.cli.ctx import Context
 from tiddl.cli.utils.resource import TidalResource
-from tiddl.core.api.models.base import Search
+from tiddl.core.api.models.base import Search, SearchArtist
 from tiddl.core.api.models.resources import Track, Album, Playlist
 
 from rich.panel import Panel
@@ -89,7 +89,7 @@ def search(
 
 def _display_name(item) -> str:
     # if searchArtist, else if track/album, else playlist
-    if isinstance(item, Search.Artist):
+    if isinstance(item, SearchArtist):
         return item.name
     elif isinstance(item, (Track, Album)):
         # Try to format as "Main Artist - Title" 
