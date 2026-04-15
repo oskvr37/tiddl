@@ -4,7 +4,6 @@ from pydantic import BaseModel
 
 from .resources import (
     Album,
-    Artist,
     Playlist,
     StreamVideoQuality,
     Track,
@@ -162,7 +161,7 @@ class Search(BaseModel):
         popularity: Optional[int] = None
 
     class Artists(Items):
-        items: List[Search.Artist]  # ← uses the inner model, not resources.Artist
+        items: List["Search.Artist"]  # ← uses the inner model, not resources.Artist
 
     class Albums(Items):
         items: List[Album]
@@ -177,7 +176,7 @@ class Search(BaseModel):
         items: List[Video]
 
     class TopHit(BaseModel):
-        value: Union[Search.Artist, Track, Playlist, Album]
+        value: Union["Search.Artist", Track, Playlist, Album]
         type: Literal["ARTISTS", "TRACKS", "PLAYLISTS", "ALBUMS"]
 
     artists: Artists

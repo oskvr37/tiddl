@@ -37,7 +37,7 @@ def search(
 
     By default, it searches for all resource types. You can specify which resource types to search for using the `--type` option.
     """
-    results: Search = ctx.obj.api.get_search(query=query);
+    results: Search = ctx.obj.api.get_search(query=query)
     table = _prepare_table(query)
     
     results_to_display = []
@@ -51,7 +51,7 @@ def search(
                 return
             else:
                 results_to_display.append(
-                    (f"Top Hit: {top_hit_type.title()}", _display_name(top_hit.value), _display_id(top_hit.value))
+                    (top_hit_type.title(), _display_name(top_hit.value), _display_id(top_hit.value))
                 )
     
     type_to_items = {
@@ -71,7 +71,7 @@ def search(
     
     for i, (resource_type, name, id) in enumerate(results_to_display, start=1):
         table.add_row(str(i), resource_type, name, id)
-    panel = Panel(table, title=f"Search Results", highlight=True, expand=True)
+    panel = Panel(table, title="Search Results", highlight=True, expand=True)
     ctx.obj.console.print(panel)
     selection = ctx.obj.console.input("[bold green]Enter the number of the resource to add to your list (comma-separated for multiple, q/empty = quit): ")
     selected_numbers = [s.strip() for s in selection.split(",")]
