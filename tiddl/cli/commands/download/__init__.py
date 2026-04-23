@@ -135,6 +135,18 @@ def download_callback(
 
     log.debug(f"{ctx.params=}")
 
+    def write_lrc_file(track: Track, lyrics: str, file_path: Path):
+        if not CONFIG.download.write_lrc_file or not lyrics.strip():
+            return
+
+        lrc_file_path = file_path.with_suffix(".lrc")
+
+        try:
+            with open(lrc_file_path, "w", encoding="utf-8") as f:
+                f.write(lyrics)
+        except Exception as e:
+            log.error(f"Failed to write LRC file for track {track.title} (ID: {track.id}): {e}")
+
     def save_m3u(
         resource_type: VALID_M3U_RESOURCE_LITERAL,
         filename: str,
@@ -237,7 +249,7 @@ def download_callback(
                     if isinstance(item, Track):
                         lyrics_subtitles = ""
 
-                        if CONFIG.metadata.lyrics:
+                        if CONFIG.metadata.lyrics or CONFIG.download.write_lrc_file:
                             try:
                                 lyrics_subtitles = ctx.obj.api.get_track_lyrics(
                                     item.id
@@ -254,6 +266,8 @@ def download_callback(
 
                         if track_metadata.cover and track_metadata.cover.data is None:
                             track_metadata.cover.fetch_data()
+
+                        write_lrc_file(item, lyrics_subtitles, download_path)
 
                         add_track_metadata(
                             path=download_path,
