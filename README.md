@@ -83,15 +83,34 @@ Run `tiddl download` to see available download options.
 
 ### Error Handling
 
-By default, tiddl stops when encountering unavailable items in collections such as playlists, albums, artists, or mixes (e.g., removed or region-locked tracks).
+By default, tiddl stops when it encounters a problem with an item in a collection (playlist, album, artist, mix). Two flags control this behaviour, each covering a different failure point:
 
-Use `--skip-errors` to automatically skip these items and continue downloading:
+#### `--skip-errors` / `skip_errors`
+
+Skips items that fail **during download** — for example a track whose album has been deleted, or a region-locked stream — and continues with the rest of the collection.
 
 ```bash
 tiddl download url <url> --skip-errors
 ```
 
-Skipped items are logged with track/album name and IDs for reference.
+#### `--skip-unavailable-tracks` / `skip_unavailable_tracks`
+
+Skips tracks that are **entirely unavailable on Tidal** (no ISRC assigned). These appear in playlists and mixes as placeholder entries and can never be downloaded. This filter runs at fetch time, before `--skip-errors` would have a chance to act, so both flags are needed for full coverage.
+
+```bash
+tiddl download url <url> --skip-unavailable-tracks
+```
+
+> [!TIP]
+> For most users, enabling **both flags together** is the recommended setup. It makes tiddl download everything it can and silently skip anything it can't, covering all known failure points. Without both, a single unavailable track can stop an entire playlist download.
+
+Both flags are logged so you can always see which tracks were skipped and why. Set them permanently in `config.toml` so you never have to pass them on the command line:
+
+```toml
+[download]
+skip_errors = true
+skip_unavailable_tracks = true
+```
 
 ### Quality
 
