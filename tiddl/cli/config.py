@@ -56,6 +56,7 @@ class Config(BaseModel):
         update_mtime: bool = False
         rewrite_metadata: bool = False
         write_lrc_file: bool = False
+        match_existing_path_case: bool = False
 
         def model_post_init(self, __context):
             # set scan path to download path when download path is non default

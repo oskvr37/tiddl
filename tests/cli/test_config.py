@@ -38,6 +38,20 @@ def test_valid_config_file(tmp_path: Path):
     assert cfg.download.threads_count == 8
 
 
+def test_match_existing_path_case_config(tmp_path: Path):
+    cfg_file = write_config(
+        tmp_path,
+        """
+        [download]
+        match_existing_path_case = true
+        """,
+    )
+
+    cfg = load_config_file(cfg_file)
+
+    assert cfg.download.match_existing_path_case is True
+
+
 def test_invalid_type_raises(tmp_path: Path):
     cfg_file = write_config(
         tmp_path,

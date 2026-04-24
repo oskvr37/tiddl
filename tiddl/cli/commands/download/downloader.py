@@ -9,6 +9,7 @@ import aiohttp
 
 from tiddl.cli.config import VIDEOS_FILTER_LITERAL
 from tiddl.cli.utils.download import get_existing_track_filename
+from tiddl.cli.utils.path import resolve_existing_path_case
 from tiddl.core.api import ApiError, TidalAPI
 from tiddl.core.api.models import StreamVideoQuality, Track, TrackQuality, Video
 from tiddl.core.utils import parse_track_stream, parse_video_stream
@@ -50,6 +51,7 @@ class Downloader:
     skip_existing: bool
     download_path: Path
     scan_path: Path
+    match_existing_path_case: bool
 
     def __init__(
         self,
@@ -62,6 +64,7 @@ class Downloader:
         skip_existing: bool,
         download_path: Path,
         scan_path: Path,
+        match_existing_path_case: bool = False,
     ) -> None:
         self.api = tidal_api
         self.rich_output = rich_output
@@ -72,6 +75,13 @@ class Downloader:
         self.skip_existing = skip_existing
         self.download_path = download_path
         self.scan_path = scan_path
+        self.match_existing_path_case = match_existing_path_case
+
+    def get_path(self, base_path: Path, relative_path: Path) -> Path:
+        if self.match_existing_path_case:
+            return resolve_existing_path_case(base_path, relative_path)
+
+        return base_path / relative_path
 
     async def download(
         self, item: Track | Video, file_path: Path
@@ -92,15 +102,15 @@ class Downloader:
             filename = get_existing_track_filename(
                 item.audioQuality, self.track_quality, file_path
             )
+            existing_file_path = self.get_path(self.scan_path, filename)
             vibrant_color = item.album.vibrantColor
 
         elif isinstance(item, Video):
             filename = file_path.with_suffix(".mp4")
+            existing_file_path = self.get_path(self.scan_path, filename)
             vibrant_color = item.vibrantColor
 
         vibrant_color = vibrant_color or "gray"
-
-        existing_file_path = self.scan_path / filename
 
         log.debug(f"{file_path=}, {filename=}, {existing_file_path=}")
 
@@ -144,7 +154,7 @@ class Downloader:
                 urls, actual_ext = parse_track_stream(stream)
                 if filename.suffix.lower() != actual_ext:
                     filename = filename.with_suffix(actual_ext)
-                download_path = self.download_path / filename
+                download_path = self.get_path(self.download_path, filename)
 
                 quality = track_qualities_color[stream.audioQuality]
 
@@ -160,7 +170,9 @@ class Downloader:
                 )
 
                 urls, ext = parse_video_stream(stream), ".ts"
-                download_path = (self.download_path / filename).with_suffix(ext)
+                download_path = self.get_path(
+                    self.download_path, filename
+                ).with_suffix(ext)
                 quality = video_qualities_color[stream.videoQuality]
 
             task_id = self.rich_output.download_start(

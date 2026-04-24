@@ -205,6 +205,7 @@ def download_callback(
             skip_existing=not SKIP_EXISTING,
             download_path=DOWNLOAD_PATH,
             scan_path=SCAN_PATH,
+            match_existing_path_case=CONFIG.download.match_existing_path_case,
         )
 
         class Metadata:

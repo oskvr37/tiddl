@@ -84,6 +84,13 @@ rewrite_metadata = false
 # track file with the same name
 write_lrc_file = false
 
+# when enabled, existing path components are reused even if Tidal returns
+# different casing. This avoids creating separate paths on case-sensitive
+# filesystems that would conflict later when moved to case-insensitive systems.
+# For example, if "FooBar" already exists and the API returns "foobar",
+# downloads will continue under "FooBar".
+match_existing_path_case = false
+
 
 [metadata]
 # embed metadata in files
