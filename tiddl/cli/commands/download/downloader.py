@@ -141,7 +141,9 @@ class Downloader:
                     )
                     return None, False
 
-                urls, _ = parse_track_stream(stream)
+                urls, actual_ext = parse_track_stream(stream)
+                if filename.suffix.lower() != actual_ext:
+                    filename = filename.with_suffix(actual_ext)
                 download_path = self.download_path / filename
 
                 quality = track_qualities_color[stream.audioQuality]
