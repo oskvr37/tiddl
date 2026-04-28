@@ -36,6 +36,8 @@ class Metadata:
 
 
 def add_flac_metadata(track_path: Path, metadata: Metadata) -> None:
+    log.debug(f"{track_path=}")
+
     mutagen = MutagenFLAC(track_path)
 
     if metadata.cover_data:
