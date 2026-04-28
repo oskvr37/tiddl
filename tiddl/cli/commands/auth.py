@@ -79,16 +79,35 @@ def login(
 
 
 @auth_command.command(help="Logout and remove token from app.")
-def logout():
-    loaded_auth_data = load_auth_data()
+def logout(
+    force: Annotated[
+        bool,
+        typer.Option(
+            "--force",
+            "-f",
+            help="Clears local auth data even if the server request fails.",
+        ),
+    ] = False,
+):
+    auth_data = load_auth_data()
 
-    if loaded_auth_data.token:
-        auth_api = AuthAPI()
-        auth_api.logout_token(loaded_auth_data.token)
+    # If there's no token, we are effectively already logged out locally
+    if not auth_data.token:
+        console.print("[yellow]No active session found.")
+        return
 
-    save_auth_data(AuthData())
+    try:
+        AuthAPI().logout_token(auth_data.token)
+        success = True
+    except Exception as error:
+        console.print(f"[bold red]Logout request failed: {error}")
+        success = False
 
-    console.print("[bold green]Logged out!")
+    if success or force:
+        save_auth_data(AuthData())
+        console.print("[bold green]Logged out successfully!")
+    else:
+        console.print("[bold yellow]Local session retained. Use --force to override.")
 
 
 @auth_command.command(help="Refreshes your token in app.")
