@@ -18,8 +18,8 @@ search_subcommand = typer.Typer()
 )
 def search(
     ctx: Context,
-    QUERY: Annotated[str, typer.Argument()],
-    RESOURCE_TYPES: Annotated[
+    query: Annotated[str, typer.Argument()],
+    resource_types: Annotated[
         list[str],
         typer.Option(
             "-t",
@@ -28,7 +28,7 @@ def search(
             help="Narrow resource types, usage: -t track -t album etc. Available resources: track, video, album, playlist, artist.",
         ),
     ] = ["track", "video", "album", "playlist", "artist"],
-    NUMBER_TOP_RESULTS: Annotated[
+    number_top_results: Annotated[
         int,
         typer.Option(
             "--num-top",
@@ -36,7 +36,7 @@ def search(
             help="Number of top results to display per resource type.",
         ),
     ] = 3,
-    PICK_TOP_HIT: Annotated[
+    pick_top_hit: Annotated[
         bool,
         typer.Option(
             "--top",
@@ -51,15 +51,15 @@ def search(
     By default, it searches for all resource types. You can specify which resource types to search for using the `--type` option.
     """
 
-    results: Search = ctx.obj.api.get_search(query=QUERY)
-    table = _prepare_table(QUERY)
+    results: Search = ctx.obj.api.get_search(query=query)
+    table = _prepare_table(query)
 
     results_to_display = []
     if results.topHit is not None:
         top_hit = results.topHit
         top_hit_type = top_hit.type.rstrip("S").lower()  # "ARTISTS" -> "artist"
-        if top_hit_type in RESOURCE_TYPES:
-            if PICK_TOP_HIT:
+        if top_hit_type in resource_types:
+            if pick_top_hit:
                 ctx.obj.resources.append(
                     TidalResource.from_string(
                         f"{top_hit_type}/{_display_id(top_hit.value)}"
@@ -87,10 +87,10 @@ def search(
     }
 
     for resource_type, items in type_to_items.items():
-        if resource_type in RESOURCE_TYPES:
+        if resource_type in resource_types:
             results_to_display.extend(
                 (resource_type.title(), _display_name(item), _display_id(item))
-                for item in items[:NUMBER_TOP_RESULTS]
+                for item in items[:number_top_results]
             )
 
     for i, (resource_type, name, id) in enumerate(results_to_display, start=1):
@@ -106,7 +106,7 @@ def search(
     for num in selected_numbers:
         if num.lower() == "q":
             return
-        
+
         if not num.isdigit() or int(num) < 1 or int(num) > len(results_to_display):
             ctx.obj.console.print(f"[red]Invalid selection: {num}")
             continue
