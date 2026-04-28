@@ -151,17 +151,13 @@ class Downloader:
                     )
                     return None, False
 
-                urls, actual_ext = parse_track_stream(stream)
-                if filename.suffix.lower() != actual_ext:
-                    filename = filename.with_suffix(actual_ext)
+                urls, _ = parse_track_stream(stream)
                 download_path = self.get_path(self.download_path, filename)
 
                 quality = track_qualities_color[stream.audioQuality]
 
                 if stream.audioQuality in ["HI_RES_LOSSLESS", "LOSSLESS"]:
                     quality = f"{quality} {stream.bitDepth}-bit, {(stream.sampleRate or 0) / 1000:.1f} kHz"
-
-                if stream.audioQuality == "HI_RES_LOSSLESS":
                     should_extract_flac = True
 
             elif isinstance(item, Video):
