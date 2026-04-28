@@ -1,3 +1,6 @@
+import logging
+import unicodedata
+
 from dataclasses import dataclass, field
 from pathlib import Path
 from datetime import datetime
@@ -7,6 +10,9 @@ from mutagen.easymp4 import EasyMP4 as MutagenEasyMP4
 from mutagen.mp4 import MP4 as MutagenMP4, MP4Cover
 
 from tiddl.core.api.models import AlbumItemsCredits, Track
+
+
+log = logging.getLogger("tiddl")
 
 
 @dataclass(slots=True)
@@ -125,6 +131,38 @@ def sort_credits_contributors(
         )
 
 
+def normalize_credits_keys(
+    entries: list[AlbumItemsCredits.ItemWithCredits.CreditsEntry],
+) -> None:
+    valid_entries: list[AlbumItemsCredits.ItemWithCredits.CreditsEntry] = []
+
+    for entry in entries:
+        try:
+            raw_key = entry.type.upper()
+
+            safe_key = (
+                # NFKD splits accented chars (É → E + combining accent),
+                unicodedata.normalize("NFKD", raw_key)
+                .encode("ascii", "ignore")
+                .decode("ascii")
+                .replace("=", "")
+                .strip()
+            )
+
+            print(raw_key, safe_key)
+
+            entry.type = safe_key
+
+            if safe_key:
+                valid_entries.append(entry)
+
+        except Exception as e:
+            log.debug(f"Skipping invalid credit tag '{entry.type}': {e}")
+
+    # replace the contents of the original list
+    entries[:] = valid_entries
+
+
 def add_track_metadata(
     path: Path,
     track: Track,
@@ -143,6 +181,7 @@ def add_track_metadata(
         credits_contributors = []
 
     sort_credits_contributors(credits_contributors)
+    normalize_credits_keys(credits_contributors)
 
     metadata = Metadata(
         title=f"{track.title} ({track.version})" if track.version else track.title,
