@@ -149,8 +149,6 @@ def normalize_credits_keys(
                 .strip()
             )
 
-            print(raw_key, safe_key)
-
             entry.type = safe_key
 
             if safe_key:
