@@ -11,7 +11,7 @@ def get_auth_credentials() -> tuple[str, str]:
 
     client_id, client_secret = (
         base64.b64decode(
-            "ZlgySnhkbW50WldLMGl4VDsxTm45QWZEQWp4cmdKRkpiS05XTGVBeUtHVkdtSU51WFBQTEhWWEF2eEFnPQ=="
+            "NE4zbjZRMXg5NUxMNUs3cDtvS09YZkpXMzcxY1g2eGFaMFB5aGdHTkJkTkxsQlpkNEFLS1lvdWdNamlrPQ=="
         )
         .decode()
         .split(";")
