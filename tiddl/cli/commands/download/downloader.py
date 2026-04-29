@@ -198,6 +198,11 @@ class Downloader:
             shutil.move(tmp.name, download_path)
 
             try:
+                download_path.chmod(0o644)
+            except OSError:
+                pass
+
+            try:
                 if isinstance(item, Track) and should_extract_flac:
                     download_path = extract_flac(download_path)
                 elif isinstance(item, Video):
