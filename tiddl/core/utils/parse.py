@@ -80,7 +80,7 @@ def parse_track_stream(track_stream: TrackStream) -> tuple[list[str], str]:
         file_extension = ".flac"
         if track_stream.audioQuality == "HI_RES_LOSSLESS":
             file_extension = ".m4a"
-    elif codecs.startswith("mp4"):
+    elif codecs.startswith("mp4") or codecs == "eac3":
         file_extension = ".m4a"
     else:
         raise ValueError(f"Unknown codecs `{codecs}` (trackId {track_stream.trackId}")

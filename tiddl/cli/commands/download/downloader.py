@@ -159,6 +159,8 @@ class Downloader:
                 if stream.audioQuality in ["HI_RES_LOSSLESS", "LOSSLESS"]:
                     quality = f"{quality} {stream.bitDepth}-bit, {(stream.sampleRate or 0) / 1000:.1f} kHz"
                     should_extract_flac = True
+                else:
+                    download_path = download_path.with_suffix(".m4a")
 
             elif isinstance(item, Video):
                 stream = self.api.get_video_stream(

@@ -124,7 +124,7 @@ class Favorites(BaseModel):
 class TrackStream(BaseModel):
     trackId: int
     assetPresentation: Literal["FULL"]
-    audioMode: Literal["STEREO"]
+    audioMode: Literal["STEREO", "DOLBY_ATMOS"]
     audioQuality: TrackQuality
     manifestMimeType: Literal["application/dash+xml", "application/vnd.tidal.bts"]
     manifestHash: str
