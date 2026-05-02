@@ -165,7 +165,7 @@ def generate_template_data(
             artists=", ".join(
                 a.name for a in (album.artists or []) if a.type == "MAIN"
             ),
-            date=album.releaseDate,
+            date=album.releaseDate or datetime.min,
             explicit=Explicit(getattr(album, "explicit", None)),
             master=UserFormat(
                 "HIRES_LOSSLESS" in album.mediaMetadata.tags and quality == "MAX"
