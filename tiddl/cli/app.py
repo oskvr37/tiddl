@@ -31,7 +31,7 @@ def callback(
     ] = CONFIG.debug,
 ):
     """
-    tiddl - download tidal tracks \u266b
+    tiddl v3.4.0a6 - download tidal tracks \u266b
 
     [link=https://github.com/oskvr37/tiddl]github (https://github.com/oskvr37/tiddl)[/link]
     [link=https://buymeacoffee.com/oskvr][yellow]buy me a coffee (https://buymeacoffee.com/oskvr)[/link]
