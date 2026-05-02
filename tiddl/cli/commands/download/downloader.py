@@ -144,6 +144,7 @@ class Downloader:
                     stream = self.api.get_track_stream(
                         track_id=item.id, quality=self.track_quality
                     )
+                    log.debug(f"{stream.trackId=}, {stream.audioQuality}, {stream.audioMode}")
                 except ApiError as e:
                     log.error(f"{item.id=} {e=}")
                     self.rich_output.console.print(
