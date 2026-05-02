@@ -1,9 +1,12 @@
 import base64
+import logging
 from os import environ
 from requests import request
 from typing import Any, TypeAlias
 
 from tiddl.core.auth.exceptions import AuthClientError
+
+log = logging.getLogger("tiddl")
 
 
 def get_auth_credentials() -> tuple[str, str]:
@@ -21,6 +24,8 @@ def get_auth_credentials() -> tuple[str, str]:
 
     if env_value:
         client_id, client_secret = env_value.split(";")
+
+    log.debug(f"{client_id=}, {bool(env_value)=}")
 
     return client_id, client_secret
 
