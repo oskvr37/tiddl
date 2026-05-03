@@ -50,6 +50,10 @@ class Cover:
         if not self.data:
             self.data = self.fetch_data()
 
+            if not self.data:
+                log.debug(f"cover data is empty ({file})")
+                return
+
         file.parent.mkdir(parents=True, exist_ok=True)
 
         try:
