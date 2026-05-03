@@ -679,7 +679,7 @@ def download_callback(
                         and playlist.squareImage
                     ):
                         Cover(
-                            playlist.squareImage, size=max(CONFIG.cover.size, 1080)
+                            playlist.squareImage, size=min(CONFIG.cover.size, 1080)
                         ).save_to_directory(
                             path=DOWNLOAD_PATH
                             / format_template(
