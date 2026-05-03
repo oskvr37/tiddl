@@ -137,7 +137,7 @@ allowed = [
 # album = "albums/{album.artist} - {album.title}"
 
 # you can access: {playlist}
-# playlist = "playlists/{title}"
+# playlist = "playlists/{playlist.title}"
 
 
 [m3u]
