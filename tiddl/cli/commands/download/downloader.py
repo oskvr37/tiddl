@@ -155,13 +155,16 @@ class Downloader:
                 urls, _ = parse_track_stream(stream)
                 download_path = self.get_path(self.download_path, filename)
 
-                quality = track_qualities_color[stream.audioQuality]
+                quality_string = track_qualities_color[stream.audioQuality]
 
-                if stream.audioQuality in ["HI_RES_LOSSLESS", "LOSSLESS"]:
-                    quality = f"{quality} {stream.bitDepth}-bit, {(stream.sampleRate or 0) / 1000:.1f} kHz"
+                if stream.audioQuality in ["HI_RES_LOSSLESS", "LOSSLESS"] and stream.audioMode == "STEREO":
+                    quality_string = f"{quality_string} {stream.bitDepth}-bit, {(stream.sampleRate or 0) / 1000:.1f} kHz"
                     should_extract_flac = True
                 else:
                     download_path = download_path.with_suffix(".m4a")
+                    
+                    if stream.audioMode == "DOLBY_ATMOS":
+                        quality_string = "[blue]Dolby Atmos[/]"
 
             elif isinstance(item, Video):
                 stream = self.api.get_video_stream(
@@ -172,10 +175,10 @@ class Downloader:
                 download_path = self.get_path(
                     self.download_path, filename
                 ).with_suffix(ext)
-                quality = video_qualities_color[stream.videoQuality]
+                quality_string = video_qualities_color[stream.videoQuality]
 
             task_id = self.rich_output.download_start(
-                f"[{vibrant_color}]{item.title} {quality}"
+                f"[{vibrant_color}]{item.title} {quality_string}"
             )
 
             download_path.parent.mkdir(exist_ok=True, parents=True)
