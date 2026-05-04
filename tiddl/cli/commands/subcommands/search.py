@@ -4,11 +4,10 @@ from typing_extensions import Annotated
 from tiddl.cli.ctx import Context
 from tiddl.cli.utils.resource import TidalResource
 from tiddl.core.api.models.base import Search, SearchArtist
-from tiddl.core.api.models.resources import Track, Album, Playlist
+from tiddl.core.api.models.resources import Track, Album, Playlist, Video
 
 from rich.panel import Panel
 from rich.table import Table
-
 
 search_subcommand = typer.Typer()
 
@@ -120,15 +119,16 @@ def search(
 
 
 def _display_name(item) -> str:
-    # if searchArtist, else if track/album, else playlist
     if isinstance(item, SearchArtist):
         return item.name
+    elif isinstance(item, Video):
+        return f"{item.artist or item.artists[0].name or ""} - {item.title}"
     elif isinstance(item, (Track, Album)):
-        # Try to format as "Main Artist - Title"
-        main_artist = item.artists[0] if item.artists else None
-        return f"{main_artist.name} - {item.title}" if main_artist else f"{item.title}"
-    else:  # Playlist
+        return f"{item.artist or item.artists[0].name or ""} - {item.title} [blue][{', '.join(item.audioModes)}][/]"
+    elif isinstance(item, (Playlist)):
         return item.title
+    else:
+        raise ValueError("Unknown item type")
 
 
 def _display_id(item) -> str:
