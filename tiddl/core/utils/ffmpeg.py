@@ -8,7 +8,14 @@ class FFmpegError(RuntimeError):
 
 def run(cmd: list[str]) -> subprocess.CompletedProcess:
     """Run a process; raise `FFmpegError` on non-zero exit with stderr."""
-    r = subprocess.run(cmd, capture_output=True, text=True)
+    # Force UTF-8 encoding to prevent UnicodeDecodeError on Windows
+    r = subprocess.run(
+        cmd, 
+        capture_output=True, 
+        text=True, 
+        encoding="utf-8", 
+        errors="replace"  # Added as a safety net
+    )
     if r.returncode != 0:
         raise FFmpegError(
             f"{cmd[0]} failed (rc={r.returncode}): {r.stderr.strip()}"
