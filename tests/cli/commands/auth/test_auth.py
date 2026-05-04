@@ -124,28 +124,73 @@ def test_logout_with_token(monkeypatch: pytest.MonkeyPatch):
         mock_api_instance.logout_token.assert_called_once_with("token")
         mock_save.assert_called_once_with(AuthData())
 
-        assert "Logged out!" in result.stdout
+        assert "Logged out successfully!\n" in result.stdout
         assert result.exit_code == 0
 
 
 def test_logout_no_token(monkeypatch: pytest.MonkeyPatch):
-    """Should only clear auth data."""
+    """Should do nothing."""
 
     monkeypatch.setattr(
         "tiddl.cli.commands.auth.load_auth_data", lambda: AuthData(token=None)
+    )
+
+    with (patch("tiddl.cli.commands.auth.AuthAPI") as MockAuthAPI,):
+        result = runner.invoke(auth_command, ["logout"])
+
+        MockAuthAPI.assert_not_called()
+
+        assert "No active session found." in result.stdout
+        assert result.exit_code == 0
+
+
+def test_logout_force(monkeypatch: pytest.MonkeyPatch):
+    """Should remove local token even when the API request raises an error."""
+
+    # 1. Mock existing session
+    monkeypatch.setattr(
+        "tiddl.cli.commands.auth.load_auth_data", lambda: AuthData(token="fake-token")
     )
 
     with (
         patch("tiddl.cli.commands.auth.AuthAPI") as MockAuthAPI,
         patch("tiddl.cli.commands.auth.save_auth_data") as mock_save,
     ):
+        # 2. Configure the mock to RAISE an exception
+        mock_api_instance = MockAuthAPI.return_value
+        mock_api_instance.logout_token.side_effect = Exception("Server Down")
+
+        # 3. Invoke with --force
+        result = runner.invoke(auth_command, ["logout", "--force"])
+
+        # 4. Assertions
+        # API was still called
+        mock_api_instance.logout_token.assert_called_once_with("fake-token")
+
+        # Local data was still wiped (this is the core of --force)
+        mock_save.assert_called_once_with(AuthData())
+
+        # Check for your specific "force" success message
+        assert "Token removed!" in result.stdout
+        assert result.exit_code == 0
+
+
+def test_logout_fails_without_force(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(
+        "tiddl.cli.commands.auth.load_auth_data", lambda: AuthData(token="token")
+    )
+
+    with (
+        patch("tiddl.cli.commands.auth.AuthAPI") as MockAuthAPI,
+        patch("tiddl.cli.commands.auth.save_auth_data") as mock_save,
+    ):
+
+        MockAuthAPI.return_value.logout_token.side_effect = Exception("Error")
+
         result = runner.invoke(auth_command, ["logout"])
 
-        mock_save.assert_called_once_with(AuthData())
-        MockAuthAPI.assert_not_called()
-
-        assert "Logged out!" in result.stdout
-        assert result.exit_code == 0
+        assert "Local session retained" in result.stdout
+        mock_save.assert_not_called()  # Ensure data wasn't wiped
 
 
 def test_refresh_not_logged_in(monkeypatch: pytest.MonkeyPatch):

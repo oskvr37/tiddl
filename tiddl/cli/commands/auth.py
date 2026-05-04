@@ -38,7 +38,7 @@ def login(
 
     if not NO_BROWSER:
         typer.launch(uri)
-    
+
     console.print(f"Go to '{uri}' and complete authentication!")
 
     auth_end_at = time() + device_auth.expiresIn
@@ -97,17 +97,23 @@ def logout(
         return
 
     try:
-        AuthAPI().logout_token(auth_data.token)
+        api = AuthAPI()
+        api.logout_token(auth_data.token)
         success = True
     except Exception as error:
         console.print(f"[bold red]Logout request failed: {error}")
         success = False
 
-    if success or force:
-        save_auth_data(AuthData())
-        console.print("[bold green]Logged out successfully!")
-    else:
+    if not (success or force):
         console.print("[bold yellow]Local session retained. Use --force to override.")
+        return
+
+    save_auth_data(AuthData())
+
+    if success:
+        console.print("[bold green]Logged out successfully!")
+    elif force:
+        console.print("[bold green]Token removed!")
 
 
 @auth_command.command(help="Refreshes your token in app.")
