@@ -217,6 +217,7 @@ def download_callback(
             download_path=DOWNLOAD_PATH,
             scan_path=SCAN_PATH,
             match_existing_path_case=CONFIG.download.match_existing_path_case,
+            dolby_atmos_filter=DOLBY_ATMOS_FILTER,
         )
 
         class Metadata:
