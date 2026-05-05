@@ -91,6 +91,13 @@ write_lrc_file = false
 # downloads will continue under "FooBar".
 match_existing_path_case = false
 
+# Dolby Atmos filter
+# none - download only STEREO tracks
+# only - download only DOLBY_ATMOS tracks
+# allow - download both
+# (both versions won't be downloaded at a time, it depends on what Tidal returns)
+atmos_filter = "none"
+
 
 [metadata]
 # embed metadata in files
