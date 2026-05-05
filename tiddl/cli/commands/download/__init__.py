@@ -145,7 +145,9 @@ def download_callback(
             with open(lrc_file_path, "w", encoding="utf-8") as f:
                 f.write(lyrics)
         except Exception as e:
-            log.error(f"Failed to write LRC file for track {track.title} (ID: {track.id}): {e}")
+            log.error(
+                f"Failed to write LRC file for track {track.title} (ID: {track.id}): {e}"
+            )
 
     def save_m3u(
         resource_type: VALID_M3U_RESOURCE_LITERAL,
@@ -346,7 +348,9 @@ def download_callback(
                                     track_metadata=Metadata(
                                         cover=cover,
                                         date=str(album.releaseDate),
-                                        artist=album.artist.name if album.artist else "",
+                                        artist=(
+                                            album.artist.name if album.artist else ""
+                                        ),
                                         credits=album_item.credits,
                                         album_review=album_review,
                                     ),
@@ -355,9 +359,11 @@ def download_callback(
                         except ApiError as e:
                             item = album_item.item
                             track_info = f"Track: {getattr(item, 'title', 'Unknown')} (ID: {item.id})"
-                            if hasattr(item, 'album') and item.album:
+                            if hasattr(item, "album") and item.album:
                                 track_info += f", Album ID: {item.album.id}"
-                            ctx.obj.console.print(f"[red]API Error:[/] {e} ({track_info})")
+                            ctx.obj.console.print(
+                                f"[red]API Error:[/] {e} ({track_info})"
+                            )
                             if RAISE_ERRORS:
                                 raise
                         except Exception as e:
@@ -441,7 +447,11 @@ def download_callback(
                     video = ctx.obj.api.get_video(resource.id)
                     template = TEMPLATE or CONFIG.templates.video
 
-                    if "{album" in template and video.album and video.album.id is not None:
+                    if (
+                        "{album" in template
+                        and video.album
+                        and video.album.id is not None
+                    ):
                         album = ctx.obj.api.get_album(video.album.id)
                     else:
                         album = None
@@ -489,13 +499,17 @@ def download_callback(
                             except ApiError as e:
                                 item = mix_item.item
                                 track_info = f"Track: {getattr(item, 'title', 'Unknown')} (ID: {item.id})"
-                                ctx.obj.console.print(f"[red]API Error:[/] {e} ({track_info})")
+                                ctx.obj.console.print(
+                                    f"[red]API Error:[/] {e} ({track_info})"
+                                )
                                 if RAISE_ERRORS:
                                     raise
                             except Exception as e:
                                 item = mix_item.item
                                 track_info = f"Track: {getattr(item, 'title', 'Unknown')} (ID: {item.id})"
-                                ctx.obj.console.print(f"[red]Error:[/] {e} ({track_info})")
+                                ctx.obj.console.print(
+                                    f"[red]Error:[/] {e} ({track_info})"
+                                )
                                 if RAISE_ERRORS:
                                     raise
 
@@ -526,11 +540,15 @@ def download_callback(
                         try:
                             await download_album(album)
                         except ApiError as e:
-                            ctx.obj.console.print(f"[red]API Error:[/] {e} (Album: {album.title}, ID: {album.id})")
+                            ctx.obj.console.print(
+                                f"[red]API Error:[/] {e} (Album: {album.title}, ID: {album.id})"
+                            )
                             if RAISE_ERRORS:
                                 raise
                         except Exception as e:
-                            ctx.obj.console.print(f"[red]Error:[/] {e} (Album: {album.title}, ID: {album.id})")
+                            ctx.obj.console.print(
+                                f"[red]Error:[/] {e} (Album: {album.title}, ID: {album.id})"
+                            )
                             if RAISE_ERRORS:
                                 raise
 
@@ -580,11 +598,15 @@ def download_callback(
                                         )
                                     )
                                 except ApiError as e:
-                                    ctx.obj.console.print(f"[red]API Error:[/] {e} (Video: {video.title}, ID: {video.id})")
+                                    ctx.obj.console.print(
+                                        f"[red]API Error:[/] {e} (Video: {video.title}, ID: {video.id})"
+                                    )
                                     if RAISE_ERRORS:
                                         raise
                                 except Exception as e:
-                                    ctx.obj.console.print(f"[red]Error:[/] {e} (Video: {video.title}, ID: {video.id})")
+                                    ctx.obj.console.print(
+                                        f"[red]Error:[/] {e} (Video: {video.title}, ID: {video.id})"
+                                    )
                                     if RAISE_ERRORS:
                                         raise
 
@@ -637,7 +659,9 @@ def download_callback(
                                             album=album,
                                             playlist=playlist,
                                             playlist_index=playlist_index,
-                                            quality=get_item_quality(playlist_item.item),
+                                            quality=get_item_quality(
+                                                playlist_item.item
+                                            ),
                                         ),
                                         track_metadata=Metadata(),
                                     )
@@ -645,15 +669,19 @@ def download_callback(
                             except ApiError as e:
                                 item = playlist_item.item
                                 track_info = f"Track: {getattr(item, 'title', 'Unknown')} (ID: {item.id})"
-                                if hasattr(item, 'album') and item.album:
+                                if hasattr(item, "album") and item.album:
                                     track_info += f", Album ID: {item.album.id}"
-                                ctx.obj.console.print(f"[red]API Error:[/] {e} ({track_info})")
+                                ctx.obj.console.print(
+                                    f"[red]API Error:[/] {e} ({track_info})"
+                                )
                                 if RAISE_ERRORS:
                                     raise
                             except Exception as e:
                                 item = playlist_item.item
                                 track_info = f"Track: {getattr(item, 'title', 'Unknown')} (ID: {item.id})"
-                                ctx.obj.console.print(f"[red]Error:[/] {e} ({track_info})")
+                                ctx.obj.console.print(
+                                    f"[red]Error:[/] {e} ({track_info})"
+                                )
                                 if RAISE_ERRORS:
                                     raise
 

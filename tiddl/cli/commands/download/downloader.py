@@ -144,7 +144,9 @@ class Downloader:
                     stream = self.api.get_track_stream(
                         track_id=item.id, quality=self.track_quality
                     )
-                    log.debug(f"{stream.trackId=}, {stream.audioQuality}, {stream.audioMode}")
+                    log.debug(
+                        f"{stream.trackId=}, {stream.audioQuality}, {stream.audioMode}"
+                    )
                 except ApiError as e:
                     log.error(f"{item.id=} {e=}")
                     self.rich_output.console.print(
@@ -157,12 +159,15 @@ class Downloader:
 
                 quality_string = track_qualities_color[stream.audioQuality]
 
-                if stream.audioQuality in ["HI_RES_LOSSLESS", "LOSSLESS"] and stream.audioMode == "STEREO":
+                if (
+                    stream.audioQuality in ["HI_RES_LOSSLESS", "LOSSLESS"]
+                    and stream.audioMode == "STEREO"
+                ):
                     quality_string = f"{quality_string} {stream.bitDepth}-bit, {(stream.sampleRate or 0) / 1000:.1f} kHz"
                     should_extract_flac = True
                 else:
                     download_path = download_path.with_suffix(".m4a")
-                    
+
                     if stream.audioMode == "DOLBY_ATMOS":
                         quality_string = "[blue]Dolby Atmos[/]"
 
@@ -172,9 +177,9 @@ class Downloader:
                 )
 
                 urls, ext = parse_video_stream(stream), ".ts"
-                download_path = self.get_path(
-                    self.download_path, filename
-                ).with_suffix(ext)
+                download_path = self.get_path(self.download_path, filename).with_suffix(
+                    ext
+                )
                 quality_string = video_qualities_color[stream.videoQuality]
 
             task_id = self.rich_output.download_start(
