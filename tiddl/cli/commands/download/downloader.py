@@ -7,7 +7,7 @@ from tempfile import NamedTemporaryFile
 import aiofiles
 import aiohttp
 
-from tiddl.cli.config import VIDEOS_FILTER_LITERAL
+from tiddl.cli.config import VIDEOS_FILTER_LITERAL, ATMOS_FILTER_LITERAL
 from tiddl.cli.utils.download import get_existing_track_filename
 from tiddl.cli.utils.path import resolve_existing_path_case
 from tiddl.core.api import ApiError, TidalAPI
@@ -52,6 +52,7 @@ class Downloader:
     download_path: Path
     scan_path: Path
     match_existing_path_case: bool
+    dolby_atmos_filter: ATMOS_FILTER_LITERAL
 
     def __init__(
         self,
@@ -65,6 +66,7 @@ class Downloader:
         download_path: Path,
         scan_path: Path,
         match_existing_path_case: bool = False,
+        dolby_atmos_filter: ATMOS_FILTER_LITERAL = "none",
     ) -> None:
         self.api = tidal_api
         self.rich_output = rich_output
@@ -76,6 +78,7 @@ class Downloader:
         self.download_path = download_path
         self.scan_path = scan_path
         self.match_existing_path_case = match_existing_path_case
+        self.dolby_atmos_filter = dolby_atmos_filter
 
     def get_path(self, base_path: Path, relative_path: Path) -> Path:
         if self.match_existing_path_case:
@@ -144,9 +147,23 @@ class Downloader:
                     stream = self.api.get_track_stream(
                         track_id=item.id, quality=self.track_quality
                     )
+
                     log.debug(
-                        f"{stream.trackId=}, {stream.audioQuality}, {stream.audioMode}"
+                        f"{stream.trackId=}, {stream.audioQuality=}, {stream.audioMode=}"
                     )
+
+                    if (
+                        self.dolby_atmos_filter == "none"
+                        and stream.audioMode == "DOLBY_ATMOS"
+                    ) or (
+                        self.dolby_atmos_filter == "only"
+                        and stream.audioMode == "STEREO"
+                    ):
+                        self.rich_output.console.print(
+                            f"[blue]Skipping[/] [gray]{item.title}[/] [blue]due to Dolby Atmos filter[/] {self.dolby_atmos_filter}"
+                        )
+                        return None, False
+
                 except ApiError as e:
                     log.error(f"{item.id=} {e=}")
                     self.rich_output.console.print(
