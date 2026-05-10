@@ -24,8 +24,8 @@ class AuthResponse(BaseModel):
         created: int | str
         updated: int | str
         facebookUid: Optional[int] = None
-        appleUid: Optional[str]
-        googleUid: Optional[str]
+        appleUid: Optional[str] = None
+        googleUid: Optional[str] = None
         accountLinkCreated: bool
         emailVerified: bool
         newUser: bool
