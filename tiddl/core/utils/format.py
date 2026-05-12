@@ -112,6 +112,7 @@ def generate_template_data(
     playlist: Playlist | None = None,
     playlist_index: int = 0,
     quality: str = "",
+    list_separator: str = "; ",
 ) -> dict[str, ItemTemplate | AlbumTemplate | PlaylistTemplate | None]:
     """Normalize Tidal API Track/Video + Album data into safe templates."""
 
@@ -149,9 +150,9 @@ def generate_template_data(
             isrc=isrc,
             quality=quality,
             artist=item.artist.name if item.artist else "",
-            artists="; ".join(main_artists),
-            features="; ".join(featured_artists),
-            artists_with_features="; ".join(main_artists + featured_artists),
+            artists=list_separator.join(main_artists),
+            features=list_separator.join(featured_artists),
+            artists_with_features=list_separator.join(main_artists + featured_artists),
             explicit=Explicit(getattr(item, "explicit", None)),
             dolby=dolby,
         )
@@ -200,6 +201,7 @@ def format_template(
     playlist_index: int = 0,
     quality: str = "",
     with_asterisk_ext: bool = True,
+    list_separator: str = "; ",
     **extra,
 ) -> str:
     """
@@ -215,6 +217,7 @@ def format_template(
             playlist=playlist,
             playlist_index=playlist_index,
             quality=quality,
+            list_separator=list_separator,
         )
         | extra
         | custom_fields

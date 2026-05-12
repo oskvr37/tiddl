@@ -295,10 +295,11 @@ def download_callback(
                             date=track_metadata.date,
                             credits_contributors=track_metadata.credits,
                             comment=track_metadata.album_review,
+                            list_separator=CONFIG.download.list_separator,
                         )
 
                     elif isinstance(item, Video):
-                        add_video_metadata(path=download_path, video=item)
+                        add_video_metadata(path=download_path, video=item, list_separator=CONFIG.download.list_separator)
 
                 if download_path and CONFIG.download.update_mtime:
                     try:
@@ -341,6 +342,7 @@ def download_callback(
                                 item=album_item.item,
                                 album=album,
                                 quality=get_item_quality(album_item.item),
+                                list_separator=CONFIG.download.list_separator,
                             )
 
                         except AttributeError as exc:
@@ -430,6 +432,7 @@ def download_callback(
                             item=track,
                             album=album,
                             quality=get_item_quality(track),
+                            list_separator=CONFIG.download.list_separator,
                         ),
                         track_metadata=Metadata(
                             cover=cover,
@@ -449,7 +452,8 @@ def download_callback(
                         ).save_to_directory(
                             path=DOWNLOAD_PATH
                             / format_template(
-                                CONFIG.cover.templates.track, item=track, album=album
+                                CONFIG.cover.templates.track, item=track, album=album,
+                                list_separator=CONFIG.download.list_separator,
                             )
                         )
 
@@ -473,6 +477,7 @@ def download_callback(
                             item=video,
                             album=album,
                             quality=get_item_quality(video),
+                            list_separator=CONFIG.download.list_separator,
                         ),
                     )
 
@@ -503,6 +508,7 @@ def download_callback(
                                             album=album,
                                             mix_id=resource.id,
                                             quality=get_item_quality(mix_item.item),
+                                            list_separator=CONFIG.download.list_separator,
                                         ),
                                     )
                                 )
@@ -604,6 +610,7 @@ def download_callback(
                                                 item=video,
                                                 album=album,
                                                 quality=get_item_quality(video),
+                                                list_separator=CONFIG.download.list_separator,
                                             ),
                                         )
                                     )
@@ -672,6 +679,7 @@ def download_callback(
                                             quality=get_item_quality(
                                                 playlist_item.item
                                             ),
+                                            list_separator=CONFIG.download.list_separator,
                                         ),
                                         track_metadata=Metadata(),
                                     )

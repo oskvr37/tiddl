@@ -98,6 +98,11 @@ match_existing_path_case = false
 # (both versions won't be downloaded at a time, it depends on what Tidal returns)
 atmos_filter = "none"
 
+# separator used when joining multiple artists in filenames and metadata.
+# default is "; " (semicolon + space), e.g. "Artist1; Artist2"
+# set to ", " for "Artist1, Artist2", " & " for "Artist1 & Artist2", or "/" for "Artist1/Artist2"
+# list_separator = "; "
+
 
 [metadata]
 # embed metadata in files
