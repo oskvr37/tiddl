@@ -89,6 +89,90 @@ class TestFormatTemplateNoAlbum:
         assert result == "Gorillaz"
 
 
+MULTI_ARTIST_VIDEO = Video.model_validate(
+    {
+        "id": 2,
+        "title": "Collab",
+        "volumeNumber": 1,
+        "trackNumber": 1,
+        "duration": 200,
+        "quality": "MP4_1080P",
+        "streamReady": True,
+        "adSupportedStreamReady": False,
+        "djReady": False,
+        "stemReady": False,
+        "allowStreaming": True,
+        "explicit": False,
+        "popularity": 10,
+        "type": "Music Video",
+        "adsPrePaywallOnly": False,
+        "artists": [
+            {"id": 1, "name": "Artist A", "type": "MAIN"},
+            {"id": 2, "name": "Artist B", "type": "MAIN"},
+        ],
+        "artist": {"id": 1, "name": "Artist A", "type": "MAIN"},
+    }
+)
+
+
+class TestListSeparator:
+    def test_default_separator_in_template(self):
+        result = format_template(
+            template="{item.artists}",
+            item=MULTI_ARTIST_VIDEO,
+            album=None,
+            with_asterisk_ext=False,
+        )
+        assert result == "Artist A; Artist B"
+
+    def test_custom_separator_in_template(self):
+        result = format_template(
+            template="{item.artists}",
+            item=MULTI_ARTIST_VIDEO,
+            album=None,
+            with_asterisk_ext=False,
+            list_separator=", ",
+        )
+        assert result == "Artist A, Artist B"
+
+    def test_ampersand_separator_in_template(self):
+        result = format_template(
+            template="{item.artists}",
+            item=MULTI_ARTIST_VIDEO,
+            album=None,
+            with_asterisk_ext=False,
+            list_separator=" & ",
+        )
+        assert result == "Artist A & Artist B"
+
+    def test_separator_applied_to_features(self):
+        video = Video.model_validate(
+            {
+                **MULTI_ARTIST_VIDEO.model_dump(),
+                "artists": [
+                    {"id": 1, "name": "Main", "type": "MAIN"},
+                    {"id": 2, "name": "Feat A", "type": "FEATURED"},
+                    {"id": 3, "name": "Feat B", "type": "FEATURED"},
+                ],
+            }
+        )
+        data = generate_template_data(item=video, list_separator=" & ")
+        assert data["item"].features == "Feat A & Feat B"
+
+    def test_separator_applied_to_artists_with_features(self):
+        video = Video.model_validate(
+            {
+                **MULTI_ARTIST_VIDEO.model_dump(),
+                "artists": [
+                    {"id": 1, "name": "Main", "type": "MAIN"},
+                    {"id": 2, "name": "Feat", "type": "FEATURED"},
+                ],
+            }
+        )
+        data = generate_template_data(item=video, list_separator=" / ")
+        assert data["item"].artists_with_features == "Main / Feat"
+
+
 class TestGenerateTemplateDataAlbumFallback:
     def test_album_template_is_never_none(self):
         """generate_template_data should always return an AlbumTemplate, never None."""

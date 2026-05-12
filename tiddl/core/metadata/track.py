@@ -35,7 +35,7 @@ class Metadata:
     comment: str = ""
 
 
-def add_flac_metadata(track_path: Path, metadata: Metadata) -> None:
+def add_flac_metadata(track_path: Path, metadata: Metadata, list_separator: str = "; ") -> None:
     log.debug(f"{track_path=}")
 
     mutagen = MutagenFLAC(track_path)
@@ -59,7 +59,7 @@ def add_flac_metadata(track_path: Path, metadata: Metadata) -> None:
             "DISCNUMBER": metadata.disc_number,
             "ALBUM": metadata.album_title,
             "ALBUMARTIST": metadata.album_artist,
-            "ARTIST": metadata.artists,
+            "ARTIST": [list_separator.join(metadata.artists)],
             "DATE": str(date) if date else "",
             "YEAR": (str(date.year) if date else ""),
             "COPYRIGHT": metadata.copyright or "",
@@ -79,7 +79,7 @@ def add_flac_metadata(track_path: Path, metadata: Metadata) -> None:
     mutagen.save()
 
 
-def add_m4a_metadata(track_path: Path, metadata: Metadata) -> None:
+def add_m4a_metadata(track_path: Path, metadata: Metadata, list_separator: str = "; ") -> None:
     mutagen = MutagenMP4(track_path)
 
     if metadata.cover_data:
@@ -101,7 +101,7 @@ def add_m4a_metadata(track_path: Path, metadata: Metadata) -> None:
             "discnumber": metadata.disc_number,
             "album": metadata.album_title,
             "albumartist": metadata.album_artist,
-            "artist": ["; ".join(metadata.artists)],
+            "artist": [list_separator.join(metadata.artists)],
             "date": metadata.date,
             "copyright": metadata.copyright or "",
             "comment": metadata.comment,
@@ -174,6 +174,7 @@ def add_track_metadata(
         list[AlbumItemsCredits.ItemWithCredits.CreditsEntry] | None
     ) = None,
     comment: str = "",
+    list_separator: str = "; ",
 ) -> None:
     """Add FLAC or M4A metadata based on file extension."""
 
@@ -203,8 +204,8 @@ def add_track_metadata(
     ext = path.suffix.lower()
 
     if ext == ".flac":
-        add_flac_metadata(path, metadata)
+        add_flac_metadata(path, metadata, list_separator=list_separator)
     elif ext == ".m4a":
-        add_m4a_metadata(path, metadata)
+        add_m4a_metadata(path, metadata, list_separator=list_separator)
     else:
         raise ValueError(f"Unsupported file extension: {ext}")

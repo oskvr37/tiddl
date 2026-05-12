@@ -75,3 +75,20 @@ def test_invalid_track_quality_raises(tmp_path: Path):
 
     with raises(Exception):
         load_config_file(cfg_file)
+
+
+def test_list_separator_default(tmp_path: Path):
+    cfg = load_config_file(tmp_path / "nonexistent.toml")
+    assert cfg.download.list_separator == "; "
+
+
+def test_list_separator_custom(tmp_path: Path):
+    cfg_file = write_config(
+        tmp_path,
+        """
+        [download]
+        list_separator = ", "
+        """,
+    )
+    cfg = load_config_file(cfg_file)
+    assert cfg.download.list_separator == ", "
