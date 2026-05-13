@@ -55,6 +55,7 @@ class Config(BaseModel):
         singles_filter: ARTIST_SINGLES_FILTER_LITERAL = "none"
         videos_filter: VIDEOS_FILTER_LITERAL = "none"
         update_mtime: bool = False
+        fav_mtime: bool = False
         rewrite_metadata: bool = False
         write_lrc_file: bool = False
         match_existing_path_case: bool = False
