@@ -13,7 +13,7 @@ log = logging.getLogger("tiddl")
 app = typer.Typer(name="tiddl", no_args_is_help=True, rich_markup_mode="rich")
 register_commands(app)
 
-VERSION = "v3.4.3"
+VERSION = "v3.4.4a1"
 
 
 @app.callback()
