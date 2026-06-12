@@ -76,6 +76,14 @@ videos_filter = "none"
 # that have been removed from a Tidal collection.
 update_mtime = false
 
+# when downloading favorites (tiddl download fav), set each file's modification
+# time to the date the item was added to your favorites.
+# for tracks and videos: uses the date that specific track/video was favorited.
+# for albums: all tracks in the album share the date the album was favorited.
+# does not apply to playlist or artist favorites.
+# if update_mtime is also enabled, it takes precedence and current time is used instead.
+fav_mtime = false
+
 # when enabled, it will write metadata to files that are already downloaded.
 # could be useful when data on Tidal has changed.
 rewrite_metadata = false

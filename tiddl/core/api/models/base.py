@@ -121,6 +121,33 @@ class Favorites(BaseModel):
     ARTIST: List[str]
 
 
+class FavoriteAlbumsItems(Items):
+    class FavoriteAlbumItem(BaseModel):
+        item: Album
+        type: Literal["album"] = "album"
+        created: str
+
+    items: List[FavoriteAlbumItem]
+
+
+class FavoriteTracksItems(Items):
+    class FavoriteTrackItem(BaseModel):
+        item: Track
+        type: ItemType = "track"
+        created: str
+
+    items: List[FavoriteTrackItem]
+
+
+class FavoriteVideosItems(Items):
+    class FavoriteVideoItem(BaseModel):
+        item: Video
+        type: ItemType = "video"
+        created: str
+
+    items: List[FavoriteVideoItem]
+
+
 class TrackStream(BaseModel):
     trackId: int
     assetPresentation: Literal["FULL"]

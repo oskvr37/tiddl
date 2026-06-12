@@ -8,6 +8,9 @@ from .models.base import (
     AlbumItemsCredits,
     ArtistAlbumsItems,
     ArtistVideosItems,
+    FavoriteAlbumsItems,
+    FavoriteTracksItems,
+    FavoriteVideosItems,
     Favorites,
     MixItems,
     PlaylistItems,
@@ -48,6 +51,15 @@ class Limits:
 
     MIX_ITEMS = 20
     MIX_ITEMS_MAX = 100
+
+    FAVORITE_ALBUMS = 20
+    FAVORITE_ALBUMS_MAX = 100
+
+    FAVORITE_TRACKS = 20
+    FAVORITE_TRACKS_MAX = 100
+
+    FAVORITE_VIDEOS = 20
+    FAVORITE_VIDEOS_MAX = 100
 
 
 class TidalAPI:
@@ -170,6 +182,48 @@ class TidalAPI:
             Favorites,
             f"users/{self.user_id}/favorites/ids",
             {"countryCode": self.country_code},
+            expire_after=EXPIRE_IMMEDIATELY,
+        )
+
+    def get_favorite_albums(
+        self, limit: int = Limits.FAVORITE_ALBUMS, offset: int = 0
+    ):
+        return self.client.fetch(
+            FavoriteAlbumsItems,
+            f"users/{self.user_id}/favorites/albums",
+            {
+                "countryCode": self.country_code,
+                "limit": min(limit, Limits.FAVORITE_ALBUMS_MAX),
+                "offset": offset,
+            },
+            expire_after=EXPIRE_IMMEDIATELY,
+        )
+
+    def get_favorite_tracks(
+        self, limit: int = Limits.FAVORITE_TRACKS, offset: int = 0
+    ):
+        return self.client.fetch(
+            FavoriteTracksItems,
+            f"users/{self.user_id}/favorites/tracks",
+            {
+                "countryCode": self.country_code,
+                "limit": min(limit, Limits.FAVORITE_TRACKS_MAX),
+                "offset": offset,
+            },
+            expire_after=EXPIRE_IMMEDIATELY,
+        )
+
+    def get_favorite_videos(
+        self, limit: int = Limits.FAVORITE_VIDEOS, offset: int = 0
+    ):
+        return self.client.fetch(
+            FavoriteVideosItems,
+            f"users/{self.user_id}/favorites/videos",
+            {
+                "countryCode": self.country_code,
+                "limit": min(limit, Limits.FAVORITE_VIDEOS_MAX),
+                "offset": offset,
+            },
             expire_after=EXPIRE_IMMEDIATELY,
         )
 
