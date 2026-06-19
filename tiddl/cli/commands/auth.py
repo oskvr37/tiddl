@@ -50,7 +50,7 @@ def login(
             sleep(device_auth.interval)
 
             try:
-                auth = auth_api.get_auth(device_auth.deviceCode)
+                auth = auth_api.get_auth(device_auth.device_code)
                 auth_data = AuthData(
                     token=auth.access_token,
                     refresh_token=auth.refresh_token,
