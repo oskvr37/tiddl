@@ -26,6 +26,21 @@ def _clean_segment(text: str) -> str:
 
     return text or "_"
 
+class PaddedNumber:
+    def __init__(self, value: int | None, width: int = 2):
+        self.value = value
+        self.width = width
+
+    def __format__(self, format_spec: str) -> str:
+        if self.value is None:
+            return ""
+
+        # allow override like "{item.number:3}" if needed
+        width = self.width
+        if format_spec.isdigit():
+            width = int(format_spec)
+
+        return f"{self.value:0{width}d}"
 
 class Explicit:
     def __init__(self, value: bool | None):
@@ -82,8 +97,8 @@ class ItemTemplate:
     id: int
     title: str
     title_version: str
-    number: int
-    volume: int
+    number: PaddedNumber
+    volume: PaddedNumber
     version: str
     copyright: str
     bpm: int
@@ -141,8 +156,8 @@ def generate_template_data(
             id=item.id,
             title=item.title,
             title_version=f"{item.title} ({version})" if version else item.title,
-            number=item.trackNumber,
-            volume=item.volumeNumber,
+            number=PaddedNumber(item.trackNumber),
+            volume=PaddedNumber(item.volumeNumber),
             version=version,
             copyright=copyright_,
             bpm=bpm,
