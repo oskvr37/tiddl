@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pytest
 
-from tiddl.core.utils.format import AlbumTemplate, format_template, generate_template_data
+from tiddl.core.utils.format import AlbumTemplate, format_template, generate_template_data, TiddlFormatter
 from tiddl.core.api.models.resources import Video
 
 
@@ -101,3 +101,44 @@ class TestGenerateTemplateDataAlbumFallback:
         album = data["album"]
         assert album.title == ""
         assert album.artist == ""
+
+class TestTemplateFormatter:
+    def test_capitalize_lowercase(self):
+        assert TiddlFormatter().format("{0:!c}", "radiohead") == "Radiohead"
+
+    def test_capitalize_already_capitalized(self):
+        assert TiddlFormatter().format("{0:!c}", "Radiohead") == "Radiohead"
+
+    def test_capitalize_single_character(self):
+        assert TiddlFormatter().format("{0:!c}", "r") == "R"
+
+    def test_capitalize_empty_string(self):
+        assert TiddlFormatter().format("{0:!c}", "") == ""
+
+    def test_capitalize_preserves_remaining_characters(self):
+        assert TiddlFormatter().format("{0:!c}", "rADIOHEAD") == "RADIOHEAD"
+
+    def test_capitalize_unicode(self):
+        assert TiddlFormatter().format("{0:!c}", "björk") == "Björk"
+
+    def test_capitalize_numeric_string(self):
+        assert TiddlFormatter().format("{0:!c}", "123abc") == "123abc"
+
+    def test_capitalize_non_string_value(self):
+        assert TiddlFormatter().format("{0:!c}", 123) == "123"
+
+    def test_output_template_with_capitalize_conversion(self):
+        data = generate_template_data(item=BASE_VIDEO, album=None)
+        album = data["album"]
+        album.artist = "radiohead"
+
+        result = TiddlFormatter().format(
+            "{album.artist:!c}/{album.artist}",
+            album=album,
+        )
+
+        assert result == "Radiohead/radiohead"
+
+    def test_standard_python_conversions_unchanged(self):
+        assert TiddlFormatter().format("{0!s}", "radiohead") == "radiohead"
+        assert TiddlFormatter().format("{0!r}", "radiohead") == "'radiohead'"

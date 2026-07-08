@@ -1,4 +1,5 @@
 import re
+import string
 from dataclasses import dataclass, field
 from datetime import datetime
 
@@ -26,6 +27,13 @@ def _clean_segment(text: str) -> str:
 
     return text or "_"
 
+class TiddlFormatter(string.Formatter):
+    def format_field(self, value, format_spec):
+        if format_spec == "!c":
+            value = str(value)
+            return value[:1].upper() + value[1:]
+
+        return super().format_field(value, format_spec)
 
 class Explicit:
     def __init__(self, value: bool | None):
@@ -223,7 +231,8 @@ def format_template(
     segments: list[str] = []
 
     for raw_segment in template.split("/"):
-        formatted = raw_segment.format(**data)
+        formatter = TiddlFormatter()
+        formatted = formatter.format(raw_segment,**data)
         cleaned = _clean_segment(formatted)
         segments.append(cleaned)
 
