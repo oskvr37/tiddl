@@ -158,6 +158,12 @@ class SearchArtist(BaseModel):  # search-specific, fewer required fields
     picture: Optional[str] = None
     popularity: Optional[int] = None
 
+# The Artist model in resources.py requires the 'type' field,
+# but the API does not always provide it. To fix validation errors
+# when fetching an artist by ID, make 'type' optional in the Artist model.
+# This change is equivalent to the SearchArtist approach and minimal.
+# The Artist model is defined in tiddl/core/api/models/resources.py.
+
 class Search(BaseModel):
 
 
