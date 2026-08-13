@@ -230,6 +230,8 @@ def test_refresh_success(monkeypatch: pytest.MonkeyPatch):
 
     mock_auth_response = MagicMock()
     mock_auth_response.access_token = "newtoken"
+    mock_auth_response.expires_in = 3600
+    mock_auth_response.refresh_token = None
 
     with (
         patch("tiddl.cli.commands.auth.AuthAPI") as MockAuthAPI,
@@ -241,5 +243,32 @@ def test_refresh_success(monkeypatch: pytest.MonkeyPatch):
         result = runner.invoke(auth_command, ["refresh"])
 
         mock_save.assert_called_once_with(expired_data)
+        assert expired_data.token == "newtoken"
+        assert expired_data.refresh_token == "refreshtoken"
         assert "Auth token has been refreshed!" in result.stdout
         assert result.exit_code == 0
+
+
+def test_refresh_saves_rotated_refresh_token(monkeypatch: pytest.MonkeyPatch):
+    expired_data = AuthData(
+        token="oldtoken", refresh_token="old-refresh-token", expires_at=0
+    )
+    monkeypatch.setattr("tiddl.cli.commands.auth.load_auth_data", lambda: expired_data)
+
+    mock_auth_response = MagicMock(
+        access_token="newtoken",
+        expires_in=3600,
+        refresh_token="rotated-refresh-token",
+    )
+
+    with (
+        patch("tiddl.cli.commands.auth.AuthAPI") as MockAuthAPI,
+        patch("tiddl.cli.commands.auth.save_auth_data") as mock_save,
+    ):
+        MockAuthAPI.return_value.refresh_token.return_value = mock_auth_response
+
+        result = runner.invoke(auth_command, ["refresh"])
+
+        assert result.exit_code == 0
+        assert expired_data.refresh_token == "rotated-refresh-token"
+        mock_save.assert_called_once_with(expired_data)

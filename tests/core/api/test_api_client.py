@@ -28,6 +28,19 @@ def test_tidal_client_init(mocker: MockerFixture):
     assert client.session is mock_session
     assert mock_session.headers["Authorization"] == "Bearer test-token"
     assert mock_session.headers["Accept"] == "application/json"
+    assert "X-Tidal-Token" not in mock_session.headers
+
+
+def test_tidal_client_sets_client_profile_header(mocker: MockerFixture):
+    mock_session = mocker.patch("tiddl.core.api.client.CachedSession").return_value
+
+    TidalClient(
+        token="test-token",
+        cache_name="test_cache",
+        client_id="client-id",
+    )
+
+    assert mock_session.headers["X-Tidal-Token"] == "client-id"
 
 
 @pytest.mark.parametrize("omit_cache", [True, False])

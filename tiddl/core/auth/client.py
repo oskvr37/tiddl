@@ -9,16 +9,19 @@ from tiddl.core.auth.exceptions import AuthClientError
 log = logging.getLogger("tiddl")
 
 
+DEFAULT_CLIENT_ID, DEFAULT_CLIENT_SECRET = (
+    base64.b64decode(
+        "NE4zbjZRMXg5NUxMNUs3cDtvS09YZkpXMzcxY1g2eGFaMFB5aGdHTkJkTkxsQlpkNEFLS1lvdWdNamlrPQ=="
+    )
+    .decode()
+    .split(";")
+)
+
+
 def get_auth_credentials() -> tuple[str, str]:
     ENV_KEY = "TIDDL_AUTH"
 
-    client_id, client_secret = (
-        base64.b64decode(
-            "NE4zbjZRMXg5NUxMNUs3cDtvS09YZkpXMzcxY1g2eGFaMFB5aGdHTkJkTkxsQlpkNEFLS1lvdWdNamlrPQ=="
-        )
-        .decode()
-        .split(";")
-    )
+    client_id, client_secret = DEFAULT_CLIENT_ID, DEFAULT_CLIENT_SECRET
 
     env_value = environ.get(ENV_KEY, None)
 
@@ -38,10 +41,18 @@ JSON: TypeAlias = dict[str, Any]
 
 class AuthClient:
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        client_id: str = CLIENT_ID,
+        client_secret: str = CLIENT_SECRET,
+        refresh_with_basic_auth: bool = True,
+        refresh_scope: str = "r_usr+w_usr+w_sub",
+    ) -> None:
         self.auth_url = AUTH_URL
-        self.client_id = CLIENT_ID
-        self.client_secret = CLIENT_SECRET
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.refresh_with_basic_auth = refresh_with_basic_auth
+        self.refresh_scope = refresh_scope
 
     def get_device_auth(self) -> JSON:
         res = request(
@@ -75,17 +86,27 @@ class AuthClient:
         return json_data
 
     def refresh_token(self, refresh_token: str) -> JSON:
-        res = request(
-            "POST",
-            f"{self.auth_url}/token",
-            data={
-                "client_id": self.client_id,
-                "refresh_token": refresh_token,
-                "grant_type": "refresh_token",
-                "scope": "r_usr+w_usr+w_sub",
-            },
-            auth=(self.client_id, self.client_secret),
-        )
+        data = {
+            "client_id": self.client_id,
+            "refresh_token": refresh_token,
+            "grant_type": "refresh_token",
+            "scope": self.refresh_scope,
+        }
+
+        if self.refresh_with_basic_auth:
+            res = request(
+                "POST",
+                f"{self.auth_url}/token",
+                data=data,
+                auth=(self.client_id, self.client_secret),
+            )
+        else:
+            data["client_secret"] = self.client_secret
+            res = request(
+                "POST",
+                f"{self.auth_url}/token",
+                data=data,
+            )
 
         res.raise_for_status()
 

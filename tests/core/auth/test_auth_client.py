@@ -115,6 +115,35 @@ def test_refresh_token(mocker: MockerFixture):
     assert result["token"] == "abc"
 
 
+def test_refresh_token_supports_form_client_secret_and_custom_scope(
+    mocker: MockerFixture,
+):
+    mock_request = mocker.patch("tiddl.core.auth.client.request")
+    mock_response = mocker.Mock()
+    mock_response.json.return_value = {"access_token": "abc"}
+    mock_request.return_value = mock_response
+
+    client = AuthClient(
+        client_id="client-id",
+        client_secret="client-secret",
+        refresh_with_basic_auth=False,
+        refresh_scope="r_usr+w_usr",
+    )
+    client.refresh_token("refresh-token")
+
+    mock_request.assert_called_once_with(
+        "POST",
+        "https://auth.tidal.com/v1/oauth2/token",
+        data={
+            "client_id": "client-id",
+            "client_secret": "client-secret",
+            "refresh_token": "refresh-token",
+            "grant_type": "refresh_token",
+            "scope": "r_usr+w_usr",
+        },
+    )
+
+
 def test_logout_token(mocker: MockerFixture):
     mock_request = mocker.patch("tiddl.core.auth.client.request")
 

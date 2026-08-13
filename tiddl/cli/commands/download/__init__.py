@@ -132,7 +132,7 @@ def download_callback(
         typer.Option(
             "--dolby-atmos",
             "-da",
-            help="Dolby Atmos filter, 'none' to exclude, 'allow' to include, 'only' to download only Dolby Atmos, if available.",
+            help="Dolby Atmos handling: 'none' uses stereo, 'allow' prefers Atmos when available, 'only' uses Atmos.",
         ),
     ] = CONFIG.download.atmos_filter,
 ):
@@ -218,6 +218,7 @@ def download_callback(
             scan_path=SCAN_PATH,
             match_existing_path_case=CONFIG.download.match_existing_path_case,
             dolby_atmos_filter=DOLBY_ATMOS_FILTER,
+            get_playback_api=ctx.obj.get_playback_api,
         )
 
         class Metadata:

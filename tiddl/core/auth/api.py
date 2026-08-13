@@ -1,7 +1,7 @@
 from tiddl.core.auth.client import AuthClient
 from tiddl.core.auth.models import (
     AuthDeviceResponse,
-    AuthResponse,
+    AuthRefreshResponse,
     AuthResponseWithRefresh,
 )
 
@@ -18,9 +18,9 @@ class AuthAPI:
         json_data = self._client.get_auth(device_code)
         return AuthResponseWithRefresh.model_validate(json_data)
 
-    def refresh_token(self, refresh_token: str) -> AuthResponse:
+    def refresh_token(self, refresh_token: str) -> AuthRefreshResponse:
         json_data = self._client.refresh_token(refresh_token)
-        return AuthResponse.model_validate(json_data)
+        return AuthRefreshResponse.model_validate(json_data)
 
     def logout_token(self, access_token: str) -> None:
         self._client.logout_token(access_token)

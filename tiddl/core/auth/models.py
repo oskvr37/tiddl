@@ -43,6 +43,16 @@ class AuthResponseWithRefresh(AuthResponse):
     refresh_token: str
 
 
+class AuthRefreshResponse(AuthResponse):
+    refresh_token: str | None = None
+
+
+class AuthTokenResponse(BaseModel):
+    access_token: str
+    expires_in: int
+    refresh_token: str | None = None
+
+
 class AuthDeviceResponse(BaseModel):
     deviceCode: str
     userCode: str

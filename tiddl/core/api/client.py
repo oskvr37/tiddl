@@ -39,16 +39,21 @@ class TidalClient:
         omit_cache: bool = False,
         debug_path: Path | None = None,
         on_token_expiry: Optional[Callable[[], str | None]] = None,
+        client_id: str | None = None,
     ) -> None:
         self.on_token_expiry = on_token_expiry
         self.debug_path = debug_path
         self.session = CachedSession(
             cache_name=cache_name, always_revalidate=omit_cache
         )
-        self.session.headers = {
+        headers = {
             "Authorization": f"Bearer {token}",
             "Accept": "application/json",
         }
+        if client_id:
+            headers["X-Tidal-Token"] = client_id
+
+        self.session.headers = headers
         self._token = token
 
     @property

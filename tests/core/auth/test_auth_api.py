@@ -4,8 +4,8 @@ from pytest_mock import MockerFixture
 from tiddl.core.auth.api import AuthAPI
 from tiddl.core.auth.models import (
     AuthDeviceResponse,
+    AuthRefreshResponse,
     AuthResponseWithRefresh,
-    AuthResponse,
 )
 
 
@@ -91,11 +91,12 @@ def test_get_auth_returns_model(mock_auth_client: Any) -> None:
 
 def test_refresh_token_returns_model(mock_auth_client: Any) -> None:
     api: AuthAPI = AuthAPI(client=mock_auth_client)
-    result: AuthResponse = api.refresh_token("refresh123")
+    result: AuthRefreshResponse = api.refresh_token("refresh123")
 
     mock_auth_client.refresh_token.assert_called_once_with("refresh123")
-    assert isinstance(result, AuthResponse)
+    assert isinstance(result, AuthRefreshResponse)
     assert result.access_token == "token123"
+    assert result.refresh_token == "refresh123"
 
 
 def test_logout_token_calls_client(mock_auth_client: Any) -> None:

@@ -155,6 +155,8 @@ def refresh(
 
     loaded_auth_data.token = auth_data.access_token
     loaded_auth_data.expires_at = auth_data.expires_in + int(time())
+    if auth_data.refresh_token:
+        loaded_auth_data.refresh_token = auth_data.refresh_token
 
     save_auth_data(loaded_auth_data)
 

@@ -1,5 +1,6 @@
 import asyncio
 import shutil
+from collections.abc import Callable
 from logging import getLogger
 from pathlib import Path
 from tempfile import NamedTemporaryFile
@@ -7,11 +8,12 @@ from tempfile import NamedTemporaryFile
 import aiofiles
 import aiohttp
 
-from tiddl.cli.config import VIDEOS_FILTER_LITERAL, ATMOS_FILTER_LITERAL
+from tiddl.cli.config import ATMOS_FILTER_LITERAL, VIDEOS_FILTER_LITERAL
 from tiddl.cli.utils.download import get_existing_track_filename
 from tiddl.cli.utils.path import resolve_existing_path_case
 from tiddl.core.api import ApiError, TidalAPI
 from tiddl.core.api.models import StreamVideoQuality, Track, TrackQuality, Video
+from tiddl.core.auth import PlaybackProfile, select_playback_profile
 from tiddl.core.utils import parse_track_stream, parse_video_stream
 from tiddl.core.utils.const import (
     TRACK_QUALITY_LITERAL,
@@ -53,6 +55,7 @@ class Downloader:
     scan_path: Path
     match_existing_path_case: bool
     dolby_atmos_filter: ATMOS_FILTER_LITERAL
+    get_playback_api: Callable[[PlaybackProfile], TidalAPI] | None
 
     def __init__(
         self,
@@ -67,6 +70,7 @@ class Downloader:
         scan_path: Path,
         match_existing_path_case: bool = False,
         dolby_atmos_filter: ATMOS_FILTER_LITERAL = "none",
+        get_playback_api: Callable[[PlaybackProfile], TidalAPI] | None = None,
     ) -> None:
         self.api = tidal_api
         self.rich_output = rich_output
@@ -79,6 +83,32 @@ class Downloader:
         self.scan_path = scan_path
         self.match_existing_path_case = match_existing_path_case
         self.dolby_atmos_filter = dolby_atmos_filter
+        self.get_playback_api = get_playback_api
+
+    def get_track_profile(self, track: Track) -> PlaybackProfile | None:
+        if not self.get_playback_api:
+            return None
+
+        atmos_available = (
+            "DOLBY_ATMOS" in track.audioModes
+            or "DOLBY_ATMOS" in track.mediaMetadata.tags
+        )
+        return select_playback_profile(
+            self.dolby_atmos_filter,
+            atmos_available,
+        )
+
+    def get_track_api(
+        self,
+        track: Track,
+        profile: PlaybackProfile | None = None,
+    ) -> TidalAPI:
+        if not self.get_playback_api:
+            return self.api
+
+        profile = profile or self.get_track_profile(track)
+        assert profile
+        return self.get_playback_api(profile)
 
     def get_path(self, base_path: Path, relative_path: Path) -> Path:
         if self.match_existing_path_case:
@@ -101,10 +131,18 @@ class Downloader:
             )
             return None, False
 
+        track_profile: PlaybackProfile | None = None
+
         if isinstance(item, Track):
-            filename = get_existing_track_filename(
-                item.audioQuality, self.track_quality, file_path
-            )
+            track_profile = self.get_track_profile(item)
+            if track_profile == "atmos":
+                filename = file_path.with_suffix(".m4a")
+            else:
+                filename = get_existing_track_filename(
+                    item.audioQuality,
+                    self.track_quality,
+                    file_path,
+                )
             existing_file_path = self.get_path(self.scan_path, filename)
             vibrant_color = item.album.vibrantColor
 
@@ -144,7 +182,7 @@ class Downloader:
         async with self.semaphore:
             if isinstance(item, Track):
                 try:
-                    stream = self.api.get_track_stream(
+                    stream = self.get_track_api(item, track_profile).get_track_stream(
                         track_id=item.id, quality=self.track_quality
                     )
 
@@ -160,7 +198,7 @@ class Downloader:
                         and stream.audioMode == "STEREO"
                     ):
                         self.rich_output.console.print(
-                            f"[blue]Skipping[/] [gray]{item.title}[/] [blue]due to Dolby Atmos filter[/] {self.dolby_atmos_filter}"
+                            f"[blue]Skipping[/] [gray]{item.title}[/] [blue]due to Dolby Atmos setting[/] {self.dolby_atmos_filter}"
                         )
                         return None, False
 
