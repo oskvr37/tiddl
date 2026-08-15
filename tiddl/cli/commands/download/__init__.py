@@ -282,18 +282,26 @@ def download_callback(
 
                         write_lrc_file(item, lyrics_subtitles, download_path)
 
+                        # Sidecar LRC/cover must not imply embedding. Only
+                        # metadata.lyrics / metadata.cover write into the file.
                         add_track_metadata(
                             path=download_path,
                             track=item,
-                            lyrics=lyrics_subtitles,
+                            lyrics=(
+                                lyrics_subtitles if CONFIG.metadata.lyrics else ""
+                            ),
                             album_artist=track_metadata.artist,
                             cover_data=(
                                 track_metadata.cover.data
-                                if track_metadata.cover
+                                if CONFIG.metadata.cover and track_metadata.cover
                                 else None
                             ),
                             date=track_metadata.date,
-                            credits_contributors=track_metadata.credits,
+                            credits_contributors=(
+                                track_metadata.credits
+                                if CONFIG.metadata.credits
+                                else []
+                            ),
                             comment=track_metadata.album_review,
                         )
 

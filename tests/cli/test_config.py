@@ -52,6 +52,42 @@ def test_match_existing_path_case_config(tmp_path: Path):
     assert cfg.download.match_existing_path_case is True
 
 
+def test_metadata_embed_flags_independent_of_sidecars(tmp_path: Path):
+    cfg_file = write_config(
+        tmp_path,
+        """
+        [metadata]
+        enable = true
+        lyrics = false
+        cover = false
+        credits = false
+
+        [cover]
+        save = true
+        allowed = ["album"]
+
+        [download]
+        write_lrc_file = true
+        """,
+    )
+
+    cfg = load_config_file(cfg_file)
+
+    assert cfg.metadata.enable is True
+    assert cfg.metadata.lyrics is False
+    assert cfg.metadata.cover is False
+    assert cfg.metadata.credits is False
+    assert cfg.cover.save is True
+    assert cfg.download.write_lrc_file is True
+
+
+def test_metadata_credits_defaults_true(tmp_path: Path):
+    cfg = load_config_file(tmp_path / "missing.toml")
+    assert cfg.metadata.credits is True
+    assert cfg.metadata.lyrics is False
+    assert cfg.metadata.cover is False
+
+
 def test_invalid_type_raises(tmp_path: Path):
     cfg_file = write_config(
         tmp_path,

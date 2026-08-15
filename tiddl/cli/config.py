@@ -28,6 +28,8 @@ class Config(BaseModel):
         lyrics: bool = False
         cover: bool = False
         album_review: bool = False
+        # composer/lyricist/producer etc. from Tidal credits
+        credits: bool = True
 
     metadata: MetadataConfig = MetadataConfig()
 
