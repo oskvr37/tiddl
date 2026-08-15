@@ -103,15 +103,18 @@ atmos_filter = "none"
 # embed metadata in files
 enable = true
 
-# embed lyrics in metadata
+# embed lyrics in metadata (independent of download.write_lrc_file)
 lyrics = false
 
-# embed track cover in the track file
+# embed track cover in the track file (independent of [cover].save)
 cover = false
 
 # embed album review text to track COMMENT metadata field.
 # only works when downloading album
 album_review = false
+
+# embed Tidal credits (composer, lyricist, producer, ...)
+credits = true
 
 
 [cover]
