@@ -59,6 +59,7 @@ class Config(BaseModel):
         write_lrc_file: bool = False
         match_existing_path_case: bool = False
         atmos_filter: ATMOS_FILTER_LITERAL = "none"
+        list_separator: str = "; "
 
         def model_post_init(self, __context):
             # set scan path to download path when download path is non default
