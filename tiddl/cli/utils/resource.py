@@ -10,6 +10,7 @@ ResourceTypeLiteral = Literal["track", "video", "album", "playlist", "artist", "
 class TidalResource(BaseModel):
     type: ResourceTypeLiteral
     id: str
+    fav_date_added: str | None = None
 
     @property
     def url(self) -> str:
