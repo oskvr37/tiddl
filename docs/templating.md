@@ -47,6 +47,10 @@ Each object type exposes fields you can use inside templates.
 | `item.explicit`              | Explicit content                       | `E`                             | str  |
 | `item.dolby:(Dolby Atmos)`   | Dolby Atmos (track only, `UserFormat`) | `(Dolby Atmos)`                 | str  |
 
+> [!NOTE]
+> Numeric fields `item.number` and `item.volume` can be padded with leading zeros
+> using `:0<width>d` (e.g. `item.number:02d` → `03`, `item.volume:03d` → `001`).
+
 ---
 
 ### `album`
