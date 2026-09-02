@@ -71,11 +71,20 @@ def login(
                     )
                     continue
 
+                if e.error == "slow_down":
+                    # Tidal requires increasing the polling interval.
+                    device_auth.interval += 5
+                    continue
+
                 if e.error == "expired_token":
                     status.console.print(
                         "\n[bold red]Time for authentication has expired."
                     )
                     break
+
+                # Handle unexpected errors gracefully.
+                status.console.print(f"\n[bold red]Authentication failed: {e.error}")
+                break
 
 
 @auth_command.command(help="Logout and remove token from app.")
