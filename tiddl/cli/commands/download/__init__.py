@@ -235,6 +235,18 @@ def download_callback(
                 self.cover = cover
                 self.album_review = album_review
 
+        def album_metadata(album: Album | None) -> Metadata:
+            """Album level tags (date, album artist) for tracks downloaded from
+            playlists and mixes, so they match tracks downloaded with their album."""
+
+            if album is None:
+                return Metadata()
+
+            return Metadata(
+                date=str(album.releaseDate) if album.releaseDate else "",
+                artist=album.artist.name if album.artist else "",
+            )
+
         async def handle_resource(resource: TidalResource):
             async def handle_item(
                 item: Track | Video,
@@ -487,7 +499,7 @@ def download_callback(
                             template = TEMPLATE or CONFIG.templates.mix
 
                             try:
-                                if "{album" in template:
+                                if "{album" in template or CONFIG.metadata.enable:
                                     album = ctx.obj.api.get_album(
                                         mix_item.item.album.id
                                     )
@@ -504,6 +516,7 @@ def download_callback(
                                             mix_id=resource.id,
                                             quality=get_item_quality(mix_item.item),
                                         ),
+                                        track_metadata=album_metadata(album),
                                     )
                                 )
                             except ApiError as e:
@@ -653,7 +666,12 @@ def download_callback(
                             template = TEMPLATE or CONFIG.templates.playlist
 
                             try:
-                                if "{album" in template:
+                                # videos are not tagged with album metadata, only fetch
+                                # their album when the template needs it
+                                if "{album" in template or (
+                                    CONFIG.metadata.enable
+                                    and isinstance(playlist_item.item, Track)
+                                ):
                                     album = ctx.obj.api.get_album(
                                         playlist_item.item.album.id
                                     )
@@ -673,7 +691,7 @@ def download_callback(
                                                 playlist_item.item
                                             ),
                                         ),
-                                        track_metadata=Metadata(),
+                                        track_metadata=album_metadata(album),
                                     )
                                 )
                             except ApiError as e:
