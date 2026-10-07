@@ -163,6 +163,19 @@ def normalize_credits_keys(
     entries[:] = valid_entries
 
 
+def _track_artist_names(track: Track) -> list[str]:
+    """Return artist names with TIDAL's primary artist first."""
+
+    if track.artist is None:
+        return [artist.name.strip() for artist in track.artists]
+
+    return [track.artist.name.strip()] + [
+        artist.name.strip()
+        for artist in track.artists
+        if artist.id != track.artist.id
+    ]
+
+
 def add_track_metadata(
     path: Path,
     track: Track,
@@ -189,7 +202,7 @@ def add_track_metadata(
         disc_number=str(track.volumeNumber),
         copyright=track.copyright,
         album_artist=album_artist,
-        artists=sorted(a.name.strip() for a in track.artists),
+        artists=_track_artist_names(track),
         album_title=track.album.title,
         date=date,
         isrc=track.isrc,
