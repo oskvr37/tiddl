@@ -222,15 +222,27 @@ class TidalAPI:
             expire_after=3600,
         )
 
-    def get_track_stream(self, track_id: ID, quality: TrackQuality):
+    def get_track_stream(
+        self,
+        track_id: ID,
+        quality: TrackQuality,
+        immersive_audio: bool | None = None,
+    ):
+        params = {
+            "audioquality": quality,
+            "playbackmode": "STREAM",
+            "assetpresentation": "FULL",
+        }
+
+        # when omitted, Tidal returns the Dolby Atmos stream
+        # for tracks that have one, whatever quality was requested
+        if immersive_audio is not None:
+            params["immersiveaudio"] = str(immersive_audio).lower()
+
         return self.client.fetch(
             TrackStream,
             f"tracks/{track_id}/playbackinfopostpaywall",
-            {
-                "audioquality": quality,
-                "playbackmode": "STREAM",
-                "assetpresentation": "FULL",
-            },
+            params,
             expire_after=DO_NOT_CACHE,
         )
 
