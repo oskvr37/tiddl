@@ -145,7 +145,12 @@ class Downloader:
             if isinstance(item, Track):
                 try:
                     stream = self.api.get_track_stream(
-                        track_id=item.id, quality=self.track_quality
+                        track_id=item.id,
+                        quality=self.track_quality,
+                        # ask Tidal for the stereo stream instead of skipping Atmos
+                        immersive_audio=(
+                            False if self.dolby_atmos_filter == "none" else None
+                        ),
                     )
 
                     log.debug(

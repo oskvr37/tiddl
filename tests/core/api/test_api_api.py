@@ -186,6 +186,23 @@ def test_get_track_stream(api: TidalAPI, mock_client: MockType):
     )
 
 
+@pytest.mark.parametrize("immersive_audio, expected", [(False, "false"), (True, "true")])
+def test_get_track_stream_immersive_audio(
+    api: TidalAPI, mock_client: MockType, immersive_audio: bool, expected: str
+):
+    api.get_track_stream(1, "LOSSLESS", immersive_audio=immersive_audio)
+    mock_client.fetch.assert_called_once_with(
+        TrackStream,
+        "tracks/1/playbackinfopostpaywall",
+        {
+            "audioquality": "LOSSLESS",
+            "playbackmode": "STREAM",
+            "assetpresentation": "FULL",
+            "immersiveaudio": expected,
+        },
+        expire_after=DO_NOT_CACHE,
+    )
+
 def test_get_video(api: TidalAPI, mock_client: MockType):
     api.get_video(1)
     mock_client.fetch.assert_called_once_with(
