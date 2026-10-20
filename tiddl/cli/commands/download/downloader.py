@@ -22,6 +22,7 @@ from tiddl.core.utils.const import (
 from tiddl.core.utils.ffmpeg import convert_to_mp4, extract_flac
 
 from .output import RichOutput
+from .report import DownloadReport
 
 log = getLogger(__name__)
 
@@ -44,6 +45,7 @@ video_qualities_color: dict[StreamVideoQuality, str] = {
 class Downloader:
     api: TidalAPI
     rich_output: RichOutput
+    report: DownloadReport
     semaphore: asyncio.Semaphore
     track_quality: TrackQuality
     video_quality: StreamVideoQuality
@@ -67,9 +69,11 @@ class Downloader:
         scan_path: Path,
         match_existing_path_case: bool = False,
         dolby_atmos_filter: ATMOS_FILTER_LITERAL = "none",
+        report: DownloadReport | None = None,
     ) -> None:
         self.api = tidal_api
         self.rich_output = rich_output
+        self.report = report if report is not None else DownloadReport()
         self.semaphore = asyncio.Semaphore(threads_count)
         self.track_quality = track_qualities[track_quality]
         self.video_quality = video_qualities[video_quality]
@@ -98,6 +102,11 @@ class Downloader:
         if not item.allowStreaming:
             self.rich_output.console.print(
                 f"[red]Can't stream[/] {item.title} ({item.id})"
+            )
+            self.report.add_skip(
+                kind="track" if isinstance(item, Track) else "video",
+                name=f"{item.title} (ID: {item.id})",
+                reason="streaming not allowed",
             )
             return None, False
 
@@ -168,6 +177,11 @@ class Downloader:
                     log.error(f"{item.id=} {e=}")
                     self.rich_output.console.print(
                         f"[red]Error [{vibrant_color}]{item.title}[/] - {e.user_message}"
+                    )
+                    self.report.add_failure(
+                        kind="track",
+                        name=f"{item.title} (ID: {item.id})",
+                        error=e,
                     )
                     return None, False
 

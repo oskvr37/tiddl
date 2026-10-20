@@ -19,6 +19,25 @@ enable_cache = true
 debug = false
 
 
+[api]
+# Tidal rate limits bursts of requests with `429 Too Many Requests`.
+# this is most noticeable on big playlists with a cold cache, where metadata
+# for every album is requested one after another.
+
+# minimum time in seconds between two requests that actually reach the API.
+# cached responses are not throttled, so a run with a warm cache is not slowed
+# down. set to 0 to disable throttling.
+min_request_interval = 0.25
+
+# how many times a request is retried while the API keeps answering with 429.
+# waiting time grows exponentially and honors the `Retry-After` header.
+rate_limit_max_retries = 8
+
+# upper bound for a single backoff wait in seconds,
+# so a run cannot hang unnoticed for a long time.
+rate_limit_max_backoff = 60.0
+
+
 [templates]
 # read more about file templating at https://github.com/oskvr37/tiddl/blob/main/docs/templating.md
 
@@ -97,6 +116,12 @@ match_existing_path_case = false
 # allow - download both
 # (both versions won't be downloaded at a time, it depends on what Tidal returns)
 atmos_filter = "none"
+
+# exit with code 2 when items were skipped because of temporary errors,
+# like a rate limit or a network problem. content that is permanently
+# unavailable, for example when streaming is not allowed, keeps exit code 0.
+# useful for scheduled runs that should retry instead of reporting success.
+fail_on_partial = false
 
 
 [metadata]

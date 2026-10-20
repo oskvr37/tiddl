@@ -23,6 +23,17 @@ class Config(BaseModel):
     enable_cache: bool = True
     debug: bool = False
 
+    class ApiConfig(BaseModel):
+        # seconds between two requests that actually reach the API,
+        # 0 disables throttling
+        min_request_interval: float = 0.25
+        # retries for `429 Too Many Requests`
+        rate_limit_max_retries: int = 8
+        # upper bound for a single backoff wait, in seconds
+        rate_limit_max_backoff: float = 60.0
+
+    api: ApiConfig = ApiConfig()
+
     class MetadataConfig(BaseModel):
         enable: bool = True
         lyrics: bool = False
@@ -59,6 +70,7 @@ class Config(BaseModel):
         write_lrc_file: bool = False
         match_existing_path_case: bool = False
         atmos_filter: ATMOS_FILTER_LITERAL = "none"
+        fail_on_partial: bool = False
 
         def model_post_init(self, __context):
             # set scan path to download path when download path is non default

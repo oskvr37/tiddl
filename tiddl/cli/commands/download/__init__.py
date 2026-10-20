@@ -30,6 +30,7 @@ from tiddl.cli.commands.subcommands import register_subcommands
 
 from .downloader import Downloader
 from .output import RichOutput
+from .report import EXIT_PARTIAL, DownloadReport, keep_existing_m3u
 
 download_command = typer.Typer(name="download")
 register_subcommands(download_command)
@@ -127,6 +128,15 @@ def download_callback(
             help="Raise an error on resource download failure. Use for debugging",
         ),
     ] = False,
+    FAIL_ON_PARTIAL: Annotated[
+        bool,
+        typer.Option(
+            "--fail-on-partial",
+            "-fp",
+            help=f"Exit with code {EXIT_PARTIAL} when items were skipped "
+            "because of temporary errors, like a rate limit.",
+        ),
+    ] = CONFIG.download.fail_on_partial,
     DOLBY_ATMOS_FILTER: Annotated[
         ATMOS_FILTER_LITERAL,
         typer.Option(
@@ -143,6 +153,8 @@ def download_callback(
     ctx.invoke(refresh, EARLY_EXPIRE_TIME=600)
 
     log.debug(f"{ctx.params=}")
+
+    report = DownloadReport()
 
     def write_lrc_file(track: Track, lyrics: str, file_path: Path):
         if not CONFIG.download.write_lrc_file or not lyrics.strip():
@@ -177,9 +189,20 @@ def download_callback(
 
         log.debug(f"{resource_type=}, {filename=}, {len(tracks_with_existing_paths)=}")
 
-        save_tracks_to_m3u(
-            tracks_with_path=tracks_with_existing_paths, path=DOWNLOAD_PATH / filename
-        )
+        path = DOWNLOAD_PATH / filename
+        m3u_path = path.with_suffix(".m3u")
+
+        # the report covers the whole invocation, so with multiple resources
+        # at once a temporary error in one of them can also preserve the m3u
+        # file of another; that errs on the side of keeping data
+        if keep_existing_m3u(m3u_path, report):
+            ctx.obj.console.print(
+                f"[yellow]Keeping existing m3u file[/] {m3u_path} "
+                "because items were skipped due to temporary errors"
+            )
+            return
+
+        save_tracks_to_m3u(tracks_with_path=tracks_with_existing_paths, path=path)
 
     def get_item_quality(item: Track | Video):
         def predict_item_quality() -> TRACK_QUALITY_LITERAL | VIDEO_QUALITY_LITERAL:
@@ -218,6 +241,7 @@ def download_callback(
             scan_path=SCAN_PATH,
             match_existing_path_case=CONFIG.download.match_existing_path_case,
             dolby_atmos_filter=DOLBY_ATMOS_FILTER,
+            report=report,
         )
 
         class Metadata:
@@ -247,9 +271,26 @@ def download_callback(
                 if not track_metadata:
                     track_metadata = Metadata()
 
-                download_path, was_downloaded = await downloader.download(
-                    item=item, file_path=Path(file_path)
-                )
+                try:
+                    download_path, was_downloaded = await downloader.download(
+                        item=item, file_path=Path(file_path)
+                    )
+                except Exception as e:
+                    # without this, a single failing item would abort the
+                    # asyncio.gather of its whole resource
+                    report.add_failure(
+                        kind="track" if isinstance(item, Track) else "video",
+                        name=f"{item.title} (ID: {item.id})",
+                        error=e,
+                    )
+                    ctx.obj.console.print(
+                        f"[red]Error:[/] {e} ({item.title}, ID: {item.id})"
+                    )
+
+                    if RAISE_ERRORS:
+                        raise
+
+                    return None, item
 
                 log.debug(f"{download_path=}, {was_downloaded=}")
 
@@ -371,6 +412,9 @@ def download_callback(
                             track_info = f"Track: {getattr(item, 'title', 'Unknown')} (ID: {item.id})"
                             if hasattr(item, "album") and item.album:
                                 track_info += f", Album ID: {item.album.id}"
+                            report.add_failure(
+                                kind="track", name=track_info, error=e
+                            )
                             ctx.obj.console.print(
                                 f"[red]API Error:[/] {e} ({track_info})"
                             )
@@ -379,6 +423,9 @@ def download_callback(
                         except Exception as e:
                             item = album_item.item
                             track_info = f"Track: {getattr(item, 'title', 'Unknown')} (ID: {item.id})"
+                            report.add_failure(
+                                kind="track", name=track_info, error=e
+                            )
                             ctx.obj.console.print(f"[red]Error:[/] {e} ({track_info})")
                             if RAISE_ERRORS:
                                 raise
@@ -509,6 +556,9 @@ def download_callback(
                             except ApiError as e:
                                 item = mix_item.item
                                 track_info = f"Track: {getattr(item, 'title', 'Unknown')} (ID: {item.id})"
+                                report.add_failure(
+                                    kind="track", name=track_info, error=e
+                                )
                                 ctx.obj.console.print(
                                     f"[red]API Error:[/] {e} ({track_info})"
                                 )
@@ -517,6 +567,9 @@ def download_callback(
                             except Exception as e:
                                 item = mix_item.item
                                 track_info = f"Track: {getattr(item, 'title', 'Unknown')} (ID: {item.id})"
+                                report.add_failure(
+                                    kind="track", name=track_info, error=e
+                                )
                                 ctx.obj.console.print(
                                     f"[red]Error:[/] {e} ({track_info})"
                                 )
@@ -547,18 +600,24 @@ def download_callback(
                     futures = []
 
                     async def safe_download_album(album: Album):
+                        album_info = f"Album: {album.title}, ID: {album.id}"
+
                         try:
                             await download_album(album)
                         except ApiError as e:
+                            report.add_failure(
+                                kind="album", name=album_info, error=e
+                            )
                             ctx.obj.console.print(
-                                f"[red]API Error:[/] {e} (Album: {album.title}, ID: {album.id})"
+                                f"[red]API Error:[/] {e} ({album_info})"
                             )
                             if RAISE_ERRORS:
                                 raise
                         except Exception as e:
-                            ctx.obj.console.print(
-                                f"[red]Error:[/] {e} (Album: {album.title}, ID: {album.id})"
+                            report.add_failure(
+                                kind="album", name=album_info, error=e
                             )
+                            ctx.obj.console.print(f"[red]Error:[/] {e} ({album_info})")
                             if RAISE_ERRORS:
                                 raise
 
@@ -608,12 +667,22 @@ def download_callback(
                                         )
                                     )
                                 except ApiError as e:
+                                    report.add_failure(
+                                        kind="video",
+                                        name=f"Video: {video.title}, ID: {video.id}",
+                                        error=e,
+                                    )
                                     ctx.obj.console.print(
                                         f"[red]API Error:[/] {e} (Video: {video.title}, ID: {video.id})"
                                     )
                                     if RAISE_ERRORS:
                                         raise
                                 except Exception as e:
+                                    report.add_failure(
+                                        kind="video",
+                                        name=f"Video: {video.title}, ID: {video.id}",
+                                        error=e,
+                                    )
                                     ctx.obj.console.print(
                                         f"[red]Error:[/] {e} (Video: {video.title}, ID: {video.id})"
                                     )
@@ -681,6 +750,9 @@ def download_callback(
                                 track_info = f"Track: {getattr(item, 'title', 'Unknown')} (ID: {item.id})"
                                 if hasattr(item, "album") and item.album:
                                     track_info += f", Album ID: {item.album.id}"
+                                report.add_failure(
+                                    kind="track", name=track_info, error=e
+                                )
                                 ctx.obj.console.print(
                                     f"[red]API Error:[/] {e} ({track_info})"
                                 )
@@ -689,6 +761,9 @@ def download_callback(
                             except Exception as e:
                                 item = playlist_item.item
                                 track_info = f"Track: {getattr(item, 'title', 'Unknown')} (ID: {item.id})"
+                                report.add_failure(
+                                    kind="track", name=track_info, error=e
+                                )
                                 ctx.obj.console.print(
                                     f"[red]Error:[/] {e} ({track_info})"
                                 )
@@ -737,10 +812,12 @@ def download_callback(
                 try:
                     await handle_resource(r)
                 except ApiError as e:
+                    report.add_failure(kind=r.type, name=str(r), error=e)
                     ctx.obj.console.print(f"[red]API Error:[/] {e} ({r})")
                     if RAISE_ERRORS:
                         raise
                 except Exception as e:
+                    report.add_failure(kind=r.type, name=str(r), error=e)
                     ctx.obj.console.print(f"[red]Error:[/] {e} ({r})")
                     if RAISE_ERRORS:
                         raise
@@ -748,6 +825,12 @@ def download_callback(
             await asyncio.gather(*(wrapper(r) for r in ctx.obj.resources))
 
         rich_output.show_stats()
+
+        for line in report.summary_lines():
+            ctx.obj.console.print(line)
+
+        if report.has_transient_failures and FAIL_ON_PARTIAL:
+            raise typer.Exit(code=EXIT_PARTIAL)
 
     def run():
         asyncio.run(download_resources())

@@ -5,7 +5,7 @@ from pathlib import Path
 from rich.console import Console
 
 from tiddl.core.api import TidalClient, TidalAPI
-from tiddl.cli.config import APP_PATH
+from tiddl.cli.config import APP_PATH, CONFIG
 from tiddl.core.auth import AuthAPI
 from tiddl.cli.utils.auth.core import load_auth_data, save_auth_data
 from tiddl.cli.utils.resource import TidalResource
@@ -61,6 +61,9 @@ class ContextObject:
             omit_cache=self.api_omit_cache,
             debug_path=self.debug_path,
             on_token_expiry=on_token_expiry,
+            min_request_interval=CONFIG.api.min_request_interval,
+            rate_limit_max_retries=CONFIG.api.rate_limit_max_retries,
+            rate_limit_max_backoff=CONFIG.api.rate_limit_max_backoff,
         )
 
         self._api = TidalAPI(client, auth_data.user_id, auth_data.country_code)
