@@ -80,6 +80,16 @@ def test_url_property():
     assert res.url == "https://listen.tidal.com/track/12345"
 
 
+def test_from_string_strips_surrounding_whitespace():
+    res = TidalResource.from_string("  track/12345  \n")
+    assert res.type == "track"
+    assert res.id == "12345"
+
+    res = TidalResource.from_string("  https://listen.tidal.com/track/12345\n")
+    assert res.type == "track"
+    assert res.id == "12345"
+
+
 def test_str_method():
     res = TidalResource(type="album", id="67890")
     assert str(res) == "album/67890"

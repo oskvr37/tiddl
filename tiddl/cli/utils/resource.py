@@ -25,7 +25,7 @@ class TidalResource(BaseModel):
         in the format `resource_type/resource_id` (e.g., `track/12345678`).
         """
 
-        segments = [seg for seg in urlparse(string).path.split("/") if seg]
+        segments = [seg for seg in urlparse(string.strip()).path.split("/") if seg]
 
         resource_type = next(
             (seg for seg in segments if seg in get_args(ResourceTypeLiteral)), None
